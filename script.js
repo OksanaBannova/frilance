@@ -310,94 +310,167 @@ function Header({ onOrder }) {
    ========================================================= */
 
 function Hero({ onOrder }) {
-  const scrollToServices = () => {
-    document
-      .getElementById("services")
-      ?.scrollIntoView({
-        behavior: "smooth"
-      });
-  };
+return ( <section className="hero" id="home"> <div className="hero-bg-glow"></div>
 
-  return (
-    <section
-      className="hero"
-      id="top"
-    >
-      <div className="container">
+```
+  <div className="container hero-grid">
+    <div className="hero-content">
+      <div className="hero-badge">
+        <span className="hero-badge-dot"></span>
+        Сайты • Нейрофото • Карточки товаров
+      </div>
 
-        <div className="hero-content">
+      <h1>
+        Цифровая упаковка,
+        <span> которая помогает продавать</span>
+      </h1>
 
-          <div className="hero-badge">
-            <span className="hero-badge-dot"></span>
-            Открыта запись на новые проекты
-          </div>
+      <p className="hero-description">
+        Создаю современные сайты, продающие визуалы с помощью нейросетей
+        и карточки товаров, которые помогают бизнесу выглядеть
+        профессионально.
+      </p>
 
+      <div className="hero-buttons">
+        <button className="btn btn-primary" onClick={onOrder}>
+          Обсудить проект
+          <span>→</span>
+        </button>
 
-          <h1 className="hero-title">
-            Цифровая упаковка,
-            <br />
+        <a href="#portfolio" className="btn btn-secondary">
+          Смотреть работы
+        </a>
+      </div>
 
-            которая помогает
-            <br />
-
-            <span className="gradient-text">
-              продавать
-            </span>
-          </h1>
-
-
-          <p className="hero-description">
-            Создаю современные сайты, нейрофото и визуал
-            для маркетплейсов — чтобы ваш бизнес выглядел
-            профессионально и вызывал доверие.
-          </p>
-
-
-          <div className="hero-actions">
-
-            <button
-              className="primary-button"
-              onClick={onOrder}
-            >
-              Обсудить мой проект
-              <span>→</span>
-            </button>
-
-            <button
-              className="secondary-button"
-              onClick={scrollToServices}
-            >
-              Посмотреть услуги
-            </button>
-
-          </div>
-
-
-          <div className="hero-stats">
-
-            <div className="hero-stat">
-              <strong>3</strong>
-              <span>направления</span>
-            </div>
-
-            <div className="hero-stat">
-              <strong>∞</strong>
-              <span>идей для визуала</span>
-            </div>
-
-            <div className="hero-stat">
-              <strong>100%</strong>
-              <span>онлайн</span>
-            </div>
-
-          </div>
-
+      <div className="hero-stats">
+        <div className="hero-stat">
+          <strong>3</strong>
+          <span>направления</span>
         </div>
 
+        <div className="hero-stat-line"></div>
+
+        <div className="hero-stat">
+          <strong>от 700 ₽</strong>
+          <span>нейрофото</span>
+        </div>
+
+        <div className="hero-stat-line"></div>
+
+        <div className="hero-stat">
+          <strong>от 15 000 ₽</strong>
+          <span>сайт</span>
+        </div>
       </div>
-    </section>
-  );
+    </div>
+
+    <div className="hero-visual">
+
+      <div className="hero-orbit hero-orbit-1"></div>
+      <div className="hero-orbit hero-orbit-2"></div>
+
+      <div className="hero-main-glow"></div>
+
+      {/* Карточка сайта */}
+      <div className="hero-card hero-card-site">
+        <div className="hero-card-top">
+          <div className="mini-dots">
+            <i></i>
+            <i></i>
+            <i></i>
+          </div>
+          <span>WEBSITE</span>
+        </div>
+
+        <div className="website-preview">
+          <div className="website-preview-header">
+            <div className="preview-logo"></div>
+            <div className="preview-menu">
+              <i></i>
+              <i></i>
+              <i></i>
+            </div>
+          </div>
+
+          <div className="website-preview-content">
+            <div className="preview-line big"></div>
+            <div className="preview-line"></div>
+            <div className="preview-line short"></div>
+
+            <div className="preview-button"></div>
+          </div>
+        </div>
+
+        <div className="hero-card-label">
+          <span className="label-icon">⌘</span>
+          Сайт под ключ
+        </div>
+      </div>
+
+      {/* Карточка нейрофото */}
+      <div className="hero-card hero-card-photo">
+        <div className="photo-placeholder">
+          <div className="photo-silhouette">
+            <div className="silhouette-head"></div>
+            <div className="silhouette-body"></div>
+          </div>
+
+          <div className="photo-spark spark-1">✦</div>
+          <div className="photo-spark spark-2">✧</div>
+          <div className="photo-spark spark-3">✦</div>
+        </div>
+
+        <div className="photo-label">
+          <span>✦</span>
+          NEUROPHOTO
+        </div>
+      </div>
+
+      {/* Карточка товара */}
+      <div className="hero-card hero-card-product">
+        <div className="product-preview">
+          <div className="product-image">
+            <div className="product-bottle"></div>
+          </div>
+
+          <div className="product-info">
+            <div className="product-line"></div>
+            <div className="product-line small"></div>
+
+            <div className="product-price">
+              1 500 ₽
+            </div>
+          </div>
+        </div>
+
+        <div className="product-label">
+          <span>◈</span>
+          Карточка товара
+        </div>
+      </div>
+
+      <div className="hero-floating-tag tag-1">
+        <span>✦</span>
+        AI VISUAL
+      </div>
+
+      <div className="hero-floating-tag tag-2">
+        <span>✓</span>
+        Под ключ
+      </div>
+
+    </div>
+  </div>
+
+  <div className="hero-scroll">
+    <span>SCROLL</span>
+    <div className="scroll-line"></div>
+  </div>
+</section>
+
+);
 }
+
 
 
 /* =========================================================

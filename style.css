@@ -478,6 +478,761 @@ section {
   gap: 14px;
 }
 
+/* =========================================
+HERO VISUAL — НОВЫЙ ПЕРВЫЙ ЭКРАН
+========================================= */
+
+.hero {
+position: relative;
+min-height: calc(100vh - 80px);
+display: flex;
+align-items: center;
+overflow: hidden;
+padding: 80px 0 100px;
+}
+
+.hero-grid {
+position: relative;
+z-index: 2;
+display: grid;
+grid-template-columns: minmax(0, 1fr) minmax(500px, 0.95fr);
+align-items: center;
+gap: 50px;
+}
+
+.hero-content {
+position: relative;
+z-index: 5;
+}
+
+.hero-badge {
+display: inline-flex;
+align-items: center;
+gap: 9px;
+padding: 9px 15px;
+margin-bottom: 25px;
+border: 1px solid rgba(120, 170, 255, 0.25);
+border-radius: 50px;
+background: rgba(255, 255, 255, 0.035);
+color: #aeb9d4;
+font-size: 12px;
+letter-spacing: 0.04em;
+backdrop-filter: blur(12px);
+}
+
+.hero-badge-dot {
+width: 7px;
+height: 7px;
+border-radius: 50%;
+background: #66c8ff;
+box-shadow: 0 0 14px rgba(102, 200, 255, 0.9);
+}
+
+.hero h1 {
+max-width: 760px;
+margin: 0;
+font-size: clamp(46px, 5.3vw, 78px);
+line-height: 0.98;
+letter-spacing: -0.045em;
+font-weight: 800;
+color: #fff;
+}
+
+.hero h1 span {
+display: block;
+margin-top: 10px;
+background: linear-gradient(
+110deg,
+#ffffff 0%,
+#9fdcff 42%,
+#d783ff 72%,
+#ff5f9e 100%
+);
+-webkit-background-clip: text;
+background-clip: text;
+color: transparent;
+}
+
+.hero-description {
+max-width: 620px;
+margin: 30px 0 32px;
+color: #9ca7c1;
+font-size: 17px;
+line-height: 1.7;
+}
+
+.hero-buttons {
+display: flex;
+flex-wrap: wrap;
+gap: 12px;
+}
+
+.hero-buttons .btn {
+min-height: 52px;
+}
+
+.hero-buttons .btn span {
+margin-left: 10px;
+font-size: 18px;
+}
+
+.hero-stats {
+display: flex;
+align-items: center;
+gap: 22px;
+margin-top: 48px;
+}
+
+.hero-stat {
+display: flex;
+flex-direction: column;
+gap: 4px;
+}
+
+.hero-stat strong {
+color: #fff;
+font-size: 18px;
+font-weight: 700;
+}
+
+.hero-stat span {
+color: #707b96;
+font-size: 11px;
+text-transform: uppercase;
+letter-spacing: 0.08em;
+}
+
+.hero-stat-line {
+width: 1px;
+height: 34px;
+background: rgba(255, 255, 255, 0.12);
+}
+
+/* =========================================
+HERO VISUAL
+========================================= */
+
+.hero-visual {
+position: relative;
+height: 620px;
+width: 100%;
+perspective: 1000px;
+}
+
+.hero-main-glow {
+position: absolute;
+width: 430px;
+height: 430px;
+left: 50%;
+top: 50%;
+transform: translate(-50%, -50%);
+border-radius: 50%;
+background:
+radial-gradient(
+circle,
+rgba(97, 160, 255, 0.23) 0%,
+rgba(170, 76, 255, 0.13) 35%,
+rgba(255, 67, 150, 0.08) 58%,
+transparent 72%
+);
+filter: blur(12px);
+pointer-events: none;
+}
+
+.hero-orbit {
+position: absolute;
+left: 50%;
+top: 50%;
+border: 1px solid rgba(120, 160, 255, 0.1);
+border-radius: 50%;
+transform: translate(-50%, -50%);
+pointer-events: none;
+}
+
+.hero-orbit-1 {
+width: 570px;
+height: 570px;
+}
+
+.hero-orbit-2 {
+width: 420px;
+height: 420px;
+border-color: rgba(255, 91, 174, 0.1);
+}
+
+/* Основные карточки */
+
+.hero-card {
+position: absolute;
+border: 1px solid rgba(255, 255, 255, 0.12);
+background: rgba(16, 18, 31, 0.72);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border-radius: 20px;
+box-shadow:
+0 30px 80px rgba(0, 0, 0, 0.35),
+inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Сайт */
+
+.hero-card-site {
+width: 370px;
+height: 275px;
+top: 65px;
+left: 45px;
+padding: 17px;
+transform: rotate(-6deg);
+z-index: 3;
+animation: heroFloat1 6s ease-in-out infinite;
+}
+
+.hero-card-top {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 13px;
+}
+
+.hero-card-top > span {
+color: #69758f;
+font-size: 9px;
+letter-spacing: 0.16em;
+}
+
+.mini-dots {
+display: flex;
+gap: 5px;
+}
+
+.mini-dots i {
+width: 5px;
+height: 5px;
+border-radius: 50%;
+background: #69758f;
+}
+
+.website-preview {
+height: 188px;
+overflow: hidden;
+border-radius: 11px;
+border: 1px solid rgba(255,255,255,0.08);
+background:
+linear-gradient(
+135deg,
+rgba(56, 68, 110, 0.35),
+rgba(26, 22, 53, 0.8)
+);
+}
+
+.website-preview-header {
+height: 31px;
+padding: 0 11px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.preview-logo {
+width: 40px;
+height: 5px;
+border-radius: 5px;
+background: linear-gradient(90deg, #61b8ff, #c36cff);
+}
+
+.preview-menu {
+display: flex;
+gap: 4px;
+}
+
+.preview-menu i {
+width: 17px;
+height: 3px;
+border-radius: 5px;
+background: rgba(255,255,255,0.25);
+}
+
+.website-preview-content {
+padding: 27px 25px;
+}
+
+.preview-line {
+width: 65%;
+height: 6px;
+margin-bottom: 8px;
+border-radius: 5px;
+background: rgba(255,255,255,0.25);
+}
+
+.preview-line.big {
+width: 82%;
+height: 13px;
+background: linear-gradient(90deg, #fff, #8bc9ff);
+}
+
+.preview-line.short {
+width: 42%;
+}
+
+.preview-button {
+width: 70px;
+height: 23px;
+margin-top: 22px;
+border-radius: 6px;
+background: linear-gradient(90deg, #477cff, #d653ae);
+box-shadow: 0 5px 20px rgba(87, 107, 255, 0.3);
+}
+
+.hero-card-label {
+display: flex;
+align-items: center;
+gap: 7px;
+margin-top: 10px;
+color: #aeb9d1;
+font-size: 11px;
+}
+
+.label-icon {
+color: #72c8ff;
+}
+
+/* Нейрофото */
+
+.hero-card-photo {
+width: 230px;
+height: 310px;
+right: 18px;
+top: 95px;
+padding: 10px;
+transform: rotate(7deg);
+z-index: 4;
+animation: heroFloat2 7s ease-in-out infinite;
+overflow: hidden;
+}
+
+.photo-placeholder {
+position: relative;
+height: 250px;
+border-radius: 13px;
+overflow: hidden;
+background:
+radial-gradient(
+circle at 50% 35%,
+rgba(195, 112, 255, 0.5),
+transparent 30%
+),
+linear-gradient(
+150deg,
+#243b67 0%,
+#171b38 43%,
+#351735 100%
+);
+}
+
+.photo-silhouette {
+position: absolute;
+width: 150px;
+height: 230px;
+left: 50%;
+bottom: -20px;
+transform: translateX(-50%);
+}
+
+.silhouette-head {
+position: absolute;
+width: 78px;
+height: 94px;
+left: 36px;
+top: 0;
+border-radius: 50% 50% 45% 45%;
+background: linear-gradient(
+135deg,
+#d9b6aa,
+#8c6472
+);
+box-shadow: 0 0 35px rgba(224, 134, 255, 0.2);
+}
+
+.silhouette-body {
+position: absolute;
+width: 150px;
+height: 155px;
+left: 0;
+top: 82px;
+border-radius: 70px 70px 15px 15px;
+background: linear-gradient(
+135deg,
+#15192e,
+#453050
+);
+}
+
+.photo-spark {
+position: absolute;
+color: #fff;
+text-shadow: 0 0 15px #8ed6ff;
+animation: sparkle 3s ease-in-out infinite;
+}
+
+.spark-1 {
+left: 20px;
+top: 35px;
+}
+
+.spark-2 {
+right: 20px;
+top: 80px;
+animation-delay: 1s;
+}
+
+.spark-3 {
+right: 42px;
+bottom: 45px;
+animation-delay: 2s;
+}
+
+.photo-label {
+padding: 9px 4px 0;
+color: #d9deed;
+font-size: 10px;
+letter-spacing: 0.13em;
+}
+
+.photo-label span {
+color: #ff68ad;
+margin-right: 5px;
+}
+
+/* Карточка товара */
+
+.hero-card-product {
+width: 245px;
+height: 175px;
+left: 95px;
+bottom: 72px;
+padding: 13px;
+transform: rotate(5deg);
+z-index: 5;
+animation: heroFloat3 8s ease-in-out infinite;
+}
+
+.product-preview {
+display: grid;
+grid-template-columns: 95px 1fr;
+gap: 13px;
+height: 112px;
+}
+
+.product-image {
+position: relative;
+border-radius: 10px;
+overflow: hidden;
+background:
+radial-gradient(
+circle at 50% 45%,
+rgba(126, 204, 255, 0.4),
+transparent 45%
+),
+linear-gradient(145deg, #222944, #111322);
+}
+
+.product-bottle {
+position: absolute;
+width: 32px;
+height: 72px;
+left: 50%;
+top: 50%;
+transform: translate(-50%, -45%);
+border-radius: 6px 6px 9px 9px;
+background: linear-gradient(
+90deg,
+#d8e7ef,
+#8ab4c7,
+#e7f4f8
+);
+box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+}
+
+.product-bottle::before {
+content: "";
+position: absolute;
+width: 17px;
+height: 9px;
+top: -8px;
+left: 8px;
+border-radius: 3px 3px 0 0;
+background: #d4e5ec;
+}
+
+.product-info {
+padding-top: 13px;
+}
+
+.product-line {
+width: 90%;
+height: 6px;
+margin-bottom: 8px;
+border-radius: 5px;
+background: rgba(255,255,255,0.23);
+}
+
+.product-line.small {
+width: 62%;
+}
+
+.product-price {
+margin-top: 28px;
+color: #fff;
+font-size: 18px;
+font-weight: 700;
+}
+
+.product-label {
+display: flex;
+align-items: center;
+gap: 6px;
+color: #aeb9d1;
+font-size: 10px;
+}
+
+.product-label span {
+color: #65d2ff;
+}
+
+/* Плавающие мини-теги */
+
+.hero-floating-tag {
+position: absolute;
+z-index: 7;
+display: flex;
+align-items: center;
+gap: 7px;
+padding: 9px 13px;
+border-radius: 10px;
+border: 1px solid rgba(255,255,255,0.12);
+background: rgba(17, 19, 33, 0.72);
+backdrop-filter: blur(15px);
+color: #c9d1e4;
+font-size: 9px;
+letter-spacing: 0.08em;
+box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+}
+
+.hero-floating-tag span {
+color: #69c9ff;
+}
+
+.tag-1 {
+right: 10px;
+top: 55px;
+}
+
+.tag-2 {
+left: 10px;
+bottom: 45px;
+}
+
+.tag-2 span {
+color: #72e1bb;
+}
+
+/* Анимации */
+
+@keyframes heroFloat1 {
+0%, 100% {
+transform: rotate(-6deg) translateY(0);
+}
+50% {
+transform: rotate(-6deg) translateY(-12px);
+}
+}
+
+@keyframes heroFloat2 {
+0%, 100% {
+transform: rotate(7deg) translateY(0);
+}
+50% {
+transform: rotate(7deg) translateY(13px);
+}
+}
+
+@keyframes heroFloat3 {
+0%, 100% {
+transform: rotate(5deg) translateY(0);
+}
+50% {
+transform: rotate(5deg) translateY(-9px);
+}
+}
+
+@keyframes sparkle {
+0%, 100% {
+opacity: 0.35;
+transform: scale(0.8);
+}
+50% {
+opacity: 1;
+transform: scale(1.15);
+}
+}
+
+/* Scroll */
+
+.hero-scroll {
+position: absolute;
+bottom: 24px;
+left: 50%;
+transform: translateX(-50%);
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 8px;
+color: #58637b;
+font-size: 8px;
+letter-spacing: 0.2em;
+z-index: 4;
+}
+
+.scroll-line {
+width: 1px;
+height: 35px;
+background: linear-gradient(
+to bottom,
+#6277a0,
+transparent
+);
+}
+
+/* =========================================
+MOBILE
+========================================= */
+
+@media (max-width: 1050px) {
+.hero-grid {
+grid-template-columns: 1fr;
+gap: 30px;
+}
+
+.hero-content {
+text-align: center;
+}
+
+.hero-badge {
+margin-left: auto;
+margin-right: auto;
+}
+
+.hero h1 {
+margin-left: auto;
+margin-right: auto;
+}
+
+.hero-description {
+margin-left: auto;
+margin-right: auto;
+}
+
+.hero-buttons {
+justify-content: center;
+}
+
+.hero-stats {
+justify-content: center;
+}
+
+.hero-visual {
+max-width: 650px;
+margin: 0 auto;
+}
+}
+
+@media (max-width: 650px) {
+.hero {
+min-height: auto;
+padding: 55px 0 80px;
+}
+
+.hero-grid {
+grid-template-columns: 1fr;
+}
+
+.hero h1 {
+font-size: clamp(39px, 12vw, 56px);
+}
+
+.hero-description {
+font-size: 15px;
+}
+
+.hero-stats {
+gap: 13px;
+}
+
+.hero-stat strong {
+font-size: 14px;
+}
+
+.hero-stat span {
+font-size: 9px;
+}
+
+.hero-visual {
+height: 480px;
+transform: scale(0.82);
+transform-origin: top center;
+margin-bottom: -80px;
+}
+
+.hero-card-site {
+left: 0;
+top: 55px;
+}
+
+.hero-card-photo {
+right: 0;
+top: 90px;
+}
+
+.hero-card-product {
+left: 40px;
+bottom: 35px;
+}
+
+.hero-orbit-1 {
+width: 470px;
+height: 470px;
+}
+
+.hero-orbit-2 {
+width: 350px;
+height: 350px;
+}
+
+.hero-floating-tag {
+display: none;
+}
+
+.hero-scroll {
+display: none;
+}
+}
+
+@media (max-width: 430px) {
+.hero-visual {
+transform: scale(0.68);
+margin-bottom: -145px;
+}
+
+.hero-stats {
+gap: 9px;
+}
+
+.hero-stat-line {
+height: 25px;
+}
+}
+
 .primary-button {
   display: inline-flex;
 
@@ -2285,4 +3040,85 @@ section {
     min-height: 320px;
   }
 
+}
+
+/* =========================================
+HERO — КНОПКА «ОБСУДИТЬ ПРОЕКТ»
+========================================= */
+
+.hero-buttons .btn-primary {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 8px;
+
+min-width: 205px;
+min-height: 54px;
+padding: 0 24px;
+
+border: 1px solid rgba(255, 255, 255, 0.12) !important;
+border-radius: 14px;
+
+background: linear-gradient(
+105deg,
+#477cff 0%,
+#7665ff 45%,
+#e653a5 100%
+) !important;
+
+color: #ffffff !important;
+font-size: 14px;
+font-weight: 700;
+text-decoration: none;
+
+box-shadow:
+0 12px 35px rgba(84, 102, 255, 0.28),
+0 5px 20px rgba(226, 73, 157, 0.12);
+
+cursor: pointer;
+
+transition:
+transform 0.25s ease,
+box-shadow 0.25s ease,
+filter 0.25s ease;
+}
+
+.hero-buttons .btn-primary:hover {
+background: linear-gradient(
+105deg,
+#5c8cff 0%,
+#866fff 45%,
+#f05db0 100%
+) !important;
+
+color: #ffffff !important;
+
+transform: translateY(-3px);
+
+box-shadow:
+0 18px 45px rgba(84, 102, 255, 0.38),
+0 8px 28px rgba(226, 73, 157, 0.22);
+
+filter: brightness(1.06);
+}
+
+.hero-buttons .btn-primary:active {
+transform: translateY(-1px);
+}
+
+.hero-buttons .btn-primary span {
+display: inline-block;
+color: #ffffff !important;
+font-size: 18px;
+line-height: 1;
+margin-left: 3px;
+}
+
+/* Убираем возможные стили ссылок/кнопок,
+которые могут перебивать оформление */
+
+.hero-buttons button.btn-primary {
+appearance: none;
+-webkit-appearance: none;
+background-clip: padding-box;
 }
