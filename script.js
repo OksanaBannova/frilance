@@ -7,7 +7,7 @@ const { useState, useEffect } = React;
 
 const CONFIG = {
   email: "oksanchik2170@yandex.ru",
-  site: "https://oksanabannova.github.io/myVizitka/"
+  site: "https://oksanabannova.github.io/frilance/"
 };
 
 
