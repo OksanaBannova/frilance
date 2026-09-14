@@ -305,172 +305,224 @@ function Header({ onOrder }) {
 }
 
 
+
 /* =========================================================
    HERO
    ========================================================= */
 
 function Hero({ onOrder }) {
-return ( <section className="hero" id="home"> <div className="hero-bg-glow"></div>
+  return (
+    <section className="hero" id="home">
+      <div className="hero-bg-glow"></div>
 
-```
-  <div className="container hero-grid">
-    <div className="hero-content">
-      <div className="hero-badge">
-        <span className="hero-badge-dot"></span>
-        Сайты • Нейрофото • Карточки товаров
-      </div>
+      <div className="container hero-grid">
 
-      <h1>
-        Цифровая упаковка,
-        <span> которая помогает продавать</span>
-      </h1>
+        <div className="hero-content">
 
-      <p className="hero-description">
-        Создаю современные сайты, продающие визуалы с помощью нейросетей
-        и карточки товаров, которые помогают бизнесу выглядеть
-        профессионально.
-      </p>
-
-      <div className="hero-buttons">
-        <button className="btn btn-primary" onClick={onOrder}>
-          Обсудить проект
-          <span>→</span>
-        </button>
-
-        <a href="#portfolio" className="btn btn-secondary">
-          Смотреть работы
-        </a>
-      </div>
-
-      <div className="hero-stats">
-        <div className="hero-stat">
-          <strong>3</strong>
-          <span>направления</span>
-        </div>
-
-        <div className="hero-stat-line"></div>
-
-        <div className="hero-stat">
-          <strong>от 700 ₽</strong>
-          <span>нейрофото</span>
-        </div>
-
-        <div className="hero-stat-line"></div>
-
-        <div className="hero-stat">
-          <strong>от 15 000 ₽</strong>
-          <span>сайт</span>
-        </div>
-      </div>
-    </div>
-
-    <div className="hero-visual">
-
-      <div className="hero-orbit hero-orbit-1"></div>
-      <div className="hero-orbit hero-orbit-2"></div>
-
-      <div className="hero-main-glow"></div>
-
-      {/* Карточка сайта */}
-      <div className="hero-card hero-card-site">
-        <div className="hero-card-top">
-          <div className="mini-dots">
-            <i></i>
-            <i></i>
-            <i></i>
+          <div className="hero-badge">
+            <span className="hero-badge-dot"></span>
+            Сайты • Нейрофото • Карточки товаров
           </div>
-          <span>WEBSITE</span>
-        </div>
 
-        <div className="website-preview">
-          <div className="website-preview-header">
-            <div className="preview-logo"></div>
-            <div className="preview-menu">
-              <i></i>
-              <i></i>
-              <i></i>
+          <h1>
+            Цифровая упаковка,
+            <span> которая помогает продавать</span>
+          </h1>
+
+          <p className="hero-description">
+            Помогаю мастерам, экспертам и небольшому бизнесу
+            выглядеть профессионально в интернете —
+            от сайта и фотографий до визуала товаров.
+          </p>
+
+          <div className="hero-buttons">
+
+            <button
+              className="btn btn-primary"
+              onClick={onOrder}
+            >
+              Обсудить проект
+              <span>→</span>
+            </button>
+
+            <a
+              href="#portfolio"
+              className="btn btn-secondary"
+            >
+              Смотреть работы
+            </a>
+
+          </div>
+
+          <div className="hero-stats">
+
+            <div className="hero-stat">
+              <strong>3</strong>
+              <span>направления</span>
             </div>
-          </div>
 
-          <div className="website-preview-content">
-            <div className="preview-line big"></div>
-            <div className="preview-line"></div>
-            <div className="preview-line short"></div>
+            <div className="hero-stat-line"></div>
 
-            <div className="preview-button"></div>
-          </div>
-        </div>
-
-        <div className="hero-card-label">
-          <span className="label-icon">⌘</span>
-          Сайт под ключ
-        </div>
-      </div>
-
-      {/* Карточка нейрофото */}
-      <div className="hero-card hero-card-photo">
-        <div className="photo-placeholder">
-          <div className="photo-silhouette">
-            <div className="silhouette-head"></div>
-            <div className="silhouette-body"></div>
-          </div>
-
-          <div className="photo-spark spark-1">✦</div>
-          <div className="photo-spark spark-2">✧</div>
-          <div className="photo-spark spark-3">✦</div>
-        </div>
-
-        <div className="photo-label">
-          <span>✦</span>
-          NEUROPHOTO
-        </div>
-      </div>
-
-      {/* Карточка товара */}
-      <div className="hero-card hero-card-product">
-        <div className="product-preview">
-          <div className="product-image">
-            <div className="product-bottle"></div>
-          </div>
-
-          <div className="product-info">
-            <div className="product-line"></div>
-            <div className="product-line small"></div>
-
-            <div className="product-price">
-              1 500 ₽
+            <div className="hero-stat">
+              <strong>от 700 ₽</strong>
+              <span>нейрофото</span>
             </div>
+
+            <div className="hero-stat-line"></div>
+
+            <div className="hero-stat">
+              <strong>от 15 000 ₽</strong>
+              <span>сайт</span>
+            </div>
+
           </div>
+
         </div>
 
-        <div className="product-label">
-          <span>◈</span>
-          Карточка товара
+
+        <div className="hero-visual">
+
+          <div className="hero-orbit hero-orbit-1"></div>
+          <div className="hero-orbit hero-orbit-2"></div>
+
+          <div className="hero-main-glow"></div>
+
+
+          {/* Карточка сайта */}
+
+          <div className="hero-card hero-card-site">
+
+            <div className="hero-card-top">
+
+              <div className="mini-dots">
+                <i></i>
+                <i></i>
+                <i></i>
+              </div>
+
+              <span>WEBSITE</span>
+
+            </div>
+
+
+            <div className="website-preview">
+
+              <div className="website-preview-header">
+
+                <div className="preview-logo"></div>
+
+                <div className="preview-menu">
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                </div>
+
+              </div>
+
+
+              <div className="website-preview-content">
+
+                <div className="preview-line big"></div>
+                <div className="preview-line"></div>
+                <div className="preview-line short"></div>
+
+                <div className="preview-button"></div>
+
+              </div>
+
+            </div>
+
+
+            <div className="hero-card-label">
+              <span className="label-icon">⌘</span>
+              Сайт под ключ
+            </div>
+
+          </div>
+
+
+          {/* Карточка нейрофото */}
+
+          <div className="hero-card hero-card-photo">
+
+            <div className="photo-placeholder">
+
+              <div className="photo-silhouette">
+                <div className="silhouette-head"></div>
+                <div className="silhouette-body"></div>
+              </div>
+
+              <div className="photo-spark spark-1">✦</div>
+              <div className="photo-spark spark-2">✧</div>
+              <div className="photo-spark spark-3">✦</div>
+
+            </div>
+
+
+            <div className="photo-label">
+              <span>✦</span>
+              NEUROPHOTO
+            </div>
+
+          </div>
+
+
+          {/* Карточка товара */}
+
+          <div className="hero-card hero-card-product">
+
+            <div className="product-preview">
+
+              <div className="product-image">
+                <div className="product-bottle"></div>
+              </div>
+
+              <div className="product-info">
+
+                <div className="product-line"></div>
+                <div className="product-line small"></div>
+
+                <div className="product-price">
+                  1 500 ₽
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div className="product-label">
+              <span>◈</span>
+              Карточка товара
+            </div>
+
+          </div>
+
+
+          <div className="hero-floating-tag tag-1">
+            <span>✦</span>
+            AI VISUAL
+          </div>
+
+
+          <div className="hero-floating-tag tag-2">
+            <span>✓</span>
+            Под ключ
+          </div>
+
         </div>
+
       </div>
 
-      <div className="hero-floating-tag tag-1">
-        <span>✦</span>
-        AI VISUAL
+
+      <div className="hero-scroll">
+        <span>SCROLL</span>
+        <div className="scroll-line"></div>
       </div>
 
-      <div className="hero-floating-tag tag-2">
-        <span>✓</span>
-        Под ключ
-      </div>
-
-    </div>
-  </div>
-
-  <div className="hero-scroll">
-    <span>SCROLL</span>
-    <div className="scroll-line"></div>
-  </div>
-</section>
-
-);
+    </section>
+  );
 }
-
 
 
 /* =========================================================
@@ -478,29 +530,34 @@ return ( <section className="hero" id="home"> <div className="hero-bg-glow"></di
    ========================================================= */
 
 function Services({ onService }) {
+
   return (
     <section
       className="services"
       id="services"
     >
+
       <div className="container">
 
         <div className="section-label">
           Услуги
         </div>
 
+
         <h2 className="section-title">
-          Не просто красиво.
+          Всё, что нужно,
           <br />
+          чтобы
           <span className="gradient-text">
-            Под задачу бизнеса.
+            выглядеть профессионально.
           </span>
         </h2>
 
+
         <p className="section-description">
-          Выбираем инструмент под вашу задачу:
-          привлечь клиента, показать себя,
-          красиво представить товар или запустить новый проект.
+          Не просто создаю красивые картинки и сайты.
+          Подбираю решение под вашу задачу —
+          чтобы вас заметили, вам доверяли и к вам обращались.
         </p>
 
 
@@ -519,17 +576,31 @@ function Services({ onService }) {
                 {service.number}
               </div>
 
+
               <div className="service-icon">
                 {service.icon}
               </div>
+
 
               <h3 className="service-title">
                 {service.title}
               </h3>
 
+
               <p className="service-description">
-                {service.short}
+                {service.id === "website" &&
+                  "Сайт, который понятно рассказывает о вас, услугах и помогает получать заявки."
+                }
+
+                {service.id === "neuro" &&
+                  "Профессиональные фотографии для соцсетей, личного бренда, рекламы или просто для себя."
+                }
+
+                {service.id === "marketplace" &&
+                  "Продающий визуал товара, который помогает выделиться среди конкурентов на маркетплейсе."
+                }
               </p>
+
 
               <div className="service-bottom">
 
@@ -549,10 +620,31 @@ function Services({ onService }) {
 
         </div>
 
+
+        <div className="services-note">
+
+          <span className="services-note-icon">✦</span>
+
+          <div>
+            <strong>
+              Не знаете, что выбрать?
+            </strong>
+
+            <p>
+              Расскажите, чем занимаетесь и какая у вас задача.
+              Я предложу подходящий вариант.
+            </p>
+          </div>
+
+        </div>
+
       </div>
+
     </section>
   );
 }
+
+
 
 
 /* =========================================================
@@ -651,203 +743,355 @@ function ServiceModal({
 }
 
 
+
 /* =========================================================
    PORTFOLIO
    ========================================================= */
 
 function Portfolio({ onOrder }) {
-const cases = [
-{
-type: "01",
-category: "Сайт",
-title: "Современный сайт\nдля мастера",
-text: "Структура, дизайн и адаптация под телефон с акцентом на запись клиентов.",
-tags: ["Дизайн", "JS", "Адаптив"],
-visual: "site"
-},
-{
-type: "02",
-category: "Нейрофото",
-title: "Визуал, который\nвыделяет",
-text: "Создание профессиональных образов и фотосессий с помощью нейросетей.",
-tags: ["AI", "Фото", "Контент"],
-visual: "photo"
-},
-{
-type: "03",
-category: "Marketplace",
-title: "Карточка товара,\nкоторая продаёт",
-text: "Визуальная упаковка товара для Wildberries и Ozon.",
-tags: ["WB", "Ozon", "Дизайн"],
-visual: "product"
-}
-];
+  const portfolioItems = [
+    {
+      number: "01",
+      category: "САЙТЫ",
+      title: "Сайт для мастера",
+      description:
+        "Современный сайт для специалиста, который собирает услуги, цены, работы и запись клиента в одном месте.",
 
-return ( <section className="portfolio section" id="portfolio"> <div className="container">
+      task:
+        "Показать мастера профессионально, сформировать доверие и сделать путь клиента до заявки максимально простым.",
 
-```
-    <div className="section-heading portfolio-heading">
-      <div>
-        <span className="section-label">ПОРТФОЛИО</span>
-        <h2>
-          Работаю не ради<br />
-          <span>«красиво»</span>
-        </h2>
-      </div>
+      result:
+        "Получается готовая онлайн-презентация специалиста, которую можно использовать в соцсетях, рекламе и переписке с клиентами.",
 
-      <p>
-        Каждый проект создаётся под конкретную задачу:
-        привлечь внимание, вызвать доверие и привести клиента
-        к действию.
-      </p>
-    </div>
+      price: "от 15 000 ₽",
 
-    <div className="portfolio-grid">
+      tags: [
+        "Дизайн",
+        "Структура",
+        "Мобильная версия"
+      ],
 
-      {cases.map((item, index) => (
-        <article
-          className={`portfolio-case portfolio-case-${item.visual}`}
-          key={item.type}
+      image: "images/portfolio-site.jpg",
+
+      imageTitle: "Сайт мастера",
+      imageText: "Современный сайт под услуги"
+    },
+
+    {
+      number: "02",
+      category: "НЕЙРОФОТО",
+      title: "Beauty-съёмка",
+
+      description:
+        "Профессиональный визуал для мастера красоты без студии, фотографа и сложной организации съёмки.",
+
+      task:
+        "Создать визуал, который выглядит профессионально и помогает мастеру красиво представить себя и свои услуги.",
+
+      result:
+        "Серия изображений в едином стиле для соцсетей, рекламы, сторис и личного бренда.",
+
+      price: "от 700 ₽",
+
+      tags: [
+        "Beauty",
+        "Личный бренд",
+        "Соцсети"
+      ],
+
+      image: "images/portfolio-neuro.jpg",
+
+      imageTitle: "Beauty-съёмка",
+      imageText: "Нейрофото для личного бренда"
+    },
+
+    {
+      number: "03",
+      category: "МАРКЕТПЛЕЙСЫ",
+      title: "Карточка товара",
+
+      description:
+        "Визуальная упаковка товара с понятной подачей преимуществ, характеристик и основных выгод для покупателя.",
+
+      task:
+        "Сделать товар заметнее среди конкурентов и за несколько секунд показать покупателю его основные преимущества.",
+
+      result:
+        "Понятная инфографика и единый визуальный стиль карточки, ориентированные на восприятие покупателя.",
+
+      price: "от 1 500 ₽",
+
+      tags: [
+        "Инфографика",
+        "Wildberries",
+        "Ozon"
+      ],
+
+      image: "images/portfolio-marketplace.jpg",
+
+      imageTitle: "Карточка товара",
+      imageText: "Визуальная упаковка товара"
+    }
+  ];
+
+  const [active, setActive] = React.useState(0);
+
+  const item = portfolioItems[active];
+
+  return (
+    <section className="portfolio-section" id="portfolio">
+      <div className="container">
+
+        {/* HEADER */}
+        <div className="section-heading portfolio-heading">
+
+          <div>
+            <span className="section-kicker">
+              ПОРТФОЛИО
+            </span>
+
+            <h2>
+              Работы, которые
+              <span> решают задачу.</span>
+            </h2>
+          </div>
+
+          <p>
+            Смотрим не только на внешний вид,
+            но и на то, зачем создавался каждый проект.
+          </p>
+
+        </div>
+
+
+        {/* TABS */}
+        <div className="portfolio-tabs">
+
+          {portfolioItems.map((portfolioItem, index) => (
+            <button
+              key={portfolioItem.number}
+              className={`portfolio-tab ${
+                active === index ? "active" : ""
+              }`}
+              onClick={() => setActive(index)}
+            >
+
+              <span className="portfolio-tab-number">
+                {portfolioItem.number}
+              </span>
+
+              <span>
+                {portfolioItem.category}
+              </span>
+
+            </button>
+          ))}
+
+        </div>
+
+
+        {/* MAIN */}
+        <div
+          className="portfolio-main-card"
+          key={item.number}
         >
 
+          {/* VISUAL */}
+          <div className="portfolio-visual">
+
+            <div className="portfolio-image-glow"></div>
+
+            <div className="portfolio-image-frame">
+
+              <div className="portfolio-browser-bar">
+
+                <div className="portfolio-browser-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+
+                <div className="portfolio-browser-url">
+                  oksanabannova.github.io
+                </div>
+
+              </div>
+
+
+              <div className="portfolio-image">
+
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    e.currentTarget.parentElement.classList.add(
+                      "portfolio-image-empty"
+                    );
+                  }}
+                />
+
+                <div className="portfolio-image-placeholder">
+
+                  <span className="portfolio-placeholder-number">
+                    {item.number}
+                  </span>
+
+                  <span className="portfolio-placeholder-category">
+                    {item.category}
+                  </span>
+
+                  <strong>
+                    {item.imageTitle}
+                  </strong>
+
+                  <small>
+                    {item.imageText}
+                  </small>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            {/* SMALL LABEL */}
+            <div className="portfolio-floating-label">
+
+              <span className="portfolio-floating-dot"></span>
+
+              <span>
+                {item.category}
+              </span>
+
+            </div>
+
+          </div>
+
+
+          {/* INFO */}
           <div className="portfolio-info">
 
-            <div className="portfolio-number">
-              {item.type}
+            <div className="portfolio-info-top">
+
+              <span className="portfolio-category">
+                {item.category}
+              </span>
+
+              <span className="portfolio-price">
+                {item.price}
+              </span>
+
             </div>
 
-            <div className="portfolio-category">
-              {item.category}
-            </div>
 
             <h3>
-              {item.title.split("\n").map((line, i) => (
-                <React.Fragment key={i}>
-                  {line}
-                  {i < item.title.split("\n").length - 1 && <br />}
-                </React.Fragment>
-              ))}
+              {item.title}
             </h3>
 
-            <p>{item.text}</p>
 
-            <div className="portfolio-tags">
-              {item.tags.map(tag => (
-                <span key={tag}>{tag}</span>
-              ))}
+            <p className="portfolio-description">
+              {item.description}
+            </p>
+
+
+            {/* CASE */}
+            <div className="portfolio-case">
+
+              <div className="portfolio-case-item">
+
+                <span>
+                  ЗАДАЧА
+                </span>
+
+                <p>
+                  {item.task}
+                </p>
+
+              </div>
+
+
+              <div className="portfolio-case-item">
+
+                <span>
+                  ЧТО СДЕЛАНО
+                </span>
+
+                <div className="portfolio-tags">
+
+                  {item.tags.map((tag) => (
+                    <span key={tag}>
+                      {tag}
+                    </span>
+                  ))}
+
+                </div>
+
+              </div>
+
+
+              <div className="portfolio-case-item">
+
+                <span>
+                  РЕЗУЛЬТАТ
+                </span>
+
+                <p>
+                  {item.result}
+                </p>
+
+              </div>
+
             </div>
 
+
+            {/* CTA */}
             <button
-              className="portfolio-link"
-              onClick={onOrder}
+              className="primary-button portfolio-order-button"
+              onClick={() => onOrder(item.title)}
             >
-              Обсудить похожий проект
-              <span>↗</span>
+              Хочу такое решение
+              <span>→</span>
             </button>
 
           </div>
 
-          <div className="portfolio-visual">
+        </div>
 
-            {item.visual === "site" && (
-              <div className="case-site">
-                <div className="case-browser">
-                  <div className="case-browser-top">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <b>your-site.ru</b>
-                  </div>
 
-                  <div className="case-site-screen">
-                    <div className="case-site-nav">
-                      <i></i>
-                      <div>
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                      </div>
-                    </div>
+        {/* BOTTOM */}
+        <div className="portfolio-bottom">
 
-                    <div className="case-site-hero">
-                      <small>YOUR BRAND</small>
-                      <strong>
-                        Сайт, который<br />
-                        работает на вас
-                      </strong>
-                      <div className="case-site-button"></div>
-                    </div>
+          <div className="portfolio-bottom-text">
 
-                    <div className="case-site-cards">
-                      <i></i>
-                      <i></i>
-                      <i></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            <span>
+              {String(active + 1).padStart(2, "0")} / 03
+            </span>
 
-            {item.visual === "photo" && (
-              <div className="case-photo">
-                <div className="case-photo-glow"></div>
-
-                <div className="case-person">
-                  <div className="case-person-head"></div>
-                  <div className="case-person-body"></div>
-                </div>
-
-                <div className="case-photo-text">
-                  <span>AI</span>
-                  <strong>VISUAL</strong>
-                </div>
-
-                <div className="case-photo-star star-a">✦</div>
-                <div className="case-photo-star star-b">✧</div>
-                <div className="case-photo-star star-c">✦</div>
-              </div>
-            )}
-
-            {item.visual === "product" && (
-              <div className="case-product">
-                <div className="case-product-bg"></div>
-
-                <div className="case-product-card">
-                  <div className="case-product-image">
-                    <div className="case-product-bottle"></div>
-                  </div>
-
-                  <div className="case-product-info">
-                    <small>НОВИНКА</small>
-                    <strong>Уход<br />за волосами</strong>
-                    <span>1 500 ₽</span>
-                  </div>
-                </div>
-
-                <div className="case-product-badge">
-                  MARKETPLACE
-                </div>
-              </div>
-            )}
+            <p>
+              Не нашли подходящий пример?
+              Сделаем решение именно под вашу задачу.
+            </p>
 
           </div>
 
-        </article>
-      ))}
 
-    </div>
+          <button
+            className="secondary-button"
+            onClick={() =>
+              onOrder("Индивидуальный проект")
+            }
+          >
+            Обсудить мой проект
+            <span>→</span>
+          </button>
 
-    <div className="portfolio-bottom">
-      <span>Есть задача, которой нет в списке?</span>
-      <button onClick={onOrder}>
-        Расскажите мне о ней →
-      </button>
-    </div>
+        </div>
 
-  </div>
-</section>
-
-);
+      </div>
+    </section>
+  );
 }
 
 
@@ -859,28 +1103,41 @@ return ( <section className="portfolio section" id="portfolio"> <div className="
 function Business({ onOrder }) {
   const targets = [
     {
-      icon: "💇‍♀️",
-      title: "Мастера и специалисты",
-      text: "Парикмахеры, визажисты, мастера ногтей, ресниц, бровей, косметологи и другие специалисты.",
-      result: "Сайт + нейрофото + визуал"
+      number: "01",
+      icon: "✦",
+      title: "Мастера красоты",
+      text:
+        "Парикмахеры, визажисты, мастера ногтей, ресниц, бровей, косметологи и другие специалисты.",
+      result:
+        
+  "Сайт и визуал для профессиональной подачи."
     },
     {
-      icon: "✨",
-      title: "Эксперты и услуги",
-      text: "Помогаю красиво упаковать личный бренд, услуги и экспертность в современном формате.",
-      result: "Упаковка, которая вызывает доверие"
+      number: "02",
+      icon: "◈",
+      title: "Эксперты и специалисты",
+      text:
+        "Для тех, кто продаёт свои знания, услуги и личный бренд и хочет выглядеть современно.",
+      result:
+        "Упаковка, которая вызывает доверие."
     },
     {
-      icon: "🏪",
+      number: "03",
+      icon: "⌂",
       title: "Малый бизнес",
-      text: "Для небольших компаний, студий, магазинов и предпринимателей, которым нужна современная подача.",
-      result: "Понятный сайт и презентация бизнеса"
+      text:
+        "Студии, магазины, небольшие компании и предприниматели, которым нужна современная цифровая подача.",
+      result:
+        "Понятный сайт и презентация бизнеса."
     },
     {
-      icon: "📦",
+      number: "04",
+      icon: "▦",
       title: "Продавцы маркетплейсов",
-      text: "Создаю визуально сильные карточки товаров для Wildberries, Ozon и других площадок.",
-      result: "Товар выглядит дороже и заметнее"
+      text:
+        "Создаю карточки товаров с понятной структурой, визуалом и акцентом на преимущества продукта.",
+      result:
+        "Карточка, которая выгодно показывает товар."
     }
   ];
 
@@ -888,59 +1145,106 @@ function Business({ onOrder }) {
     <section className="business section" id="business">
       <div className="container">
 
-        <div className="section-heading">
-          <div className="section-kicker">ДЛЯ КОГО</div>
+        {/* HEADER */}
+        <div className="business-heading">
 
-          <h2>
-            Если вам нужно выглядеть
-            <span> профессионально — вам сюда</span>
-          </h2>
+          <div>
+            <span className="section-kicker">
+              ДЛЯ КОГО
+            </span>
+
+            <h2>
+              Если вам нужно выглядеть
+              <span> профессионально</span>
+            </h2>
+          </div>
 
           <p>
-            Я помогаю специалистам и небольшому бизнесу создавать
-            современную цифровую упаковку без огромных бюджетов.
+            Помогаю специалистам и небольшому бизнесу
+            создать современную цифровую упаковку —
+            без сложностей и огромных бюджетов.
           </p>
+
         </div>
 
-        <div className="business-grid">
-          {targets.map((item, index) => (
-            <article className="business-card" key={index}>
 
-              <div className="business-icon">
-                {item.icon}
+        {/* CARDS */}
+        <div className="business-grid">
+
+          {targets.map((item) => (
+            <article
+              className="business-card"
+              key={item.number}
+            >
+
+              <div className="business-card-top">
+
+                <span className="business-number">
+                  {item.number}
+                </span>
+
+                <div className="business-icon">
+                  {item.icon}
+                </div>
+
               </div>
 
-              <h3>{item.title}</h3>
 
-              <p>{item.text}</p>
+              <h3>
+                {item.title}
+              </h3>
+
+
+              <p className="business-card-text">
+                {item.text}
+              </p>
+
 
               <div className="business-result">
-                <span>✓</span>
-                {item.result}
+
+                <span className="business-result-icon">
+                  ✓
+                </span>
+
+                <span>
+                  {item.result}
+                </span>
+
               </div>
+
+
+              <div className="business-card-line"></div>
 
             </article>
           ))}
+
         </div>
 
+
+        {/* CTA */}
         <div className="business-bottom">
 
           <div className="business-bottom-text">
+
             <span className="business-bottom-label">
               НЕ ЗНАЕТЕ, ЧТО ИМЕННО ВАМ НУЖНО?
             </span>
 
             <strong>
-              Расскажите о задаче — я предложу подходящий вариант.
+              Расскажите о задаче — я помогу подобрать
+              подходящий вариант.
             </strong>
+
           </div>
 
+
           <button
-  className="btn btn-primary"
-  onClick={() => onOrder("Консультация")}
->
-  Обсудить задачу
-</button>
+            className="btn btn-primary business-button"
+            onClick={() => onOrder("Консультация")}
+          >
+            Обсудить задачу
+            <span>→</span>
+          </button>
 
         </div>
 
@@ -958,23 +1262,27 @@ function Process({ onOrder }) {
   const steps = [
     {
       number: "01",
-      title: "Заявка",
-      text: "Вы рассказываете, что хотите сделать, присылаете материалы и пожелания."
+      title: "Обсуждаем задачу",
+      text: "Вы рассказываете, что нужно сделать, для кого и какой результат хотите получить.",
+      label: "ЗАПРОС"
     },
     {
       number: "02",
-      title: "Обсуждение",
-      text: "Я уточняю задачу, предлагаю решение и согласовываю стоимость."
+      title: "Предлагаю решение",
+      text: "Подбираю подходящий формат, структуру, стиль и объём работы под вашу задачу.",
+      label: "ПЛАН"
     },
     {
       number: "03",
-      title: "Создание",
-      text: "Разрабатываю сайт, создаю визуал или оформляю карточки товара."
+      title: "Создаю проект",
+      text: "Разрабатываю сайт, создаю нейрофото или оформляю карточки товара.",
+      label: "РАБОТА"
     },
     {
       number: "04",
-      title: "Готовый результат",
-      text: "Вы получаете готовый материал, который можно сразу использовать в работе."
+      title: "Передаю готовый результат",
+      text: "Вы получаете готовый материал, который можно сразу использовать в работе и продвижении.",
+      label: "РЕЗУЛЬТАТ"
     }
   ];
 
@@ -982,64 +1290,87 @@ function Process({ onOrder }) {
     <section className="process section" id="process">
       <div className="container">
 
-        <div className="section-heading process-heading">
-          <div className="section-kicker">КАК ЭТО РАБОТАЕТ</div>
+        <div className="process-heading">
+          <div>
+            <span className="section-kicker">КАК ЭТО РАБОТАЕТ</span>
 
-          <h2>
-            От идеи до готового
-            <span> результата</span>
-          </h2>
+            <h2>
+              От идеи до
+              <span> готового результата</span>
+            </h2>
+          </div>
 
           <p>
-            Без сложных технических терминов и бесконечных согласований.
-            Вы ставите задачу — я занимаюсь реализацией.
+            Без сложных технических заданий и бесконечных согласований.
+            Вы рассказываете о задаче — я беру на себя её реализацию.
           </p>
         </div>
 
-        <div className="process-list">
-
+        <div className="process-steps">
           {steps.map((step, index) => (
-            <div className="process-item" key={step.number}>
+            <React.Fragment key={step.number}>
 
-              <div className="process-number">
-                {step.number}
-              </div>
+              <article className="process-step">
 
-              <div className="process-content">
+                <div className="process-step-top">
+                  <span className="process-number">
+                    {step.number}
+                  </span>
+
+                  <span className="process-label">
+                    {step.label}
+                  </span>
+                </div>
+
+                <div className="process-step-icon">
+                  {index === 0 && "✦"}
+                  {index === 1 && "◈"}
+                  {index === 2 && "✧"}
+                  {index === 3 && "✓"}
+                </div>
+
                 <h3>{step.title}</h3>
-                <p>{step.text}</p>
-              </div>
 
-              {index !== steps.length - 1 && (
-                <div className="process-line"></div>
+                <p>{step.text}</p>
+
+                <div className="process-step-line"></div>
+
+              </article>
+
+              {index < steps.length - 1 && (
+                <div className="process-arrow">
+                  →
+                </div>
               )}
 
-            </div>
+            </React.Fragment>
           ))}
-
         </div>
 
-        <div className="process-cta">
+        <div className="process-bottom">
 
-          <div>
+          <div className="process-bottom-text">
             <span>ГОТОВЫ НАЧАТЬ?</span>
+
             <strong>
-              Давайте обсудим вашу задачу
+              Расскажите, что хотите создать —
+              обсудим идею и варианты реализации.
             </strong>
           </div>
 
           <button
-            className="btn btn-primary"
+            className="btn btn-primary process-button"
             onClick={() => onOrder("Новый проект")}
           >
-            Оставить заявку
+            Обсудить проект
+            <span>→</span>
           </button>
 
         </div>
 
       </div>
     </section>
-  )
+  );
 }
 
 /* =========================================================
@@ -1229,81 +1560,71 @@ function Prices({ onOrder, onNeuroPrices }) {
 function Advantages() {
   const advantages = [
     {
-      icon: "✦",
-      title: "Современный подход",
-      text: "Использую современные инструменты дизайна, разработки и AI."
+      number: "01",
+      title: "Под задачу",
+      text: "Не использую одно решение для всех. Подбираю визуал, структуру и формат под конкретный бизнес и цель."
     },
     {
-      icon: "◎",
-      title: "Под вашу задачу",
-      text: "Не предлагаю ненужные функции. Сначала определяем цель."
+      number: "02",
+      title: "Современно",
+      text: "Слежу за актуальной подачей, чтобы сайт, фотографии и карточки выглядели современно и профессионально."
     },
     {
-      icon: "↗",
-      title: "Понятный результат",
-      text: "Вы заранее понимаете, что входит в работу и что получите."
+      number: "03",
+      title: "Понятно",
+      text: "Без сложных терминов. Вы понимаете, что мы делаем, зачем это нужно и какой результат получите."
     },
     {
-      icon: "⌁",
-      title: "Работа онлайн",
-      text: "Можно работать со мной независимо от вашего города."
-    },
-    {
-      icon: "✓",
-      title: "Связь напрямую",
-      text: "Вы общаетесь непосредственно со специалистом, который делает проект."
-    },
-    {
-      icon: "∞",
-      title: "Можно развивать",
-      text: "Сайт или визуал можно постепенно дополнять по мере роста бизнеса."
+      number: "04",
+      title: "Всё в одном стиле",
+      text: "Можно собрать несколько инструментов в единую визуальную систему: сайт, фото и материалы для продвижения."
     }
   ];
 
   return (
-    <section
-      className="advantages"
-      id="advantages"
-    >
+    <section className="advantages section" id="advantages">
       <div className="container">
 
-        <div className="section-label">
-          Почему я
+        <div className="advantages-heading">
+          <div>
+            <span className="section-kicker">МОЙ ПОДХОД</span>
+
+            <h2>
+              Не просто красиво —
+              <span> с пользой для бизнеса</span>
+            </h2>
+          </div>
+
+          <p>
+            Хорошая упаковка должна не только привлекать внимание,
+            но и помогать человеку быстрее понять, кто вы,
+            что предлагаете и почему стоит обратиться именно к вам.
+          </p>
         </div>
-
-        <h2 className="section-title">
-          Работаю так,
-          <br />
-          чтобы вам было
-          <span className="gradient-text">
-            спокойно.
-          </span>
-        </h2>
-
 
         <div className="advantages-grid">
 
-          {advantages.map((item, index) => (
-
-            <div
+          {advantages.map((item) => (
+            <article
               className="advantage-card"
-              key={index}
+              key={item.number}
             >
+              <div className="advantage-top">
+                <span className="advantage-number">
+                  {item.number}
+                </span>
 
-              <div className="advantage-icon">
-                {item.icon}
+                <span className="advantage-mark">
+                  ✦
+                </span>
               </div>
 
-              <h3>
-                {item.title}
-              </h3>
+              <h3>{item.title}</h3>
 
-              <p>
-                {item.text}
-              </p>
+              <p>{item.text}</p>
 
-            </div>
-
+              <div className="advantage-line"></div>
+            </article>
           ))}
 
         </div>
@@ -1311,77 +1632,112 @@ function Advantages() {
       </div>
     </section>
   );
-}
-
+};
 
 /* =========================================================
    FAQ
    ========================================================= */
 
 function FAQ() {
-  const [open, setOpen] = useState(null);
+  const questions = [
+    {
+      question: "Сколько времени занимает создание сайта?",
+      answer:
+        "Срок зависит от объёма проекта. Небольшой сайт обычно можно подготовить за несколько дней после согласования структуры, содержания и дизайна."
+    },
+    {
+      question: "Можно ли заказать только нейрофото?",
+      answer:
+        "Да. Можно заказать как одну фотографию по вашему запросу, так и полноценную серию: портрет, beauty-съёмку, семейные или парные фотографии."
+    },
+    {
+      question: "Можно ли сделать сайт без готового дизайна?",
+      answer:
+        "Да. Вам не обязательно заранее знать, каким должен быть сайт. Я помогу определить структуру, визуальный стиль и основные блоки."
+    },
+    {
+      question: "Вы работаете с клиентами из других городов?",
+      answer:
+        "Да. Большую часть работы можно выполнить полностью дистанционно. Общаемся онлайн, материалы передаются в электронном виде."
+    },
+    {
+      question: "Можно ли заказать несколько услуг сразу?",
+      answer:
+        "Да. Например, можно одновременно сделать сайт, нейрофото и визуальные материалы для соцсетей. В таком случае всё можно выдержать в едином стиле."
+    },
+    {
+      question: "Как происходит оплата?",
+      answer:
+        "Условия оплаты обсуждаем до начала работы в зависимости от выбранной услуги и объёма проекта."
+    }
+  ];
+
+  const [openIndex, setOpenIndex] = React.useState(null);
+
+  const toggleQuestion = (index) => {
+    setOpenIndex((current) =>
+      current === index ? null : index
+    );
+  };
 
   return (
-    <section
-      className="faq"
-      id="faq"
-    >
+    <section className="faq section" id="faq">
       <div className="container">
 
-        <div className="section-label">
-          FAQ
+        <div className="faq-heading">
+          <div>
+            <span className="section-kicker">ВОПРОСЫ</span>
+
+            <h2>
+              Остались
+              <span> вопросы?</span>
+            </h2>
+          </div>
+
+          <p>
+            Собрала ответы на самые частые вопросы.
+            Если вашего вопроса здесь нет — просто напишите мне.
+          </p>
         </div>
-
-        <h2 className="section-title">
-          Частые вопросы
-        </h2>
-
 
         <div className="faq-list">
 
-          {faq.map((item, index) => {
-
-            const isOpen = open === index;
+          {questions.map((item, index) => {
+            const isOpen = openIndex === index;
 
             return (
               <div
-                className={`faq-item ${
-                  isOpen ? "open" : ""
-                }`}
+                className={`faq-item ${isOpen ? "is-open" : ""}`}
                 key={index}
               >
 
                 <button
+                  type="button"
                   className="faq-question"
-                  onClick={() => {
-                    setOpen(
-                      isOpen ? null : index
-                    );
-                  }}
+                  onClick={() => toggleQuestion(index)}
+                  aria-expanded={isOpen}
                 >
+                  <span className="faq-question-number">
+                    0{index + 1}
+                  </span>
 
-                  <span>
-                    {item.q}
+                  <span className="faq-question-text">
+                    {item.question}
                   </span>
 
                   <span className="faq-plus">
-                    +
+                    {isOpen ? "−" : "+"}
                   </span>
-
                 </button>
 
-
-                <div className="faq-answer">
-
-                  <div className="faq-answer-inner">
-                    {item.a}
+                {isOpen && (
+                  <div className="faq-answer-visible">
+                    {item.answer}
                   </div>
-
-                </div>
+                )}
 
               </div>
             );
-
           })}
 
         </div>
@@ -1389,8 +1745,7 @@ function FAQ() {
       </div>
     </section>
   );
-}
-
+};
 
 /* =========================================================
    CTA
@@ -1398,46 +1753,75 @@ function FAQ() {
 
 function FinalCTA({ onOrder }) {
   return (
-    <section className="final-cta">
-
+    <section className="final-cta section" id="contact">
       <div className="container">
 
-        <div className="cta-box">
+        <div className="final-cta-card">
 
-          <div className="cta-content">
+          <div className="final-cta-glow final-cta-glow-one"></div>
+          <div className="final-cta-glow final-cta-glow-two"></div>
 
-            <div className="section-label">
-              Начнём?
-            </div>
+          <div className="final-cta-content">
 
-            <h2 className="cta-title">
-              Расскажите,
-              <br />
-              <span className="gradient-text">
-                что хотите создать.
-              </span>
+            <span className="section-kicker">
+              ГОТОВЫ НАЧАТЬ?
+            </span>
+
+            <h2>
+              Давайте создадим
+              <span> что-то сильное</span>
             </h2>
 
-            <p className="cta-description">
-              Напишите пару слов о вашей задаче.
-              Я посмотрю запрос и предложу оптимальный
-              вариант решения.
+            <p>
+              Расскажите о своей задаче — я помогу подобрать
+              подходящий формат и предложу оптимальный вариант
+              под ваш бюджет.
             </p>
 
+            <div className="final-cta-actions">
 
-            <button
-              className="primary-button"
-              onClick={onOrder}
-            >
-              Оставить заявку →
-            </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => onOrder("Новый проект")}
+              >
+                Обсудить проект
+                <span>→</span>
+              </button>
+
+              <a
+                className="final-cta-email"
+                href="mailto:oksanchik2170@yandex.ru"
+              >
+                <span className="final-cta-email-label">
+                  ИЛИ НАПИШИТЕ НА ПОЧТУ
+                </span>
+
+                <span className="final-cta-email-address">
+                  oksanchik2170@yandex.ru
+                </span>
+              </a>
+
+            </div>
+
+          </div>
+
+          <div className="final-cta-side">
+
+            <div className="final-cta-side-number">
+              01
+            </div>
+
+            <div className="final-cta-side-text">
+              <span>САЙТЫ</span>
+              <span>НЕЙРОФОТО</span>
+              <span>КАРТОЧКИ ТОВАРОВ</span>
+            </div>
 
           </div>
 
         </div>
 
       </div>
-
     </section>
   );
 }
@@ -1855,56 +2239,148 @@ function NeuroPricesModal({ onClose, onOrder }) {
    ========================================================= */
 
 function Footer() {
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
 
-  const year =
-    new Date().getFullYear();
+    if (element) {
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+  };
 
   return (
     <footer className="footer">
 
       <div className="container">
 
-        <div className="footer-inner">
+        <div className="footer-main">
+
+          {/* Бренд */}
 
           <div className="footer-brand">
-            Оксана Баннова — сайты, нейрофото,
-            визуал для бизнеса
+
+            <button
+              className="footer-logo"
+              onClick={() => window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+              })}
+            >
+              Оксана Баннова
+            </button>
+
+            <p>
+              Сайты, нейрофото и визуальная упаковка
+              для специалистов и небольшого бизнеса.
+            </p>
+
           </div>
 
 
-          <div className="footer-links">
+          {/* Навигация */}
 
-            <a
-              href="#services"
-            >
+          <div className="footer-column">
+
+            <span className="footer-title">
+              НАВИГАЦИЯ
+            </span>
+
+            <button onClick={() => scrollToSection("services")}>
               Услуги
-            </a>
+            </button>
 
-            <a
-              href="#portfolio"
-            >
+            <button onClick={() => scrollToSection("portfolio")}>
               Портфолио
-            </a>
+            </button>
 
-            <a
-              href="#prices"
-            >
+            <button onClick={() => scrollToSection("prices")}>
               Цены
+            </button>
+
+            <button onClick={() => scrollToSection("process")}>
+              Как работаем
+            </button>
+
+            <button onClick={() => scrollToSection("faq")}>
+              FAQ
+            </button>
+
+          </div>
+
+
+          {/* Услуги */}
+
+          <div className="footer-column">
+
+            <span className="footer-title">
+              УСЛУГИ
+            </span>
+
+            <button onClick={() => scrollToSection("services")}>
+              Сайты
+            </button>
+
+            <button onClick={() => scrollToSection("services")}>
+              Нейрофото
+            </button>
+
+            <button onClick={() => scrollToSection("services")}>
+              Карточки товаров
+            </button>
+
+          </div>
+
+
+          {/* Контакты */}
+
+          <div className="footer-column footer-contact">
+
+            <span className="footer-title">
+              СВЯЗАТЬСЯ
+            </span>
+
+            <a href="mailto:oksanchik2170@yandex.ru">
+              oksanchik2170@yandex.ru
             </a>
 
-            <a
-              href="#faq"
+            <button
+              className="footer-contact-button"
+              onClick={() => scrollToSection("contact")}
             >
-              FAQ
-            </a>
+              Обсудить проект
+              <span>→</span>
+            </button>
 
           </div>
 
         </div>
 
 
-        <div className="footer-copy">
-          © {year} Оксана Баннова. Все права защищены.
+        {/* Нижняя часть */}
+
+        <div className="footer-bottom">
+
+          <span>
+            © {new Date().getFullYear()} Оксана Баннова
+          </span>
+
+          <span>
+            Сайты • Нейрофото • Карточки товаров
+          </span>
+
+          <button
+            onClick={() => window.scrollTo({
+              top: 0,
+              behavior: "smooth"
+            })}
+            className="footer-up"
+            aria-label="Наверх"
+          >
+            ↑
+          </button>
+
         </div>
 
       </div>
