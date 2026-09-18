@@ -358,7 +358,7 @@ section {
 .hero h1 {
   max-width: 760px;
   margin: 0;
-  font-size: clamp(46px, 5.3vw, 78px);
+  font-size: clamp(46px, 4.3vw, 78px);
   line-height: 0.98;
   letter-spacing: -0.045em;
   font-weight: 800;
@@ -1474,7 +1474,7 @@ section {
 
 .process-heading {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: 3.2fr 1.9fr;
   gap: 60px;
   align-items: end;
   margin-bottom: 60px;
