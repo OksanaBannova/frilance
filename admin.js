@@ -2,16 +2,21 @@
 
 /* =========================================================
    FRILANCE ADMIN
-========================================================= */
+   Админ-панель сайта Оксаны Банновой
 
-const ADMIN_CONFIG = {
-    siteUrl: "https://oksanabannova.github.io/frilance/",
-    email: "oksanchik2170@yandex.ru"
-};
+   Версия:
+   - Supabase
+   - Портфолио
+   - Услуги
+   - Тексты
+   - Контакты
+   - Заявки
+   - Встроенные превью без изображений
+========================================================= */
 
 
 /* =========================================================
-   STATE
+   ГЛОБАЛЬНЫЕ ДАННЫЕ
 ========================================================= */
 
 let portfolio = [];
@@ -20,47 +25,9 @@ let texts = null;
 let contacts = null;
 let leads = [];
 
-let editingPortfolioId = null;
-let selectedPortfolioImage = "";
-let notificationTimer = null;
-
 
 /* =========================================================
-   DEFAULT DATA
-========================================================= */
-
-const DEFAULT_SERVICES = {
-    neuro_price: "от 700 ₽",
-    website_price: "от 15 000 ₽",
-    marketplace_price: "от 1 500 ₽",
-    start_price: "15 000 ₽",
-    business_price: "25 000 ₽"
-};
-
-const DEFAULT_TEXTS = {
-    hero_title: "Цифровая упаковка, которая помогает продавать",
-    hero_subtitle:
-        "Сайты, нейрофото и карточки товаров для мастеров, специалистов и малого бизнеса.",
-    hero_primary_button: "Обсудить проект",
-    hero_secondary_button: "Смотреть работы",
-    services_title: "Услуги",
-    portfolio_title: "Портфолио",
-    process_title: "Как работаю",
-    faq_title: "FAQ",
-    final_title: "Готовы обсудить проект?",
-    final_button: "Обсудить проект",
-    about:
-        "Создаю сайты, нейрофото и карточки товаров, которые помогают специалистам и небольшому бизнесу выглядеть профессионально в интернете."
-};
-
-const DEFAULT_CONTACTS = {
-    email: ADMIN_CONFIG.email,
-    site: ADMIN_CONFIG.siteUrl
-};
-
-
-/* =========================================================
-   HELPERS
+   ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 ========================================================= */
 
 function $(selector, root = document) {
@@ -68,11 +35,10 @@ function $(selector, root = document) {
 }
 
 function $$(selector, root = document) {
-    return Array.from(root.querySelectorAll(selector));
+    return [...root.querySelectorAll(selector)];
 }
 
 function escapeHtml(value) {
-
     if (value === null || value === undefined) {
         return "";
     }
@@ -85,33 +51,36 @@ function escapeHtml(value) {
         .replace(/'/g, "&#039;");
 }
 
-function setText(selector, value) {
+function formatDate(date) {
+    if (!date) {
+        return "—";
+    }
 
-    const element = $(selector);
+    const d = new Date(date);
 
-    if (!element) return;
+    if (Number.isNaN(d.getTime())) {
+        return "—";
+    }
 
-    element.textContent =
-        value === null ||
-        value === undefined ||
-        value === ""
-            ? "—"
-            : String(value);
+    return d.toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    });
 }
 
-function formatDate(dateValue) {
-
-    if (!dateValue) {
+function formatDateTime(date) {
+    if (!date) {
         return "—";
     }
 
-    const date = new Date(dateValue);
+    const d = new Date(date);
 
-    if (Number.isNaN(date.getTime())) {
+    if (Number.isNaN(d.getTime())) {
         return "—";
     }
 
-    return date.toLocaleString("ru-RU", {
+    return d.toLocaleString("ru-RU", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -120,218 +89,834 @@ function formatDate(dateValue) {
     });
 }
 
-function formatDateShort(dateValue) {
-
-    if (!dateValue) {
-        return "—";
-    }
-
-    const date = new Date(dateValue);
-
-    if (Number.isNaN(date.getTime())) {
-        return "—";
-    }
-
-    return date.toLocaleDateString("ru-RU", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric"
-    });
-}
-
 function showNotification(message, type = "success") {
-
     let notification = $("#adminNotification");
 
     if (!notification) {
-
         notification = document.createElement("div");
-
         notification.id = "adminNotification";
-
-        notification.className =
-            "admin-notification";
+        notification.className = "admin-notification";
 
         document.body.appendChild(notification);
     }
 
     notification.textContent = message;
 
-    notification.className =
-        `admin-notification ${type}`;
+    notification.classList.remove(
+        "show",
+        "success",
+        "error"
+    );
 
-    notification.classList.add("show");
+    notification.classList.add(
+        "show",
+        type === "error" ? "error" : "success"
+    );
 
-    clearTimeout(notificationTimer);
+    clearTimeout(notification._timer);
 
-    notificationTimer = setTimeout(() => {
-
+    notification._timer = setTimeout(() => {
         notification.classList.remove("show");
-
-    }, 3500);
-}
-
-function setButtonLoading(
-    button,
-    loading,
-    loadingText = "Сохранение..."
-) {
-
-    if (!button) return;
-
-    if (loading) {
-
-        button.dataset.originalText =
-            button.textContent;
-
-        button.disabled = true;
-
-        button.classList.add("is-loading");
-
-        button.textContent = loadingText;
-
-    } else {
-
-        button.disabled = false;
-
-        button.classList.remove("is-loading");
-
-        button.textContent =
-            button.dataset.originalText ||
-            "Сохранить";
-    }
+    }, 3000);
 }
 
 
 /* =========================================================
-   SUPABASE SESSION
+   ВСТРОЕННЫЕ ПРЕВЬЮ ПОРТФОЛИО
 ========================================================= */
 
-async function getCurrentSession() {
+/*
+   Картинки нам больше не нужны.
 
-    try {
+   Если в Supabase есть image_url, сначала пробуем показать
+   реальную картинку.
 
-        if (
-            !window.frilanceSupabase ||
-            !frilanceSupabase.auth
-        ) {
-            return null;
+   Если её нет или она отдаёт 404 —
+   автоматически показываем встроенное превью.
+*/
+
+function getPortfolioPreviewType(item) {
+    const text = [
+        item?.title || "",
+        item?.category || "",
+        item?.description || ""
+    ]
+        .join(" ")
+        .toLowerCase();
+
+    if (
+        text.includes("нейро") ||
+        text.includes("фото") ||
+        text.includes("ai")
+    ) {
+        return "neuro";
+    }
+
+    if (
+        text.includes("карточ") ||
+        text.includes("товар") ||
+        text.includes("market") ||
+        text.includes("маркет")
+    ) {
+        return "marketplace";
+    }
+
+    return "website";
+}
+
+
+function getBuiltInPreview(type) {
+
+    if (type === "neuro") {
+        return `
+            <div class="portfolio-built-preview portfolio-preview-neuro">
+                <div class="preview-glow preview-glow-one"></div>
+                <div class="preview-glow preview-glow-two"></div>
+
+                <div class="neuro-preview-content">
+                    <div class="neuro-spark">✦</div>
+
+                    <div class="neuro-face">
+                        <div class="neuro-hair"></div>
+                        <div class="neuro-face-shape">
+                            <div class="neuro-eye left"></div>
+                            <div class="neuro-eye right"></div>
+                            <div class="neuro-mouth"></div>
+                        </div>
+                    </div>
+
+                    <div class="neuro-label">
+                        <span>AI</span>
+                        <strong>НЕЙРОФОТО</strong>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+
+    if (type === "marketplace") {
+        return `
+            <div class="portfolio-built-preview portfolio-preview-marketplace">
+
+                <div class="market-top">
+                    <span class="market-logo">MARKET</span>
+                    <span class="market-icon">♡</span>
+                </div>
+
+                <div class="market-product">
+                    <div class="product-box">
+                        <div class="product-shine"></div>
+                        <div class="product-line"></div>
+                        <div class="product-circle"></div>
+                    </div>
+                </div>
+
+                <div class="market-info">
+                    <div class="market-lines">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+
+                    <div class="market-price">
+                        от 1 500 ₽
+                    </div>
+                </div>
+
+                <div class="market-badge">
+                    КАРТОЧКА ТОВАРА
+                </div>
+            </div>
+        `;
+    }
+
+
+    return `
+        <div class="portfolio-built-preview portfolio-preview-website">
+
+            <div class="browser-window">
+
+                <div class="browser-top">
+                    <div class="browser-dots">
+                        <i></i>
+                        <i></i>
+                        <i></i>
+                    </div>
+
+                    <div class="browser-address">
+                        your-site.ru
+                    </div>
+                </div>
+
+                <div class="browser-content">
+
+                    <div class="site-nav">
+                        <strong>BRAND</strong>
+
+                        <div class="site-nav-lines">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+
+                    <div class="site-hero">
+
+                        <div class="site-hero-text">
+                            <small>САЙТ ПОД КЛЮЧ</small>
+
+                            <strong>
+                                Цифровая<br>
+                                упаковка
+                            </strong>
+
+                            <div class="site-button">
+                                Обсудить проект
+                            </div>
+                        </div>
+
+                        <div class="site-hero-card">
+                            <div class="site-card-glow"></div>
+                            <div class="site-card-circle"></div>
+                        </div>
+
+                    </div>
+
+                    <div class="site-bottom">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="website-label">
+                <span>WEB</span>
+                <strong>САЙТ</strong>
+            </div>
+
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   ДОБАВЛЯЕМ СТИЛИ ВСТРОЕННЫХ ПРЕВЬЮ
+========================================================= */
+
+function injectPortfolioPreviewStyles() {
+
+    if ($("#portfolioBuiltPreviewStyles")) {
+        return;
+    }
+
+    const style = document.createElement("style");
+
+    style.id = "portfolioBuiltPreviewStyles";
+
+    style.textContent = `
+
+        .portfolio-preview-area {
+            position: relative;
+            width: 100%;
+            height: 230px;
+            overflow: hidden;
+            border-radius: 18px 18px 0 0;
+            background: #0d0a16;
         }
 
-        const result =
-            await frilanceSupabase.auth.getSession();
 
-        if (result.error) {
+        .portfolio-built-preview {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
 
-            console.error(
-                "Ошибка получения сессии:",
-                result.error
+
+        /* ================================
+           WEBSITE
+        ================================= */
+
+        .portfolio-preview-website {
+            background:
+                radial-gradient(
+                    circle at 80% 20%,
+                    rgba(98, 200, 255, .25),
+                    transparent 35%
+                ),
+                radial-gradient(
+                    circle at 20% 80%,
+                    rgba(155, 92, 255, .25),
+                    transparent 40%
+                ),
+                #090711;
+            padding: 22px;
+        }
+
+        .browser-window {
+            position: absolute;
+            left: 8%;
+            right: 8%;
+            top: 15%;
+            bottom: -15%;
+            border-radius: 12px 12px 0 0;
+            background: #11101a;
+            border: 1px solid rgba(255,255,255,.12);
+            box-shadow: 0 18px 45px rgba(0,0,0,.45);
+            overflow: hidden;
+            transform: perspective(700px) rotateX(3deg);
+        }
+
+        .browser-top {
+            height: 28px;
+            background: rgba(255,255,255,.055);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 10px;
+        }
+
+        .browser-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .browser-dots i {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.3);
+        }
+
+        .browser-address {
+            flex: 1;
+            height: 14px;
+            border-radius: 20px;
+            background: rgba(255,255,255,.05);
+            color: rgba(255,255,255,.3);
+            font-size: 7px;
+            display: flex;
+            align-items: center;
+            padding-left: 8px;
+        }
+
+        .browser-content {
+            padding: 18px;
+        }
+
+        .site-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+
+        .site-nav strong {
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        .site-nav-lines {
+            display: flex;
+            gap: 5px;
+        }
+
+        .site-nav-lines span {
+            width: 22px;
+            height: 3px;
+            border-radius: 10px;
+            background: rgba(255,255,255,.25);
+        }
+
+        .site-hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+        }
+
+        .site-hero-text small {
+            display: block;
+            color: #62c8ff;
+            font-size: 7px;
+            margin-bottom: 7px;
+            letter-spacing: 1px;
+        }
+
+        .site-hero-text strong {
+            display: block;
+            color: white;
+            font-size: 19px;
+            line-height: 1.05;
+        }
+
+        .site-button {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 6px 10px;
+            border-radius: 7px;
+            background: linear-gradient(
+                135deg,
+                #62c8ff,
+                #9b5cff
             );
-
-            return null;
+            color: white;
+            font-size: 6px;
         }
 
-        return result.data?.session || null;
+        .site-hero-card {
+            width: 65px;
+            height: 85px;
+            border-radius: 14px;
+            position: relative;
+            overflow: hidden;
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(98,200,255,.5),
+                    rgba(255,79,154,.45)
+                );
+            box-shadow:
+                0 0 30px rgba(98,200,255,.2);
+        }
 
-    } catch (error) {
+        .site-card-glow {
+            position: absolute;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.25);
+            filter: blur(10px);
+            top: 10px;
+            left: 8px;
+        }
 
-        console.error(
-            "Ошибка проверки сессии:",
-            error
-        );
+        .site-card-circle {
+            position: absolute;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,.5);
+            bottom: 13px;
+            right: 12px;
+        }
 
-        return null;
-    }
-}
+        .site-bottom {
+            display: flex;
+            gap: 7px;
+            margin-top: 20px;
+        }
 
-async function requireSession() {
+        .site-bottom span {
+            height: 5px;
+            border-radius: 10px;
+            background: rgba(255,255,255,.1);
+            width: 35px;
+        }
 
-    const session =
-        await getCurrentSession();
+        .site-bottom span:first-child {
+            width: 65px;
+        }
 
-    if (!session) {
+        .website-label {
+            position: absolute;
+            bottom: 15px;
+            left: 22px;
+            display: flex;
+            flex-direction: column;
+            color: white;
+        }
 
-        showNotification(
-            "Сессия администратора не найдена.",
-            "error"
-        );
+        .website-label span {
+            font-size: 7px;
+            color: #62c8ff;
+            letter-spacing: 2px;
+        }
 
-        return false;
-    }
+        .website-label strong {
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
 
-    return true;
+
+        /* ================================
+           MARKETPLACE
+        ================================= */
+
+        .portfolio-preview-marketplace {
+            background:
+                radial-gradient(
+                    circle at 50% 40%,
+                    rgba(255,79,154,.18),
+                    transparent 40%
+                ),
+                #100b18;
+            padding: 18px;
+        }
+
+        .market-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+
+        .market-logo {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        .market-icon {
+            color: #ff4f9a;
+            font-size: 18px;
+        }
+
+        .market-product {
+            height: 105px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-box {
+            width: 82px;
+            height: 82px;
+            border-radius: 18px;
+            position: relative;
+            background:
+                linear-gradient(
+                    145deg,
+                    #2b213a,
+                    #171020
+                );
+            border: 1px solid rgba(255,255,255,.12);
+            box-shadow:
+                0 15px 35px rgba(0,0,0,.4),
+                0 0 25px rgba(255,79,154,.12);
+        }
+
+        .product-shine {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.14);
+            filter: blur(3px);
+        }
+
+        .product-line {
+            position: absolute;
+            left: 18px;
+            right: 18px;
+            bottom: 20px;
+            height: 5px;
+            border-radius: 5px;
+            background: rgba(255,255,255,.2);
+        }
+
+        .product-circle {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,79,154,.7);
+            left: 24px;
+            top: 22px;
+        }
+
+        .market-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .market-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .market-lines span {
+            width: 55px;
+            height: 4px;
+            border-radius: 10px;
+            background: rgba(255,255,255,.12);
+        }
+
+        .market-lines span:first-child {
+            width: 80px;
+            background: rgba(255,255,255,.25);
+        }
+
+        .market-price {
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .market-badge {
+            position: absolute;
+            right: 15px;
+            bottom: 15px;
+            padding: 5px 8px;
+            border-radius: 5px;
+            background: rgba(255,79,154,.12);
+            border: 1px solid rgba(255,79,154,.25);
+            color: #ff82b5;
+            font-size: 6px;
+            letter-spacing: .7px;
+        }
+
+
+        /* ================================
+           NEURO PHOTO
+        ================================= */
+
+        .portfolio-preview-neuro {
+            background:
+                radial-gradient(
+                    circle at 50% 35%,
+                    rgba(255,79,154,.35),
+                    transparent 34%
+                ),
+                radial-gradient(
+                    circle at 20% 80%,
+                    rgba(155,92,255,.25),
+                    transparent 35%
+                ),
+                #0d0915;
+        }
+
+        .preview-glow {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(25px);
+        }
+
+        .preview-glow-one {
+            width: 90px;
+            height: 90px;
+            top: 25px;
+            left: 25px;
+            background: rgba(255,79,154,.18);
+        }
+
+        .preview-glow-two {
+            width: 80px;
+            height: 80px;
+            right: 25px;
+            bottom: 20px;
+            background: rgba(98,200,255,.14);
+        }
+
+        .neuro-preview-content {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .neuro-spark {
+            position: absolute;
+            top: 28px;
+            right: 28%;
+            color: #ff78b0;
+            font-size: 22px;
+        }
+
+        .neuro-face {
+            position: relative;
+            width: 100px;
+            height: 135px;
+        }
+
+        .neuro-hair {
+            position: absolute;
+            width: 100px;
+            height: 105px;
+            border-radius: 48% 48% 35% 35%;
+            background:
+                linear-gradient(
+                    135deg,
+                    #171020,
+                    #3a2447
+                );
+            top: 2px;
+            box-shadow:
+                0 0 35px rgba(255,79,154,.18);
+        }
+
+        .neuro-face-shape {
+            position: absolute;
+            width: 63px;
+            height: 82px;
+            left: 18px;
+            top: 24px;
+            border-radius: 46% 46% 48% 48%;
+            background:
+                linear-gradient(
+                    135deg,
+                    #f3c6ba,
+                    #c98982
+                );
+            box-shadow:
+                0 8px 20px rgba(0,0,0,.3);
+        }
+
+        .neuro-eye {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #30202d;
+            top: 34px;
+        }
+
+        .neuro-eye.left {
+            left: 17px;
+        }
+
+        .neuro-eye.right {
+            right: 17px;
+        }
+
+        .neuro-mouth {
+            position: absolute;
+            width: 13px;
+            height: 5px;
+            border-bottom: 1px solid #713e46;
+            border-radius: 50%;
+            left: 25px;
+            bottom: 17px;
+        }
+
+        .neuro-label {
+            position: absolute;
+            left: 22px;
+            bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .neuro-label span {
+            color: #ff4f9a;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .neuro-label strong {
+            color: white;
+            font-size: 9px;
+            letter-spacing: 1px;
+        }
+
+
+        /* ================================
+           FALLBACK
+        ================================= */
+
+        .portfolio-image-error {
+            width: 100%;
+            height: 100%;
+        }
+
+        .portfolio-preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+
+        /* ================================
+           LEADS LOADING
+        ================================= */
+
+        .leads-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 100px;
+            color: rgba(255,255,255,.55);
+        }
+
+        .leads-loading-spinner {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,.12);
+            border-top-color: #62c8ff;
+            animation: frilanceSpin .8s linear infinite;
+        }
+
+        @keyframes frilanceSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+    `;
+
+    document.head.appendChild(style);
 }
 
 
 /* =========================================================
-   START
+   ИНИЦИАЛИЗАЦИЯ
 ========================================================= */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
+document.addEventListener("DOMContentLoaded", () => {
 
-        initNavigation();
+    injectPortfolioPreviewStyles();
 
-        initQuickActions();
+    initNavigation();
+    initPortfolio();
+    initServices();
+    initTexts();
+    initContacts();
+    initLeads();
+    initQuickActions();
 
-        initPortfolio();
+    waitForSupabase();
+});
 
-        initServices();
 
-        initTexts();
+/* =========================================================
+   ОЖИДАНИЕ SUPABASE
+========================================================= */
 
-        initContacts();
+function waitForSupabase() {
 
-        initLeads();
+    if (typeof frilanceSupabase !== "undefined") {
 
-        initGeneralButtons();
-
-        showSection("dashboard");
+        console.log(
+            "FRILANCE ADMIN: Supabase готов"
+        );
 
         loadAllData();
 
-        /*
-         * Если авторизация завершается уже после загрузки
-         * страницы — повторно загружаем данные.
-         */
-
-        if (
-            window.frilanceSupabase &&
-            frilanceSupabase.auth
-        ) {
-
-            frilanceSupabase.auth.onAuthStateChange(
-                (event, session) => {
-
-                    console.log(
-                        "FRILANCE AUTH:",
-                        event
-                    );
-
-                    if (
-                        event === "SIGNED_IN" &&
-                        session
-                    ) {
-
-                        setTimeout(() => {
-
-                            loadAllData();
-
-                        }, 500);
-                    }
-                }
-            );
-        }
+        return;
     }
-);
+
+    console.log(
+        "FRILANCE ADMIN: ждём Supabase..."
+    );
+
+    setTimeout(waitForSupabase, 100);
+}
 
 
 /* =========================================================
-   LOAD ALL DATA
-   ВАЖНО:
-   каждая таблица загружается отдельно.
-   Ошибка одной таблицы НЕ ломает остальные.
+   ЗАГРУЗКА ВСЕХ ДАННЫХ
 ========================================================= */
 
 async function loadAllData() {
@@ -341,17 +926,9 @@ async function loadAllData() {
     );
 
 
-    /*
-     * Не используем Promise.all().
-     * Каждый запрос обрабатывается отдельно.
-     */
-
     try {
-
         await loadPortfolio();
-
     } catch (error) {
-
         console.error(
             "Ошибка загрузки портфолио:",
             error
@@ -360,11 +937,8 @@ async function loadAllData() {
 
 
     try {
-
         await loadServices();
-
     } catch (error) {
-
         console.error(
             "Ошибка загрузки услуг:",
             error
@@ -373,11 +947,8 @@ async function loadAllData() {
 
 
     try {
-
         await loadTexts();
-
     } catch (error) {
-
         console.error(
             "Ошибка загрузки текстов:",
             error
@@ -386,11 +957,8 @@ async function loadAllData() {
 
 
     try {
-
         await loadContacts();
-
     } catch (error) {
-
         console.error(
             "Ошибка загрузки контактов:",
             error
@@ -399,11 +967,8 @@ async function loadAllData() {
 
 
     try {
-
         await loadLeads();
-
     } catch (error) {
-
         console.error(
             "Ошибка загрузки заявок:",
             error
@@ -413,7 +978,6 @@ async function loadAllData() {
 
     updateDashboard();
 
-
     console.log(
         "FRILANCE ADMIN: загрузка завершена"
     );
@@ -421,167 +985,154 @@ async function loadAllData() {
 
 
 /* =========================================================
-   NAVIGATION
+   НАВИГАЦИЯ
 ========================================================= */
 
 function initNavigation() {
+
+    $$(".admin-nav-item").forEach(item => {
+
+        item.addEventListener("click", event => {
+
+            event.preventDefault();
+
+            const section =
+                item.dataset.section ||
+                item.getAttribute("data-section");
+
+            if (section) {
+                showSection(section);
+            }
+        });
+    });
+
+
+    $$("[data-section]").forEach(item => {
+
+        if (
+            item.classList.contains("admin-nav-item")
+        ) {
+            return;
+        }
+
+        if (
+            item.dataset.section &&
+            item.tagName === "BUTTON"
+        ) {
+
+            item.addEventListener("click", () => {
+
+                showSection(
+                    item.dataset.section
+                );
+
+            });
+        }
+
+    });
+
+
+    const hash =
+        window.location.hash.replace("#", "");
+
+    if (hash) {
+        showSection(hash);
+    } else {
+        showSection("dashboard");
+    }
+}
+
+
+function showSection(sectionName) {
+
+    if (!sectionName) {
+        return;
+    }
+
+    const sections = $$(".admin-section");
+
+    sections.forEach(section => {
+
+        section.classList.toggle(
+            "active",
+            section.id ===
+            `section-${sectionName}`
+        );
+
+    });
+
 
     const navItems =
         $$(".admin-nav-item");
 
     navItems.forEach(item => {
 
-        item.addEventListener(
-            "click",
-            event => {
-
-                event.preventDefault();
-
-                const section =
-                    item.dataset.section;
-
-                if (!section) return;
-
-                showSection(section);
-            }
+        item.classList.toggle(
+            "active",
+            item.dataset.section === sectionName
         );
+
     });
-}
 
 
-function showSection(sectionName) {
+    const title =
+        $("[data-page-title]");
 
-    $$(".admin-section").forEach(
-        section => {
+    if (title) {
 
-            section.classList.remove(
-                "active"
-            );
-        }
-    );
+        const titles = {
+            dashboard: "Обзор",
+            portfolio: "Портфолио",
+            services: "Услуги",
+            texts: "Тексты",
+            contacts: "Контакты",
+            leads: "Заявки",
+            seo: "SEO",
+            settings: "Настройки"
+        };
 
-
-    const target =
-        $(`#section-${sectionName}`);
-
-    if (target) {
-
-        target.classList.add("active");
+        title.textContent =
+            titles[sectionName] ||
+            "Админ-панель";
     }
 
 
-    $$(".admin-nav-item").forEach(
-        item => {
-
-            item.classList.toggle(
-                "active",
-                item.dataset.section ===
-                    sectionName
-            );
-        }
-    );
+    window.location.hash = sectionName;
 
 
-    /*
-     * При открытии заявок сразу
-     * перечитываем их из Supabase.
-     */
+    if (sectionName === "leads") {
+        renderLeads();
+    }
 
-    if (
-        sectionName === "leads"
-    ) {
-
-        loadLeads();
+    if (sectionName === "portfolio") {
+        renderPortfolio();
     }
 }
 
 
 /* =========================================================
-   QUICK ACTIONS
+   БЫСТРЫЕ ДЕЙСТВИЯ
 ========================================================= */
 
 function initQuickActions() {
 
-    $$("[data-open-section]")
-        .forEach(button => {
+    $$("[data-open-section]").forEach(button => {
 
-            button.addEventListener(
-                "click",
-                () => {
+        button.addEventListener("click", () => {
 
-                    const section =
-                        button.dataset.openSection;
+            const section =
+                button.dataset.openSection;
 
-                    if (!section) return;
-
-                    showSection(section);
-                }
-            );
+            if (section) {
+                showSection(section);
+            }
         });
+    });
 }
 
 
 /* =========================================================
-   DASHBOARD
-========================================================= */
-
-function updateDashboard() {
-
-    updatePortfolioCount();
-
-    updateServicesCount();
-
-    updateLeadsCount();
-
-    renderRecentLeads();
-}
-
-
-function updatePortfolioCount() {
-
-    setText(
-        "#dashboardPortfolioCount",
-        portfolio.length
-    );
-}
-
-
-function updateServicesCount() {
-
-    const element =
-        $("#dashboardServicesCount");
-
-    if (!element) return;
-
-    element.textContent =
-        services ? "5" : "0";
-}
-
-
-function updateLeadsCount() {
-
-    const count =
-        leads.length;
-
-    setText(
-        "#dashboardLeadsCount",
-        count
-    );
-
-    setText(
-        "#leadsCount",
-        count
-    );
-
-    setText(
-        "#leadsTotal",
-        count
-    );
-}
-
-
-/* =========================================================
-   PORTFOLIO
+   ПОРТФОЛИО
 ========================================================= */
 
 function initPortfolio() {
@@ -592,22 +1143,6 @@ function initPortfolio() {
     const addEmptyButton =
         $("#addPortfolioButtonEmpty");
 
-    const closeButton =
-        $("#closePortfolioModal");
-
-    const cancelButton =
-        $("#cancelPortfolioButton");
-
-    const form =
-        $("#portfolioForm");
-
-    const imageInput =
-        $("#portfolioImage");
-
-    const uploadBox =
-        $("#portfolioUploadBox");
-
-
     if (addButton) {
 
         addButton.addEventListener(
@@ -615,7 +1150,6 @@ function initPortfolio() {
             () => openPortfolioModal()
         );
     }
-
 
     if (addEmptyButton) {
 
@@ -626,6 +1160,9 @@ function initPortfolio() {
     }
 
 
+    const closeButton =
+        $("#closePortfolioModal");
+
     if (closeButton) {
 
         closeButton.addEventListener(
@@ -635,43 +1172,14 @@ function initPortfolio() {
     }
 
 
+    const cancelButton =
+        $("#cancelPortfolioButton");
+
     if (cancelButton) {
 
         cancelButton.addEventListener(
             "click",
             closePortfolioModal
-        );
-    }
-
-
-    if (form) {
-
-        form.addEventListener(
-            "submit",
-            savePortfolioItem
-        );
-    }
-
-
-    if (imageInput) {
-
-        imageInput.addEventListener(
-            "change",
-            handlePortfolioImage
-        );
-    }
-
-
-    if (uploadBox) {
-
-        uploadBox.addEventListener(
-            "click",
-            () => {
-
-                if (imageInput) {
-                    imageInput.click();
-                }
-            }
         );
     }
 
@@ -688,10 +1196,33 @@ function initPortfolio() {
                 if (
                     event.target === modal
                 ) {
-
                     closePortfolioModal();
                 }
             }
+        );
+    }
+
+
+    const form =
+        $("#portfolioForm");
+
+    if (form) {
+
+        form.addEventListener(
+            "submit",
+            savePortfolio
+        );
+    }
+
+
+    const imageInput =
+        $("#portfolioImage");
+
+    if (imageInput) {
+
+        imageInput.addEventListener(
+            "change",
+            previewPortfolioImage
         );
     }
 }
@@ -708,18 +1239,15 @@ async function loadPortfolio() {
         await frilanceSupabase
             .from("portfolio")
             .select("*")
-            .order(
-                "sort_order",
-                { ascending: true }
-            )
-            .order(
-                "created_at",
-                { ascending: false }
-            );
+            .order("sort_order", {
+                ascending: true
+            })
+            .order("created_at", {
+                ascending: false
+            });
 
 
     if (error) {
-
         throw error;
     }
 
@@ -737,7 +1265,6 @@ async function loadPortfolio() {
 
 
     renderPortfolio();
-
     updatePortfolioCount();
 }
 
@@ -751,18 +1278,17 @@ function renderPortfolio() {
         $("#portfolioEmptyState");
 
 
-    if (!grid) return;
-
-
-    grid.innerHTML = "";
+    if (!grid) {
+        return;
+    }
 
 
     if (!portfolio.length) {
 
-        if (emptyState) {
+        grid.innerHTML = "";
 
-            emptyState.style.display =
-                "block";
+        if (emptyState) {
+            emptyState.style.display = "";
         }
 
         return;
@@ -770,130 +1296,157 @@ function renderPortfolio() {
 
 
     if (emptyState) {
-
-        emptyState.style.display =
-            "none";
+        emptyState.style.display = "none";
     }
 
 
-    portfolio.forEach(item => {
-
-        const card =
-            document.createElement("article");
-
-        card.className =
-            "portfolio-admin-card";
-
-
-        let imageHtml = "";
+    grid.innerHTML =
+        portfolio
+            .map(item =>
+                createPortfolioCard(item)
+            )
+            .join("");
 
 
-        if (item.image_url) {
+    $$(".portfolio-edit-button", grid)
+        .forEach(button => {
 
-            imageHtml = `
+            button.addEventListener(
+                "click",
+                () => {
 
-                <div class="portfolio-admin-image">
+                    const id =
+                        button.dataset.id;
 
-                    <img
-                        src="${escapeHtml(
-                            item.image_url
-                        )}"
-                        alt="${escapeHtml(
-                            item.title
-                        )}"
-                        onerror="
-                            this.parentElement.classList.add('image-error');
-                            this.style.display='none';
-                        "
-                    >
+                    const item =
+                        portfolio.find(
+                            portfolioItem =>
+                                portfolioItem.id === id
+                        );
+
+                    if (item) {
+                        openPortfolioModal(item);
+                    }
+                }
+            );
+        });
+
+
+    $$(".portfolio-delete-button", grid)
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const id =
+                        button.dataset.id;
+
+                    deletePortfolio(id);
+                }
+            );
+        });
+}
+
+
+function createPortfolioCard(item) {
+
+    const previewType =
+        getPortfolioPreviewType(item);
+
+
+    const hasImage =
+        item.image_url &&
+        String(item.image_url).trim();
+
+
+    let preview;
+
+
+    if (hasImage) {
+
+        preview = `
+            <div class="portfolio-preview-area">
+                <img
+                    class="portfolio-preview-image"
+                    src="${escapeHtml(item.image_url)}"
+                    alt="${escapeHtml(item.title)}"
+                    loading="lazy"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                >
+
+                <div
+                    class="portfolio-image-error"
+                    style="display:none;"
+                >
+                    ${getBuiltInPreview(previewType)}
+                </div>
+            </div>
+        `;
+
+    } else {
+
+        preview = `
+            <div class="portfolio-preview-area">
+                ${getBuiltInPreview(previewType)}
+            </div>
+        `;
+    }
+
+
+    return `
+        <article class="portfolio-admin-card">
+
+            ${preview}
+
+            <div class="portfolio-admin-card-content">
+
+                <div class="portfolio-admin-card-top">
+
+                    <div>
+                        <div class="portfolio-category">
+                            ${escapeHtml(
+                                item.category || "Работа"
+                            )}
+                        </div>
+
+                        <h3>
+                            ${escapeHtml(
+                                item.title || "Без названия"
+                            )}
+                        </h3>
+                    </div>
+
+                    <div class="portfolio-price">
+                        ${escapeHtml(
+                            item.price || ""
+                        )}
+                    </div>
 
                 </div>
 
-            `;
 
-        } else {
-
-            imageHtml = `
-
-                <div class="
-                    portfolio-admin-image
-                    portfolio-admin-image-empty
-                ">
-
-                    <span>
-                        Нет изображения
-                    </span>
-
-                </div>
-
-            `;
-        }
-
-
-        card.innerHTML = `
-
-            ${imageHtml}
-
-            <div class="portfolio-admin-content">
-
-                <div class="portfolio-admin-category">
-
-                    ${escapeHtml(
-                        item.category || "—"
-                    )}
-
-                </div>
-
-
-                <h3>
-
-                    ${escapeHtml(
-                        item.title ||
-                        "Без названия"
-                    )}
-
-                </h3>
-
-
-                <div class="portfolio-admin-price">
-
-                    ${escapeHtml(
-                        item.price || "—"
-                    )}
-
-                </div>
-
-
-                <p>
-
+                <p class="portfolio-description">
                     ${escapeHtml(
                         item.description || ""
                     )}
-
                 </p>
 
 
-                <div class="
-                    portfolio-admin-actions
-                ">
+                <div class="portfolio-card-actions">
 
                     <button
                         type="button"
-                        class="admin-button secondary"
-                        data-edit-portfolio="${escapeHtml(
-                            item.id
-                        )}"
+                        class="admin-button portfolio-edit-button"
+                        data-id="${escapeHtml(item.id)}"
                     >
-                        Изменить
+                        Редактировать
                     </button>
 
-
                     <button
                         type="button"
-                        class="admin-button danger"
-                        data-delete-portfolio="${escapeHtml(
-                            item.id
-                        )}"
+                        class="admin-button admin-button-danger portfolio-delete-button"
+                        data-id="${escapeHtml(item.id)}"
                     >
                         Удалить
                     </button>
@@ -901,45 +1454,13 @@ function renderPortfolio() {
                 </div>
 
             </div>
-        `;
 
-
-        grid.appendChild(card);
-    });
-
-
-    $$("[data-edit-portfolio]")
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    openPortfolioModal(
-                        button.dataset.editPortfolio
-                    );
-                }
-            );
-        });
-
-
-    $$("[data-delete-portfolio]")
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    deletePortfolioItem(
-                        button.dataset.deletePortfolio
-                    );
-                }
-            );
-        });
+        </article>
+    `;
 }
 
 
-function openPortfolioModal(id = null) {
+function openPortfolioModal(item = null) {
 
     const modal =
         $("#portfolioModal");
@@ -948,137 +1469,84 @@ function openPortfolioModal(id = null) {
         $("#portfolioForm");
 
 
-    if (!modal || !form) return;
+    if (!modal) {
+        return;
+    }
 
 
-    editingPortfolioId =
-        id;
-
-    selectedPortfolioImage =
-        "";
+    if (form) {
+        form.reset();
+    }
 
 
-    form.reset();
-
+    const modalTitle =
+        $("#portfolioModalTitle");
 
     const idInput =
         $("#portfolioId");
 
-    if (idInput) {
 
-        idInput.value =
-            id || "";
-    }
+    if (item) {
 
+        if (modalTitle) {
+            modalTitle.textContent =
+                "Редактировать работу";
+        }
 
-    const title =
-        $("#portfolioModalTitle");
+        if (idInput) {
+            idInput.value =
+                item.id || "";
+        }
 
-    if (title) {
+        const title =
+            $("#portfolioTitle");
 
-        title.textContent =
-            id
-                ? "Редактировать работу"
-                : "Добавить работу";
-    }
+        const category =
+            $("#portfolioCategory");
 
+        const price =
+            $("#portfolioPrice");
 
-    const preview =
-        $("#portfolioImagePreview");
-
-    if (preview) {
-
-        preview.innerHTML = "";
-
-        preview.style.display =
-            "none";
-    }
+        const description =
+            $("#portfolioDescription");
 
 
-    if (id) {
+        if (title) {
+            title.value =
+                item.title || "";
+        }
 
-        const item =
-            portfolio.find(
-                portfolioItem =>
-                    portfolioItem.id === id
-            );
+        if (category) {
+            category.value =
+                item.category || "";
+        }
 
+        if (price) {
+            price.value =
+                item.price || "";
+        }
 
-        if (item) {
-
-            const titleInput =
-                $("#portfolioTitle");
-
-            const categoryInput =
-                $("#portfolioCategory");
-
-            const priceInput =
-                $("#portfolioPrice");
-
-            const descriptionInput =
-                $("#portfolioDescription");
+        if (description) {
+            description.value =
+                item.description || "";
+        }
 
 
-            if (titleInput) {
+    } else {
 
-                titleInput.value =
-                    item.title || "";
-            }
+        if (modalTitle) {
+            modalTitle.textContent =
+                "Добавить работу";
+        }
 
-
-            if (categoryInput) {
-
-                categoryInput.value =
-                    item.category || "";
-            }
-
-
-            if (priceInput) {
-
-                priceInput.value =
-                    item.price || "";
-            }
-
-
-            if (descriptionInput) {
-
-                descriptionInput.value =
-                    item.description || "";
-            }
-
-
-            selectedPortfolioImage =
-                item.image_url || "";
-
-
-            if (
-                preview &&
-                item.image_url
-            ) {
-
-                preview.innerHTML = `
-
-                    <img
-                        src="${escapeHtml(
-                            item.image_url
-                        )}"
-                        alt=""
-                    >
-
-                `;
-
-                preview.style.display =
-                    "block";
-            }
+        if (idInput) {
+            idInput.value = "";
         }
     }
 
 
     modal.classList.add("active");
-
-    document.body.classList.add(
-        "modal-open"
-    );
+    modal.style.display = "flex";
 }
 
 
@@ -1087,41 +1555,25 @@ function closePortfolioModal() {
     const modal =
         $("#portfolioModal");
 
-    if (!modal) return;
-
+    if (!modal) {
+        return;
+    }
 
     modal.classList.remove("active");
-
-    document.body.classList.remove(
-        "modal-open"
-    );
-
-
-    editingPortfolioId =
-        null;
-
-    selectedPortfolioImage =
-        "";
+    modal.style.display = "none";
 }
 
 
-function handlePortfolioImage(event) {
+function previewPortfolioImage(event) {
 
     const file =
         event.target.files?.[0];
 
-    if (!file) return;
+    const preview =
+        $("#portfolioImagePreview");
 
 
-    if (
-        !file.type.startsWith("image/")
-    ) {
-
-        showNotification(
-            "Выберите изображение.",
-            "error"
-        );
-
+    if (!file || !preview) {
         return;
     }
 
@@ -1132,28 +1584,11 @@ function handlePortfolioImage(event) {
 
     reader.onload = () => {
 
-        selectedPortfolioImage =
+        preview.src =
             reader.result;
 
-
-        const preview =
-            $("#portfolioImagePreview");
-
-
-        if (preview) {
-
-            preview.innerHTML = `
-
-                <img
-                    src="${reader.result}"
-                    alt="Предпросмотр"
-                >
-
-            `;
-
-            preview.style.display =
-                "block";
-        }
+        preview.style.display =
+            "block";
     };
 
 
@@ -1161,53 +1596,35 @@ function handlePortfolioImage(event) {
 }
 
 
-async function savePortfolioItem(event) {
+async function savePortfolio(event) {
 
     event.preventDefault();
 
 
-    if (!(await requireSession())) {
-        return;
-    }
-
-
-    const form =
-        event.currentTarget;
+    const id =
+        $("#portfolioId")?.value.trim() || "";
 
 
     const title =
-        $("#portfolioTitle")
-            ?.value
-            .trim() || "";
+        $("#portfolioTitle")?.value.trim() || "";
 
 
     const category =
-        $("#portfolioCategory")
-            ?.value
-            .trim() || "";
+        $("#portfolioCategory")?.value.trim() || "";
 
 
     const price =
-        $("#portfolioPrice")
-            ?.value
-            .trim() || "";
+        $("#portfolioPrice")?.value.trim() || "";
 
 
     const description =
-        $("#portfolioDescription")
-            ?.value
-            .trim() || "";
+        $("#portfolioDescription")?.value.trim() || "";
 
 
-    const id =
-        $("#portfolioId")
-            ?.value || "";
-
-
-    if (!title) {
+    if (!title || !category || !price) {
 
         showNotification(
-            "Введите название работы.",
+            "Заполните название, категорию и цену.",
             "error"
         );
 
@@ -1215,98 +1632,53 @@ async function savePortfolioItem(event) {
     }
 
 
-    if (!category) {
-
-        showNotification(
-            "Введите категорию.",
-            "error"
-        );
-
-        return;
-    }
-
-
-    if (!price) {
-
-        showNotification(
-            "Введите цену.",
-            "error"
-        );
-
-        return;
-    }
-
-
-    const submitButton =
-        form.querySelector(
-            'button[type="submit"]'
-        );
-
-
-    setButtonLoading(
-        submitButton,
-        true
-    );
+    const payload = {
+        title,
+        category,
+        price,
+        description
+    };
 
 
     try {
 
-        const payload = {
-
-            title,
-
-            category,
-
-            price,
-
-            description,
-
-            image_url:
-                selectedPortfolioImage || "",
-
-            updated_at:
-                new Date().toISOString()
-        };
+        let result;
 
 
         if (id) {
 
-            const { error } =
+            result =
                 await frilanceSupabase
                     .from("portfolio")
                     .update(payload)
                     .eq("id", id);
 
-
-            if (error) {
-                throw error;
-            }
-
-
-            showNotification(
-                "Работа обновлена."
-            );
-
         } else {
 
+            const maxSort =
+                portfolio.reduce(
+                    (max, item) =>
+                        Math.max(
+                            max,
+                            Number(item.sort_order) || 0
+                        ),
+                    0
+                );
+
+
             payload.sort_order =
-                portfolio.length;
+                maxSort + 1;
 
 
-            const { error } =
+            result =
                 await frilanceSupabase
                     .from("portfolio")
                     .insert(payload);
+        }
 
 
-            if (error) {
-                throw error;
-            }
-
-
-            showNotification(
-                "Работа добавлена."
-            );
+        if (result.error) {
+            throw result.error;
         }
 
 
@@ -1316,6 +1688,13 @@ async function savePortfolioItem(event) {
 
         updateDashboard();
 
+        showNotification(
+            id
+                ? "Работа обновлена."
+                : "Работа добавлена."
+        );
+
+
     } catch (error) {
 
         console.error(
@@ -1324,24 +1703,16 @@ async function savePortfolioItem(event) {
         );
 
         showNotification(
-            error.message ||
             "Не удалось сохранить работу.",
             "error"
-        );
-
-    } finally {
-
-        setButtonLoading(
-            submitButton,
-            false
         );
     }
 }
 
 
-async function deletePortfolioItem(id) {
+async function deletePortfolio(id) {
 
-    if (!(await requireSession())) {
+    if (!id) {
         return;
     }
 
@@ -1353,16 +1724,13 @@ async function deletePortfolioItem(id) {
         );
 
 
-    const title =
-        item?.title ||
-        "эту работу";
+    const confirmed =
+        confirm(
+            `Удалить работу «${item?.title || "Без названия"}»?`
+        );
 
 
-    if (
-        !confirm(
-            `Удалить «${title}»?`
-        )
-    ) {
+    if (!confirmed) {
         return;
     }
 
@@ -1381,24 +1749,23 @@ async function deletePortfolioItem(id) {
         }
 
 
+        await loadPortfolio();
+
+        updateDashboard();
+
         showNotification(
             "Работа удалена."
         );
 
 
-        await loadPortfolio();
-
-        updateDashboard();
-
     } catch (error) {
 
         console.error(
-            "Ошибка удаления:",
+            "Ошибка удаления портфолио:",
             error
         );
 
         showNotification(
-            error.message ||
             "Не удалось удалить работу.",
             "error"
         );
@@ -1406,8 +1773,27 @@ async function deletePortfolioItem(id) {
 }
 
 
+function updatePortfolioCount() {
+
+    const elements = [
+        $("#dashboardPortfolioCount"),
+        $("#portfolioCount")
+    ];
+
+
+    elements.forEach(element => {
+
+        if (element) {
+            element.textContent =
+                portfolio.length;
+        }
+
+    });
+}
+
+
 /* =========================================================
-   SERVICES
+   УСЛУГИ
 ========================================================= */
 
 function initServices() {
@@ -1415,7 +1801,9 @@ function initServices() {
     const form =
         $("#servicesForm");
 
-    if (!form) return;
+    if (!form) {
+        return;
+    }
 
 
     form.addEventListener(
@@ -1431,10 +1819,9 @@ async function loadServices() {
         await frilanceSupabase
             .from("services")
             .select("*")
-            .order(
-                "created_at",
-                { ascending: true }
-            )
+            .order("created_at", {
+                ascending: true
+            })
             .limit(1);
 
 
@@ -1444,10 +1831,7 @@ async function loadServices() {
 
 
     services =
-        data?.[0] ||
-        {
-            ...DEFAULT_SERVICES
-        };
+        data?.[0] || null;
 
 
     fillServicesForm();
@@ -1458,42 +1842,40 @@ async function loadServices() {
 
 function fillServicesForm() {
 
-    if (!services) return;
+    if (!services) {
+        return;
+    }
 
 
     const fields = {
-
-        "#serviceNeuroPrice":
+        serviceNeuroPrice:
             services.neuro_price,
 
-        "#serviceWebsitePrice":
+        serviceWebsitePrice:
             services.website_price,
 
-        "#serviceMarketplacePrice":
+        serviceMarketplacePrice:
             services.marketplace_price,
 
-        "#serviceStartPrice":
+        serviceStartPrice:
             services.start_price,
 
-        "#serviceBusinessPrice":
+        serviceBusinessPrice:
             services.business_price
     };
 
 
     Object.entries(fields)
-        .forEach(
-            ([selector, value]) => {
+        .forEach(([id, value]) => {
 
-                const element =
-                    $(selector);
+            const field =
+                $(`#${id}`);
 
-                if (element) {
-
-                    element.value =
-                        value || "";
-                }
+            if (field) {
+                field.value =
+                    value || "";
             }
-        );
+        });
 }
 
 
@@ -1502,114 +1884,63 @@ async function saveServices(event) {
     event.preventDefault();
 
 
-    if (!(await requireSession())) {
-        return;
-    }
-
-
-    const form =
-        event.currentTarget;
-
-
-    const button =
-        $("#saveServicesButton");
-
-
     const payload = {
 
         neuro_price:
-            $("#serviceNeuroPrice")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_SERVICES.neuro_price,
+            $("#serviceNeuroPrice")?.value.trim()
+            || "от 700 ₽",
 
         website_price:
-            $("#serviceWebsitePrice")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_SERVICES.website_price,
+            $("#serviceWebsitePrice")?.value.trim()
+            || "от 15 000 ₽",
 
         marketplace_price:
-            $("#serviceMarketplacePrice")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_SERVICES.marketplace_price,
+            $("#serviceMarketplacePrice")?.value.trim()
+            || "от 1 500 ₽",
 
         start_price:
-            $("#serviceStartPrice")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_SERVICES.start_price,
+            $("#serviceStartPrice")?.value.trim()
+            || "15 000 ₽",
 
         business_price:
-            $("#serviceBusinessPrice")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_SERVICES.business_price,
-
-        updated_at:
-            new Date().toISOString()
+            $("#serviceBusinessPrice")?.value.trim()
+            || "25 000 ₽"
     };
-
-
-    setButtonLoading(
-        button,
-        true
-    );
 
 
     try {
 
+        let result;
+
+
         if (services?.id) {
 
-            const { data, error } =
+            result =
                 await frilanceSupabase
                     .from("services")
                     .update(payload)
-                    .eq(
-                        "id",
-                        services.id
-                    )
-                    .select()
-                    .single();
-
-
-            if (error) {
-                throw error;
-            }
-
-
-            services = data;
+                    .eq("id", services.id);
 
         } else {
 
-            const { data, error } =
+            result =
                 await frilanceSupabase
                     .from("services")
-                    .insert(payload)
-                    .select()
-                    .single();
-
-
-            if (error) {
-                throw error;
-            }
-
-
-            services = data;
+                    .insert(payload);
         }
 
 
-        fillServicesForm();
+        if (result.error) {
+            throw result.error;
+        }
+
+
+        await loadServices();
 
         showNotification(
             "Цены сохранены."
         );
+
 
     } catch (error) {
 
@@ -1619,35 +1950,52 @@ async function saveServices(event) {
         );
 
         showNotification(
-            error.message ||
             "Не удалось сохранить цены.",
             "error"
-        );
-
-    } finally {
-
-        setButtonLoading(
-            button,
-            false
         );
     }
 }
 
 
+function updateServicesCount() {
+
+    const element =
+        $("#dashboardServicesCount");
+
+    if (element) {
+        element.textContent =
+            services ? "5" : "0";
+    }
+}
+
+
 /* =========================================================
-   TEXTS
+   ТЕКСТЫ
 ========================================================= */
 
 function initTexts() {
 
-    $$("form[id^='texts']")
-        .forEach(form => {
+    const forms = [
+        "#textsHeroForm",
+        "#textsSectionsForm",
+        "#textsAdditionalForm"
+    ];
 
-            form.addEventListener(
-                "submit",
-                saveTexts
-            );
-        });
+
+    forms.forEach(selector => {
+
+        const form = $(selector);
+
+        if (!form) {
+            return;
+        }
+
+
+        form.addEventListener(
+            "submit",
+            saveTexts
+        );
+    });
 }
 
 
@@ -1657,10 +2005,9 @@ async function loadTexts() {
         await frilanceSupabase
             .from("texts")
             .select("*")
-            .order(
-                "created_at",
-                { ascending: true }
-            )
+            .order("created_at", {
+                ascending: true
+            })
             .limit(1);
 
 
@@ -1670,10 +2017,7 @@ async function loadTexts() {
 
 
     texts =
-        data?.[0] ||
-        {
-            ...DEFAULT_TEXTS
-        };
+        data?.[0] || null;
 
 
     fillTextsForms();
@@ -1682,60 +2026,59 @@ async function loadTexts() {
 
 function fillTextsForms() {
 
-    if (!texts) return;
+    if (!texts) {
+        return;
+    }
 
 
     const fields = {
 
-        "#textHeroTitle":
+        textHeroTitle:
             texts.hero_title,
 
-        "#textHeroSubtitle":
+        textHeroSubtitle:
             texts.hero_subtitle,
 
-        "#textHeroPrimaryButton":
+        textHeroPrimaryButton:
             texts.hero_primary_button,
 
-        "#textHeroSecondaryButton":
+        textHeroSecondaryButton:
             texts.hero_secondary_button,
 
-        "#textServicesTitle":
+        textServicesTitle:
             texts.services_title,
 
-        "#textPortfolioTitle":
+        textPortfolioTitle:
             texts.portfolio_title,
 
-        "#textProcessTitle":
+        textProcessTitle:
             texts.process_title,
 
-        "#textFaqTitle":
+        textFaqTitle:
             texts.faq_title,
 
-        "#textFinalTitle":
+        textFinalTitle:
             texts.final_title,
 
-        "#textFinalButton":
+        textFinalButton:
             texts.final_button,
 
-        "#textAbout":
+        textAbout:
             texts.about
     };
 
 
     Object.entries(fields)
-        .forEach(
-            ([selector, value]) => {
+        .forEach(([id, value]) => {
 
-                const element =
-                    $(selector);
+            const field =
+                $(`#${id}`);
 
-                if (element) {
-
-                    element.value =
-                        value || "";
-                }
+            if (field) {
+                field.value =
+                    value || "";
             }
-        );
+        });
 }
 
 
@@ -1744,158 +2087,87 @@ async function saveTexts(event) {
     event.preventDefault();
 
 
-    if (!(await requireSession())) {
-        return;
-    }
-
-
-    const form =
-        event.currentTarget;
-
-
     const payload = {
 
         hero_title:
-            $("#textHeroTitle")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_TEXTS.hero_title,
+            $("#textHeroTitle")?.value.trim()
+            || "",
 
         hero_subtitle:
-            $("#textHeroSubtitle")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_TEXTS.hero_subtitle,
+            $("#textHeroSubtitle")?.value.trim()
+            || "",
 
         hero_primary_button:
-            $("#textHeroPrimaryButton")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_TEXTS.hero_primary_button,
+            $("#textHeroPrimaryButton")?.value.trim()
+            || "",
 
         hero_secondary_button:
-            $("#textHeroSecondaryButton")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_TEXTS.hero_secondary_button,
+            $("#textHeroSecondaryButton")?.value.trim()
+            || "",
 
         services_title:
-            $("#textServicesTitle")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_TEXTS.services_title,
+            $("#textServicesTitle")?.value.trim()
+            || "",
 
         portfolio_title:
-            $("#textPortfolioTitle")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_TEXTS.portfolio_title,
+            $("#textPortfolioTitle")?.value.trim()
+            || "",
 
         process_title:
-            $("#textProcessTitle")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_TEXTS.process_title,
+            $("#textProcessTitle")?.value.trim()
+            || "",
 
         faq_title:
-            $("#textFaqTitle")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_TEXTS.faq_title,
+            $("#textFaqTitle")?.value.trim()
+            || "",
 
         final_title:
-            $("#textFinalTitle")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_TEXTS.final_title,
+            $("#textFinalTitle")?.value.trim()
+            || "",
 
         final_button:
-            $("#textFinalButton")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_TEXTS.final_button,
+            $("#textFinalButton")?.value.trim()
+            || "",
 
         about:
-            $("#textAbout")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_TEXTS.about,
-
-        updated_at:
-            new Date().toISOString()
+            $("#textAbout")?.value.trim()
+            || ""
     };
-
-
-    const button =
-        form.querySelector(
-            'button[type="submit"]'
-        );
-
-
-    setButtonLoading(
-        button,
-        true
-    );
 
 
     try {
 
+        let result;
+
+
         if (texts?.id) {
 
-            const { data, error } =
+            result =
                 await frilanceSupabase
                     .from("texts")
                     .update(payload)
-                    .eq(
-                        "id",
-                        texts.id
-                    )
-                    .select()
-                    .single();
-
-
-            if (error) {
-                throw error;
-            }
-
-
-            texts = data;
+                    .eq("id", texts.id);
 
         } else {
 
-            const { data, error } =
+            result =
                 await frilanceSupabase
                     .from("texts")
-                    .insert(payload)
-                    .select()
-                    .single();
-
-
-            if (error) {
-                throw error;
-            }
-
-
-            texts = data;
+                    .insert(payload);
         }
 
 
-        fillTextsForms();
+        if (result.error) {
+            throw result.error;
+        }
+
+
+        await loadTexts();
 
         showNotification(
             "Тексты сохранены."
         );
+
 
     } catch (error) {
 
@@ -1905,23 +2177,15 @@ async function saveTexts(event) {
         );
 
         showNotification(
-            error.message ||
             "Не удалось сохранить тексты.",
             "error"
-        );
-
-    } finally {
-
-        setButtonLoading(
-            button,
-            false
         );
     }
 }
 
 
 /* =========================================================
-   CONTACTS
+   КОНТАКТЫ
 ========================================================= */
 
 function initContacts() {
@@ -1929,7 +2193,9 @@ function initContacts() {
     const form =
         $("#contactsForm");
 
-    if (!form) return;
+    if (!form) {
+        return;
+    }
 
 
     form.addEventListener(
@@ -1945,10 +2211,9 @@ async function loadContacts() {
         await frilanceSupabase
             .from("contacts")
             .select("*")
-            .order(
-                "created_at",
-                { ascending: true }
-            )
+            .order("created_at", {
+                ascending: true
+            })
             .limit(1);
 
 
@@ -1958,10 +2223,7 @@ async function loadContacts() {
 
 
     contacts =
-        data?.[0] ||
-        {
-            ...DEFAULT_CONTACTS
-        };
+        data?.[0] || null;
 
 
     fillContactsForm();
@@ -1970,7 +2232,9 @@ async function loadContacts() {
 
 function fillContactsForm() {
 
-    if (!contacts) return;
+    if (!contacts) {
+        return;
+    }
 
 
     const email =
@@ -1981,14 +2245,12 @@ function fillContactsForm() {
 
 
     if (email) {
-
         email.value =
             contacts.email || "";
     }
 
 
     if (site) {
-
         site.value =
             contacts.site || "";
     }
@@ -2000,95 +2262,51 @@ async function saveContacts(event) {
     event.preventDefault();
 
 
-    if (!(await requireSession())) {
-        return;
-    }
-
-
-    const form =
-        event.currentTarget;
-
-
     const payload = {
 
         email:
-            $("#contactEmail")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_CONTACTS.email,
+            $("#contactEmail")?.value.trim()
+            || "",
 
         site:
-            $("#contactSite")
-                ?.value
-                .trim()
-            ||
-            DEFAULT_CONTACTS.site,
-
-        updated_at:
-            new Date().toISOString()
+            $("#contactSite")?.value.trim()
+            || ""
     };
-
-
-    const button =
-        form.querySelector(
-            'button[type="submit"]'
-        );
-
-
-    setButtonLoading(
-        button,
-        true
-    );
 
 
     try {
 
+        let result;
+
+
         if (contacts?.id) {
 
-            const { data, error } =
+            result =
                 await frilanceSupabase
                     .from("contacts")
                     .update(payload)
-                    .eq(
-                        "id",
-                        contacts.id
-                    )
-                    .select()
-                    .single();
-
-
-            if (error) {
-                throw error;
-            }
-
-
-            contacts = data;
+                    .eq("id", contacts.id);
 
         } else {
 
-            const { data, error } =
+            result =
                 await frilanceSupabase
                     .from("contacts")
-                    .insert(payload)
-                    .select()
-                    .single();
-
-
-            if (error) {
-                throw error;
-            }
-
-
-            contacts = data;
+                    .insert(payload);
         }
 
 
-        fillContactsForm();
+        if (result.error) {
+            throw result.error;
+        }
+
+
+        await loadContacts();
 
         showNotification(
             "Контакты сохранены."
         );
+
 
     } catch (error) {
 
@@ -2098,23 +2316,15 @@ async function saveContacts(event) {
         );
 
         showNotification(
-            error.message ||
             "Не удалось сохранить контакты.",
             "error"
-        );
-
-    } finally {
-
-        setButtonLoading(
-            button,
-            false
         );
     }
 }
 
 
 /* =========================================================
-   LEADS
+   ЗАЯВКИ
 ========================================================= */
 
 function initLeads() {
@@ -2127,10 +2337,7 @@ function initLeads() {
 
         refreshButton.addEventListener(
             "click",
-            async () => {
-
-                await loadLeads(true);
-            }
+            () => loadLeads(true)
         );
     }
 
@@ -2138,24 +2345,25 @@ function initLeads() {
     const closeButton =
         $("#closeLeadDetailsModal");
 
-    const closeDetailsButton =
-        $("#closeLeadDetailsButton");
-
 
     if (closeButton) {
 
         closeButton.addEventListener(
             "click",
-            closeLeadDetails
+            closeLeadDetailsModal
         );
     }
+
+
+    const closeDetailsButton =
+        $("#closeLeadDetailsButton");
 
 
     if (closeDetailsButton) {
 
         closeDetailsButton.addEventListener(
             "click",
-            closeLeadDetails
+            closeLeadDetailsModal
         );
     }
 
@@ -2173,32 +2381,15 @@ function initLeads() {
                 if (
                     event.target === modal
                 ) {
-
-                    closeLeadDetails();
+                    closeLeadDetailsModal();
                 }
             }
         );
     }
-
-
-    document.addEventListener(
-        "keydown",
-        event => {
-
-            if (
-                event.key === "Escape"
-            ) {
-
-                closeLeadDetails();
-            }
-        }
-    );
 }
 
 
-async function loadLeads(
-    showMessage = false
-) {
+async function loadLeads(showMessage = false) {
 
     const tbody =
         $("#leadsTableBody");
@@ -2207,25 +2398,13 @@ async function loadLeads(
     if (tbody) {
 
         tbody.innerHTML = `
-
             <tr>
-
                 <td colspan="6">
-
                     <div class="leads-loading">
-
-                        <span class="
-                            leads-loading-spinner
-                        "></span>
-
-                        <span>
-                            Загрузка заявок...
-                        </span>
-
+                        <span class="leads-loading-spinner"></span>
+                        <span>Загрузка заявок...</span>
                     </div>
-
                 </td>
-
             </tr>
         `;
     }
@@ -2237,10 +2416,9 @@ async function loadLeads(
             await frilanceSupabase
                 .from("leads")
                 .select("*")
-                .order(
-                    "created_at",
-                    { ascending: false }
-                );
+                .order("created_at", {
+                    ascending: false
+                });
 
 
         if (error) {
@@ -2261,9 +2439,7 @@ async function loadLeads(
 
 
         renderLeads();
-
         renderRecentLeads();
-
         updateLeadsCount();
 
 
@@ -2289,34 +2465,30 @@ async function loadLeads(
         if (tbody) {
 
             tbody.innerHTML = `
-
                 <tr>
-
                     <td colspan="6">
-
-                        <div class="empty-state">
-
-                            <h3>
-                                Не удалось загрузить заявки
-                            </h3>
-
-                            <p>
-                                ${escapeHtml(
-                                    error.message ||
-                                    "Проверьте соединение с Supabase."
-                                )}
-                            </p>
-
+                        <div class="admin-empty-state">
+                            Не удалось загрузить заявки.
                         </div>
-
                     </td>
-
                 </tr>
             `;
         }
 
 
         updateLeadsCount();
+
+
+        if (showMessage) {
+
+            showNotification(
+                "Ошибка загрузки заявок.",
+                "error"
+            );
+        }
+
+
+        throw error;
     }
 }
 
@@ -2326,38 +2498,31 @@ function renderLeads() {
     const tbody =
         $("#leadsTableBody");
 
-
-    if (!tbody) return;
-
-
-    tbody.innerHTML = "";
+    const total =
+        $("#leadsTotal");
 
 
-    updateLeadsCount();
+    if (total) {
+
+        total.textContent =
+            `Всего: ${leads.length}`;
+    }
+
+
+    if (!tbody) {
+        return;
+    }
 
 
     if (!leads.length) {
 
         tbody.innerHTML = `
-
             <tr>
-
                 <td colspan="6">
-
-                    <div class="empty-state">
-
-                        <h3>
-                            Заявок пока нет
-                        </h3>
-
-                        <p>
-                            Новые заявки с сайта появятся здесь.
-                        </p>
-
+                    <div class="admin-empty-state">
+                        Пока нет заявок.
                     </div>
-
                 </td>
-
             </tr>
         `;
 
@@ -2365,271 +2530,132 @@ function renderLeads() {
     }
 
 
-    leads.forEach(lead => {
-
-        const tr =
-            document.createElement("tr");
-
-
-        const name =
-            lead.name || "Без имени";
-
-        const contact =
-            lead.contact || "—";
-
-        const service =
-            lead.service || "—";
-
-        const message =
-            lead.message || "—";
+    tbody.innerHTML =
+        leads
+            .map(
+                (lead, index) =>
+                    createLeadRow(
+                        lead,
+                        index
+                    )
+            )
+            .join("");
 
 
-        const shortMessage =
-            message.length > 90
-                ? `${message.substring(0, 90)}…`
-                : message;
-
-
-        tr.innerHTML = `
-
-            <td>
-
-                <div class="lead-name">
-
-                    ${escapeHtml(name)}
-
-                </div>
-
-            </td>
-
-
-            <td>
-
-                <a
-                    class="lead-contact-link"
-                    href="${escapeHtml(
-                        getContactHref(
-                            contact
-                        )
-                    )}"
-                >
-
-                    ${escapeHtml(contact)}
-
-                </a>
-
-            </td>
-
-
-            <td>
-
-                <span class="
-                    lead-service-badge
-                ">
-
-                    ${escapeHtml(service)}
-
-                </span>
-
-            </td>
-
-
-            <td>
-
-                <div
-                    class="
-                        lead-message-preview
-                    "
-                    title="${escapeHtml(
-                        message
-                    )}"
-                >
-
-                    ${escapeHtml(
-                        shortMessage
-                    )}
-
-                </div>
-
-            </td>
-
-
-            <td>
-
-                <div class="lead-date">
-
-                    ${formatDate(
-                        lead.created_at
-                    )}
-
-                </div>
-
-            </td>
-
-
-            <td>
-
-                <button
-                    type="button"
-                    class="lead-view-button"
-                    data-lead-id="${escapeHtml(
-                        lead.id
-                    )}"
-                >
-                    Подробнее
-                </button>
-
-            </td>
-        `;
-
-
-        tbody.appendChild(tr);
-    });
-
-
-    $$("[data-lead-id]")
+    $$(".lead-details-button", tbody)
         .forEach(button => {
 
             button.addEventListener(
                 "click",
                 () => {
 
-                    openLeadDetails(
-                        button.dataset.leadId
-                    );
+                    const id =
+                        button.dataset.id;
+
+                    const lead =
+                        leads.find(
+                            item =>
+                                item.id === id
+                        );
+
+                    if (lead) {
+                        openLeadDetailsModal(
+                            lead
+                        );
+                    }
+                }
+            );
+        });
+
+
+    $$(".lead-delete-button", tbody)
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const id =
+                        button.dataset.id;
+
+                    deleteLead(id);
                 }
             );
         });
 }
 
 
-function getContactHref(contact) {
+function createLeadRow(lead, index) {
 
-    if (!contact) {
-        return "#";
-    }
+    return `
+        <tr>
 
+            <td>
+                <div class="lead-name">
+                    ${escapeHtml(
+                        lead.name || "Без имени"
+                    )}
+                </div>
+            </td>
 
-    const value =
-        String(contact).trim();
+            <td>
+                <div class="lead-contact">
+                    ${escapeHtml(
+                        lead.contact || "—"
+                    )}
+                </div>
+            </td>
 
+            <td>
+                <div class="lead-service">
+                    ${escapeHtml(
+                        lead.service || "—"
+                    )}
+                </div>
+            </td>
 
-    if (
-        value.includes("@") &&
-        !value.startsWith("http")
-    ) {
+            <td>
+                <div class="lead-message">
+                    ${escapeHtml(
+                        lead.message || "—"
+                    )}
+                </div>
+            </td>
 
-        return `mailto:${value}`;
-    }
+            <td>
+                <div class="lead-date">
+                    ${formatDateTime(
+                        lead.created_at
+                    )}
+                </div>
+            </td>
 
+            <td>
 
-    if (
-        /^https?:\/\//i.test(value)
-    ) {
+                <div class="lead-actions">
 
-        return value;
-    }
+                    <button
+                        type="button"
+                        class="admin-button lead-details-button"
+                        data-id="${escapeHtml(lead.id)}"
+                    >
+                        Подробнее
+                    </button>
 
+                    <button
+                        type="button"
+                        class="admin-button admin-button-danger lead-delete-button"
+                        data-id="${escapeHtml(lead.id)}"
+                    >
+                        Удалить
+                    </button>
 
-    const phone =
-        value.replace(
-            /[^\d+]/g,
-            ""
-        );
+                </div>
 
+            </td>
 
-    if (
-        phone.length >= 10
-    ) {
-
-        return `tel:${phone}`;
-    }
-
-
-    return "#";
-}
-
-
-function openLeadDetails(id) {
-
-    const lead =
-        leads.find(
-            item => item.id === id
-        );
-
-
-    if (!lead) return;
-
-
-    setText(
-        "#leadDetailsTitle",
-        lead.name || "Заявка"
-    );
-
-
-    setText(
-        "#leadDetailsName",
-        lead.name || "—"
-    );
-
-
-    setText(
-        "#leadDetailsContact",
-        lead.contact || "—"
-    );
-
-
-    setText(
-        "#leadDetailsService",
-        lead.service || "—"
-    );
-
-
-    setText(
-        "#leadDetailsDate",
-        formatDate(
-            lead.created_at
-        )
-    );
-
-
-    setText(
-        "#leadDetailsMessage",
-        lead.message || "—"
-    );
-
-
-    const modal =
-        $("#leadDetailsModal");
-
-
-    if (!modal) return;
-
-
-    modal.classList.add("active");
-
-    document.body.classList.add(
-        "modal-open"
-    );
-}
-
-
-function closeLeadDetails() {
-
-    const modal =
-        $("#leadDetailsModal");
-
-
-    if (!modal) return;
-
-
-    modal.classList.remove(
-        "active"
-    );
-
-    document.body.classList.remove(
-        "modal-open"
-    );
+        </tr>
+    `;
 }
 
 
@@ -2639,30 +2665,16 @@ function renderRecentLeads() {
         $("#recentLeads");
 
 
-    if (!container) return;
+    if (!container) {
+        return;
+    }
 
 
-    container.innerHTML = "";
-
-
-    const recent =
-        leads.slice(0, 5);
-
-
-    if (!recent.length) {
+    if (!leads.length) {
 
         container.innerHTML = `
-
-            <div class="empty-state">
-
-                <h3>
-                    Пока нет заявок
-                </h3>
-
-                <p>
-                    Новые обращения появятся здесь.
-                </p>
-
+            <div class="admin-empty-state">
+                Пока нет новых заявок.
             </div>
         `;
 
@@ -2670,175 +2682,263 @@ function renderRecentLeads() {
     }
 
 
-    recent.forEach(lead => {
+    container.innerHTML =
+        leads
+            .slice(0, 5)
+            .map(
+                lead => `
+                    <div class="recent-lead-item">
 
-        const item =
-            document.createElement("div");
+                        <div class="recent-lead-main">
 
+                            <strong>
+                                ${escapeHtml(
+                                    lead.name || "Без имени"
+                                )}
+                            </strong>
 
-        item.className =
-            "recent-lead-item";
+                            <span>
+                                ${escapeHtml(
+                                    lead.service || "Запрос"
+                                )}
+                            </span>
 
+                        </div>
 
-        item.innerHTML = `
+                        <div class="recent-lead-date">
+                            ${formatDate(
+                                lead.created_at
+                            )}
+                        </div>
 
-            <div class="
-                recent-lead-main
-            ">
-
-                <div class="
-                    recent-lead-name
-                ">
-
-                    ${escapeHtml(
-                        lead.name ||
-                        "Без имени"
-                    )}
-
-                </div>
-
-                <div class="
-                    recent-lead-contact
-                ">
-
-                    ${escapeHtml(
-                        lead.contact ||
-                        "—"
-                    )}
-
-                </div>
-
-            </div>
+                    </div>
+                `
+            )
+            .join("");
+}
 
 
-            <div class="
-                recent-lead-meta
-            ">
+function updateLeadsCount() {
 
-                <span>
-
-                    ${escapeHtml(
-                        lead.service ||
-                        "—"
-                    )}
-
-                </span>
-
-                <time>
-
-                    ${formatDateShort(
-                        lead.created_at
-                    )}
-
-                </time>
-
-            </div>
-        `;
+    const count =
+        leads.length;
 
 
-        item.addEventListener(
-            "click",
-            () => {
-
-                showSection("leads");
-
-                setTimeout(() => {
-
-                    openLeadDetails(
-                        lead.id
-                    );
-
-                }, 100);
-            }
-        );
+    const elements = [
+        $("#dashboardLeadsCount"),
+        $("#leadsCount")
+    ];
 
 
-        container.appendChild(item);
+    elements.forEach(element => {
+
+        if (!element) {
+            return;
+        }
+
+        element.textContent =
+            count;
     });
 }
 
 
-/* =========================================================
-   GENERAL BUTTONS
-========================================================= */
+function openLeadDetailsModal(lead) {
 
-function initGeneralButtons() {
+    const modal =
+        $("#leadDetailsModal");
 
-    $$("[data-site-link]")
-        .forEach(button => {
 
-            button.addEventListener(
-                "click",
-                event => {
+    if (!modal) {
+        return;
+    }
 
-                    if (
-                        button.tagName.toLowerCase()
-                        === "a"
-                    ) {
-                        return;
-                    }
 
-                    event.preventDefault();
+    const fields = {
 
-                    window.open(
-                        ADMIN_CONFIG.siteUrl,
-                        "_blank"
-                    );
-                }
-            );
+        leadDetailsTitle:
+            `Заявка от ${lead.name || "клиента"}`,
+
+        leadDetailsName:
+            lead.name || "—",
+
+        leadDetailsContact:
+            lead.contact || "—",
+
+        leadDetailsService:
+            lead.service || "—",
+
+        leadDetailsDate:
+            formatDateTime(lead.created_at),
+
+        leadDetailsMessage:
+            lead.message || "Сообщение отсутствует."
+    };
+
+
+    Object.entries(fields)
+        .forEach(([id, value]) => {
+
+            const element =
+                $(`#${id}`);
+
+            if (element) {
+                element.textContent =
+                    value;
+            }
         });
 
 
-    $$("[data-logout]")
-        .forEach(button => {
+    modal.classList.add("active");
+    modal.style.display = "flex";
+}
 
-            button.addEventListener(
-                "click",
-                async () => {
 
-                    if (
-                        typeof window.frilanceLogout
-                        === "function"
-                    ) {
+function closeLeadDetailsModal() {
 
-                        await window.frilanceLogout();
-                    }
-                }
-            );
-        });
+    const modal =
+        $("#leadDetailsModal");
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.classList.remove("active");
+    modal.style.display = "none";
+}
+
+
+async function deleteLead(id) {
+
+    if (!id) {
+        return;
+    }
+
+
+    const lead =
+        leads.find(
+            item =>
+                item.id === id
+        );
+
+
+    const confirmed =
+        confirm(
+            `Удалить заявку от «${lead?.name || "клиента"}»?`
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const { error } =
+            await frilanceSupabase
+                .from("leads")
+                .delete()
+                .eq("id", id);
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        await loadLeads();
+
+        updateDashboard();
+
+        showNotification(
+            "Заявка удалена."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка удаления заявки:",
+            error
+        );
+
+        showNotification(
+            "Не удалось удалить заявку.",
+            "error"
+        );
+    }
 }
 
 
 /* =========================================================
-   DEBUG API
+   DASHBOARD
+========================================================= */
+
+function updateDashboard() {
+
+    updatePortfolioCount();
+    updateServicesCount();
+    updateLeadsCount();
+    renderRecentLeads();
+}
+
+
+/* =========================================================
+   ESC — ЗАКРЫТЬ МОДАЛЬНЫЕ ОКНА
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (event.key !== "Escape") {
+            return;
+        }
+
+
+        closePortfolioModal();
+        closeLeadDetailsModal();
+    }
+);
+
+
+/* =========================================================
+   ПУБЛИЧНЫЙ API
 ========================================================= */
 
 window.FRILANCE_ADMIN = {
 
-    reload:
-        loadAllData,
+    reload: loadAllData,
 
-    reloadPortfolio:
-        loadPortfolio,
+    reloadPortfolio: loadPortfolio,
 
-    reloadLeads:
-        loadLeads,
+    reloadLeads: loadLeads,
 
-    showSection:
-        showSection,
+    showSection,
 
-    portfolio:
-        () => portfolio,
+    getPortfolio: () =>
+        [...portfolio],
 
-    services:
-        () => services,
+    getServices: () =>
+        services,
 
-    texts:
-        () => texts,
+    getTexts: () =>
+        texts,
 
-    contacts:
-        () => contacts,
+    getContacts: () =>
+        contacts,
 
-    leads:
-        () => leads
+    getLeads: () =>
+        [...leads]
 };
+
+
+/* =========================================================
+   ГОТОВО
+========================================================= */
+
+console.log(
+    "FRILANCE ADMIN: admin.js загружен"
+);
