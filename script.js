@@ -2,6 +2,23 @@ const { useState, useEffect } = React;
 
 
 /* =========================================================
+   SUPABASE — ПУБЛИЧНЫЙ САЙТ
+   ========================================================= */
+
+const PUBLIC_SUPABASE_URL =
+  "https://vmiehkctmtpmpmizhkzt.supabase.co";
+
+const PUBLIC_SUPABASE_KEY =
+  "sb_publishable_XeGc3k4Wl67a0MSXzSufYA_L0Zl-sRS";
+
+const frilancePublicSupabase =
+  window.supabase.createClient(
+    PUBLIC_SUPABASE_URL,
+    PUBLIC_SUPABASE_KEY
+  );
+
+
+/* =========================================================
    НАСТРОЙКИ
    ========================================================= */
 
@@ -303,7 +320,6 @@ function Header({ onOrder }) {
     </header>
   );
 }
-
 
 
 /* =========================================================
@@ -645,8 +661,6 @@ function Services({ onService }) {
 }
 
 
-
-
 /* =========================================================
    SERVICE MODAL
    ========================================================= */
@@ -741,7 +755,6 @@ function ServiceModal({
     </div>
   );
 }
-
 
 
 /* =========================================================
@@ -842,7 +855,6 @@ function Portfolio({ onOrder }) {
     <section className="portfolio-section" id="portfolio">
       <div className="container">
 
-        {/* HEADER */}
         <div className="section-heading portfolio-heading">
 
           <div>
@@ -864,7 +876,6 @@ function Portfolio({ onOrder }) {
         </div>
 
 
-        {/* TABS */}
         <div className="portfolio-tabs">
 
           {portfolioItems.map((portfolioItem, index) => (
@@ -890,13 +901,11 @@ function Portfolio({ onOrder }) {
         </div>
 
 
-        {/* MAIN */}
         <div
           className="portfolio-main-card"
           key={item.number}
         >
 
-          {/* VISUAL */}
           <div className="portfolio-visual">
 
             <div className="portfolio-image-glow"></div>
@@ -956,7 +965,6 @@ function Portfolio({ onOrder }) {
             </div>
 
 
-            {/* SMALL LABEL */}
             <div className="portfolio-floating-label">
 
               <span className="portfolio-floating-dot"></span>
@@ -970,7 +978,6 @@ function Portfolio({ onOrder }) {
           </div>
 
 
-          {/* INFO */}
           <div className="portfolio-info">
 
             <div className="portfolio-info-top">
@@ -996,7 +1003,6 @@ function Portfolio({ onOrder }) {
             </p>
 
 
-            {/* CASE */}
             <div className="portfolio-case">
 
               <div className="portfolio-case-item">
@@ -1046,7 +1052,6 @@ function Portfolio({ onOrder }) {
             </div>
 
 
-            {/* CTA */}
             <button
               className="primary-button portfolio-order-button"
               onClick={() => onOrder(item.title)}
@@ -1060,7 +1065,6 @@ function Portfolio({ onOrder }) {
         </div>
 
 
-        {/* BOTTOM */}
         <div className="portfolio-bottom">
 
           <div className="portfolio-bottom-text">
@@ -1095,7 +1099,6 @@ function Portfolio({ onOrder }) {
 }
 
 
-
 /* =========================================================
    BUSINESS
    ========================================================= */
@@ -1109,8 +1112,7 @@ function Business({ onOrder }) {
       text:
         "Парикмахеры, визажисты, мастера ногтей, ресниц, бровей, косметологи и другие специалисты.",
       result:
-        
-  "Сайт и визуал для профессиональной подачи."
+        "Сайт и визуал для профессиональной подачи."
     },
     {
       number: "02",
@@ -1145,7 +1147,6 @@ function Business({ onOrder }) {
     <section className="business section" id="business">
       <div className="container">
 
-        {/* HEADER */}
         <div className="business-heading">
 
           <div>
@@ -1168,7 +1169,6 @@ function Business({ onOrder }) {
         </div>
 
 
-        {/* CARDS */}
         <div className="business-grid">
 
           {targets.map((item) => (
@@ -1221,7 +1221,6 @@ function Business({ onOrder }) {
         </div>
 
 
-        {/* CTA */}
         <div className="business-bottom">
 
           <div className="business-bottom-text">
@@ -1373,6 +1372,7 @@ function Process({ onOrder }) {
   );
 }
 
+
 /* =========================================================
    PRICES
    ========================================================= */
@@ -1495,11 +1495,11 @@ function Prices({ onOrder, onNeuroPrices }) {
               </div>
 
               <button
-  className="btn btn-primary tariff-button"
-  onClick={() => onOrder(tariff.type)}
->
-  {tariff.button}
-</button>
+                className="btn btn-primary tariff-button"
+                onClick={() => onOrder(tariff.type)}
+              >
+                {tariff.button}
+              </button>
 
             </article>
 
@@ -1533,11 +1533,11 @@ function Prices({ onOrder, onNeuroPrices }) {
           </div>
 
           <button
-  className="btn btn-primary"
-  onClick={onNeuroPrices}
->
-  Смотреть прайс
-</button>
+            className="btn btn-primary"
+            onClick={onNeuroPrices}
+          >
+            Смотреть прайс
+          </button>
 
         </div>
 
@@ -1632,7 +1632,8 @@ function Advantages() {
       </div>
     </section>
   );
-};
+}
+
 
 /* =========================================================
    FAQ
@@ -1745,7 +1746,8 @@ function FAQ() {
       </div>
     </section>
   );
-};
+}
+
 
 /* =========================================================
    CTA
@@ -1871,7 +1873,12 @@ function OrderModal({
   };
 
 
-  const handleSubmit = (e) => {
+  /* =========================================================
+     ОТПРАВКА ЗАЯВКИ
+     Supabase + Email
+     ========================================================= */
+
+  const handleSubmit = async (e) => {
 
     e.preventDefault();
 
@@ -1880,6 +1887,7 @@ function OrderModal({
       !form.name.trim() ||
       !form.contact.trim()
     ) {
+
       alert(
         "Пожалуйста, укажите имя и контакт для связи."
       );
@@ -1888,30 +1896,51 @@ function OrderModal({
     }
 
 
-    const lead = {
-      ...form,
-      date: new Date().toLocaleString("ru-RU")
-    };
-
+    /* ---------------------------------------------------------
+       Сохраняем заявку в Supabase
+       --------------------------------------------------------- */
 
     try {
 
-      const oldLeads =
-        JSON.parse(
-          localStorage.getItem("oksana_leads") || "[]"
-        );
+      const {
+        error
+      } = await frilancePublicSupabase
+        .from("leads")
+        .insert({
+          name: form.name.trim(),
+          contact: form.contact.trim(),
+          service: form.service || "",
+          message: form.message.trim() || ""
+        });
 
-      oldLeads.push(lead);
 
-      localStorage.setItem(
-        "oksana_leads",
-        JSON.stringify(oldLeads)
+      if (error) {
+        throw error;
+      }
+
+
+      console.log(
+        "Заявка успешно сохранена в Supabase."
       );
 
     } catch (error) {
-      console.log(error);
+
+      console.error(
+        "Ошибка сохранения заявки в Supabase:",
+        error
+      );
+
+      alert(
+        "Не удалось сохранить заявку. Попробуйте ещё раз."
+      );
+
+      return;
     }
 
+
+    /* ---------------------------------------------------------
+       Формируем письмо
+       --------------------------------------------------------- */
 
     const subject =
       `Заявка с сайта — ${form.service || "новый проект"}`;
@@ -1934,8 +1963,16 @@ ${form.message || "не указана"}`;
       `&body=${encodeURIComponent(body)}`;
 
 
+    /* ---------------------------------------------------------
+       Показываем подтверждение
+       --------------------------------------------------------- */
+
     setSent(true);
 
+
+    /* ---------------------------------------------------------
+       Открываем почтовое приложение
+       --------------------------------------------------------- */
 
     window.location.href = mailto;
 
@@ -2257,8 +2294,6 @@ function Footer() {
 
         <div className="footer-main">
 
-          {/* Бренд */}
-
           <div className="footer-brand">
 
             <button
@@ -2278,8 +2313,6 @@ function Footer() {
 
           </div>
 
-
-          {/* Навигация */}
 
           <div className="footer-column">
 
@@ -2310,8 +2343,6 @@ function Footer() {
           </div>
 
 
-          {/* Услуги */}
-
           <div className="footer-column">
 
             <span className="footer-title">
@@ -2332,8 +2363,6 @@ function Footer() {
 
           </div>
 
-
-          {/* Контакты */}
 
           <div className="footer-column footer-contact">
 
@@ -2357,8 +2386,6 @@ function Footer() {
 
         </div>
 
-
-        {/* Нижняя часть */}
 
         <div className="footer-bottom">
 
@@ -2544,22 +2571,21 @@ function App() {
         />
 
 
-        
-
-<Business
-  onOrder={openOrder}
-/>
+        <Business
+          onOrder={openOrder}
+        />
 
 
-<Process
-  onOrder={openOrder}
-/>
+        <Process
+          onOrder={openOrder}
+        />
 
 
-<Prices
-  onOrder={openOrder}
-  onNeuroPrices={openNeuro}
-/>
+        <Prices
+          onOrder={openOrder}
+          onNeuroPrices={openNeuro}
+        />
+
 
         <Advantages />
 

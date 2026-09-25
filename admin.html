@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="robots"
+        content="noindex, nofollow"
+    >
+
+    <title>FRILANCE — Панель управления</title>
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="admin.css"
+    >
+</head>
+
+<body>
+
+<div class="admin-app">
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="admin-sidebar">
+
+        <div class="admin-logo">
+
+            <div class="admin-logo-mark">
+                OB
+            </div>
+
+            <div class="admin-logo-text">
+                <strong>FRILANCE ADMIN</strong>
+                <span>ПАНЕЛЬ УПРАВЛЕНИЯ</span>
+            </div>
+
+        </div>
+
+
+        <nav class="admin-nav">
+
+            <div class="admin-nav-label">
+                ОСНОВНОЕ
+            </div>
+
+            <button
+                class="admin-nav-item active"
+                data-section="dashboard"
+                type="button"
+            >
+                <span class="admin-nav-icon">⌂</span>
+                <span>Главная</span>
+            </button>
+
+
+            <div class="admin-nav-label">
+                КОНТЕНТ
+            </div>
+
+            <button
+                class="admin-nav-item"
+                data-section="portfolio"
+                type="button"
+            >
+                <span class="admin-nav-icon">▣</span>
+                <span>Портфолио</span>
+            </button>
+
+            <button
+                class="admin-nav-item"
+                data-section="services"
+                type="button"
+            >
+                <span class="admin-nav-icon">◆</span>
+                <span>Услуги и цены</span>
+            </button>
+
+            <button
+                class="admin-nav-item"
+                data-section="texts"
+                type="button"
+            >
+                <span class="admin-nav-icon">✎</span>
+                <span>Тексты</span>
+            </button>
+
+
+            <div class="admin-nav-label">
+                КЛИЕНТЫ
+            </div>
+
+            <button
+                class="admin-nav-item"
+                data-section="contacts"
+                type="button"
+            >
+                <span class="admin-nav-icon">◎</span>
+                <span>Контакты</span>
+            </button>
+
+            <button
+                class="admin-nav-item"
+                data-section="leads"
+                type="button"
+            >
+                <span class="admin-nav-icon">✉</span>
+                <span>Заявки</span>
+
+                <span
+                    class="admin-nav-count"
+                    id="leadsCount"
+                >
+                    0
+                </span>
+            </button>
+
+
+            <div class="admin-nav-label">
+                СИСТЕМА
+            </div>
+
+            <button
+                class="admin-nav-item"
+                data-section="seo"
+                type="button"
+            >
+                <span class="admin-nav-icon">⌕</span>
+                <span>SEO</span>
+            </button>
+
+            <button
+                class="admin-nav-item"
+                data-section="settings"
+                type="button"
+            >
+                <span class="admin-nav-icon">⚙</span>
+                <span>Настройки</span>
+            </button>
+
+        </nav>
+
+
+        <div class="admin-sidebar-bottom">
+
+            <a
+                class="back-to-site"
+                href="https://oksanabannova.github.io/frilance/"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <span>↗</span>
+                <span>Открыть сайт</span>
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main class="admin-main">
+
+        <!-- TOPBAR -->
+
+        <header class="admin-topbar">
+
+            <div class="admin-mobile-brand">
+                <span>OB</span>
+                FRILANCE
+            </div>
+
+
+            <div class="admin-topbar-right">
+
+                <a
+                    class="view-site-button"
+                    href="https://oksanabannova.github.io/frilance/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Смотреть сайт ↗
+                </a>
+
+
+                <div class="admin-user">
+
+                    <div class="admin-user-avatar">
+                        OB
+                    </div>
+
+                    <div class="admin-user-info">
+                        <strong>Оксана</strong>
+                        <span>Администратор</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- CONTENT -->
+
+        <div class="admin-content">
+
+
+            <!-- =================================================
+                 DASHBOARD
+            ================================================== -->
+
+            <section
+                class="admin-section active"
+                id="section-dashboard"
+            >
+
+                <div class="page-heading">
+
+                    <div class="page-kicker">
+                        FRILANCE ADMIN
+                    </div>
+
+                    <h1>
+                        Панель управления
+                    </h1>
+
+                    <p>
+                        Управляйте портфолио, услугами, текстами
+                        и заявками с сайта в одном месте.
+                    </p>
+
+                </div>
+
+
+                <!-- STATS -->
+
+                <div class="stats-grid">
+
+                    <div class="stat-card">
+
+                        <div class="stat-card-icon">
+                            ▣
+                        </div>
+
+                        <div class="stat-card-info">
+
+                            <span>
+                                Работ в портфолио
+                            </span>
+
+                            <strong id="dashboardPortfolioCount">
+                                0
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-card-icon">
+                            ◆
+                        </div>
+
+                        <div class="stat-card-info">
+
+                            <span>
+                                Услуг
+                            </span>
+
+                            <strong id="dashboardServicesCount">
+                                5
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-card-icon">
+                            ✉
+                        </div>
+
+                        <div class="stat-card-info">
+
+                            <span>
+                                Заявок
+                            </span>
+
+                            <strong id="dashboardLeadsCount">
+                                0
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-card-icon">
+                            ●
+                        </div>
+
+                        <div class="stat-card-info">
+
+                            <span>
+                                Статус
+                            </span>
+
+                            <strong>
+                                Онлайн
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- DASHBOARD GRID -->
+
+                <div class="dashboard-grid">
+
+
+                    <!-- QUICK ACTIONS -->
+
+                    <div class="admin-card">
+
+                        <div class="admin-card-header">
+
+                            <div>
+                                <span class="card-kicker">
+                                    БЫСТРЫЙ ДОСТУП
+                                </span>
+
+                                <h2>
+                                    Что изменить?
+                                </h2>
+                            </div>
+
+                        </div>
+
+
+                        <div class="quick-actions">
+
+
+                            <button
+                                class="quick-action"
+                                data-open-section="portfolio"
+                                type="button"
+                            >
+
+                                <span class="quick-action-icon">
+                                    +
+                                </span>
+
+                                <span>
+
+                                    <strong>
+                                        Добавить работу
+                                    </strong>
+
+                                    <small>
+                                        Новая работа в портфолио
+                                    </small>
+
+                                </span>
+
+                            </button>
+
+
+                            <button
+                                class="quick-action"
+                                data-open-section="services"
+                                type="button"
+                            >
+
+                                <span class="quick-action-icon">
+                                    ₽
+                                </span>
+
+                                <span>
+
+                                    <strong>
+                                        Изменить цены
+                                    </strong>
+
+                                    <small>
+                                        Услуги и стоимость
+                                    </small>
+
+                                </span>
+
+                            </button>
+
+
+                            <button
+                                class="quick-action"
+                                data-open-section="texts"
+                                type="button"
+                            >
+
+                                <span class="quick-action-icon">
+                                    T
+                                </span>
+
+                                <span>
+
+                                    <strong>
+                                        Изменить тексты
+                                    </strong>
+
+                                    <small>
+                                        Главная и разделы сайта
+                                    </small>
+
+                                </span>
+
+                            </button>
+
+
+                            <button
+                                class="quick-action"
+                                data-open-section="leads"
+                                type="button"
+                            >
+
+                                <span class="quick-action-icon">
+                                    ✉
+                                </span>
+
+                                <span>
+
+                                    <strong>
+                                        Посмотреть заявки
+                                    </strong>
+
+                                    <small>
+                                        Обращения клиентов
+                                    </small>
+
+                                </span>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- RECENT LEADS -->
+
+                    <div class="admin-card">
+
+                        <div class="admin-card-header">
+
+                            <div>
+
+                                <span class="card-kicker">
+                                    КЛИЕНТЫ
+                                </span>
+
+                                <h2>
+                                    Последние заявки
+                                </h2>
+
+                            </div>
+
+
+                            <button
+                                class="text-button"
+                                data-open-section="leads"
+                                type="button"
+                            >
+                                Все заявки →
+                            </button>
+
+                        </div>
+
+
+                        <div
+                            class="recent-leads"
+                            id="recentLeads"
+                        >
+
+                            <div class="empty-state small">
+
+                                <h3>
+                                    Заявок пока нет
+                                </h3>
+
+                                <p>
+                                    Новые обращения с сайта
+                                    появятся здесь.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 PORTFOLIO
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="section-portfolio"
+            >
+
+                <div class="page-heading page-heading-row">
+
+                    <div>
+
+                        <div class="page-kicker">
+                            КОНТЕНТ
+                        </div>
+
+                        <h1>
+                            Портфолио
+                        </h1>
+
+                        <p>
+                            Добавляйте, редактируйте и удаляйте
+                            работы, которые отображаются на сайте.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        class="admin-primary-button"
+                        id="addPortfolioButton"
+                        type="button"
+                    >
+                        + Добавить работу
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="portfolio-admin-grid"
+                    id="portfolioAdminGrid"
+                ></div>
+
+
+                <div
+                    class="empty-state"
+                    id="portfolioEmptyState"
+                    style="display: none;"
+                >
+
+                    <div class="empty-state-icon">
+                        +
+                    </div>
+
+                    <h3>
+                        Портфолио пока пустое
+                    </h3>
+
+                    <p>
+                        Добавьте первую работу,
+                        чтобы она появилась на сайте.
+                    </p>
+
+                    <button
+                        class="admin-primary-button"
+                        id="addPortfolioButtonEmpty"
+                        type="button"
+                    >
+                        + Добавить работу
+                    </button>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 SERVICES
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="section-services"
+            >
+
+                <div class="page-heading">
+
+                    <div class="page-kicker">
+                        КОНТЕНТ
+                    </div>
+
+                    <h1>
+                        Услуги и цены
+                    </h1>
+
+                    <p>
+                        Здесь можно изменить стоимость услуг,
+                        которая отображается на сайте.
+                    </p>
+
+                </div>
+
+
+                <div class="admin-card">
+
+                    <form
+                        class="admin-form"
+                        id="servicesForm"
+                    >
+
+                        <div class="form-grid">
+
+
+                            <div class="admin-field">
+
+                                <label for="serviceNeuroPrice">
+                                    Нейрофото
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="serviceNeuroPrice"
+                                    placeholder="от 700 ₽"
+                                >
+
+                            </div>
+
+
+                            <div class="admin-field">
+
+                                <label for="serviceWebsitePrice">
+                                    Сайты
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="serviceWebsitePrice"
+                                    placeholder="от 15 000 ₽"
+                                >
+
+                            </div>
+
+
+                            <div class="admin-field">
+
+                                <label for="serviceMarketplacePrice">
+                                    Карточки товаров
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="serviceMarketplacePrice"
+                                    placeholder="от 1 500 ₽"
+                                >
+
+                            </div>
+
+
+                            <div class="admin-field">
+
+                                <label for="serviceStartPrice">
+                                    Пакет «Старт»
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="serviceStartPrice"
+                                    placeholder="15 000 ₽"
+                                >
+
+                            </div>
+
+
+                            <div class="admin-field">
+
+                                <label for="serviceBusinessPrice">
+                                    Пакет «Бизнес»
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="serviceBusinessPrice"
+                                    placeholder="25 000 ₽"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="admin-form-actions">
+
+                            <button
+                                class="admin-primary-button"
+                                id="saveServicesButton"
+                                type="submit"
+                            >
+                                Сохранить изменения
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 TEXTS
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="section-texts"
+            >
+
+                <div class="page-heading">
+
+                    <div class="page-kicker">
+                        КОНТЕНТ
+                    </div>
+
+                    <h1>
+                        Тексты сайта
+                    </h1>
+
+                    <p>
+                        Редактируйте основные тексты
+                        без изменения кода сайта.
+                    </p>
+
+                </div>
+
+
+                <!-- HERO -->
+
+                <div class="admin-card">
+
+                    <div class="admin-card-header">
+
+                        <div>
+
+                            <span class="card-kicker">
+                                ПЕРВЫЙ ЭКРАН
+                            </span>
+
+                            <h2>
+                                Главный экран
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <form
+                        class="admin-form"
+                        id="textsHeroForm"
+                    >
+
+                        <div class="admin-field">
+
+                            <label for="textHeroTitle">
+                                Заголовок
+                            </label>
+
+                            <input
+                                type="text"
+                                id="textHeroTitle"
+                            >
+
+                        </div>
+
+
+                        <div class="admin-field">
+
+                            <label for="textHeroSubtitle">
+                                Подзаголовок
+                            </label>
+
+                            <textarea
+                                id="textHeroSubtitle"
+                            ></textarea>
+
+                        </div>
+
+
+                        <div class="form-grid">
+
+                            <div class="admin-field">
+
+                                <label for="textHeroPrimaryButton">
+                                    Основная кнопка
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="textHeroPrimaryButton"
+                                >
+
+                            </div>
+
+
+                            <div class="admin-field">
+
+                                <label for="textHeroSecondaryButton">
+                                    Вторая кнопка
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="textHeroSecondaryButton"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="admin-form-actions">
+
+                            <button
+                                class="admin-primary-button"
+                                type="submit"
+                            >
+                                Сохранить
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+
+                <!-- SECTION TITLES -->
+
+                <div
+                    class="admin-card"
+                    style="margin-top: 22px;"
+                >
+
+                    <div class="admin-card-header">
+
+                        <div>
+
+                            <span class="card-kicker">
+                                РАЗДЕЛЫ
+                            </span>
+
+                            <h2>
+                                Заголовки разделов
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <form
+                        class="admin-form"
+                        id="textsSectionsForm"
+                    >
+
+                        <div class="form-grid">
+
+
+                            <div class="admin-field">
+
+                                <label for="textServicesTitle">
+                                    Услуги
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="textServicesTitle"
+                                >
+
+                            </div>
+
+
+                            <div class="admin-field">
+
+                                <label for="textPortfolioTitle">
+                                    Портфолио
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="textPortfolioTitle"
+                                >
+
+                            </div>
+
+
+                            <div class="admin-field">
+
+                                <label for="textProcessTitle">
+                                    Как работаю
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="textProcessTitle"
+                                >
+
+                            </div>
+
+
+                            <div class="admin-field">
+
+                                <label for="textFaqTitle">
+                                    FAQ
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="textFaqTitle"
+                                >
+
+                            </div>
+
+
+                            <div class="admin-field">
+
+                                <label for="textFinalTitle">
+                                    Финальный блок
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="textFinalTitle"
+                                >
+
+                            </div>
+
+
+                            <div class="admin-field">
+
+                                <label for="textFinalButton">
+                                    Финальная кнопка
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="textFinalButton"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="admin-form-actions">
+
+                            <button
+                                class="admin-primary-button"
+                                type="submit"
+                            >
+                                Сохранить
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+
+                <!-- ABOUT -->
+
+                <div
+                    class="admin-card"
+                    style="margin-top: 22px;"
+                >
+
+                    <div class="admin-card-header">
+
+                        <div>
+
+                            <span class="card-kicker">
+                                О СПЕЦИАЛИСТЕ
+                            </span>
+
+                            <h2>
+                                Дополнительный текст
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <form
+                        class="admin-form"
+                        id="textsAdditionalForm"
+                    >
+
+                        <div class="admin-field">
+
+                            <label for="textAbout">
+                                О себе / описание
+                            </label>
+
+                            <textarea
+                                id="textAbout"
+                            ></textarea>
+
+                        </div>
+
+
+                        <div class="admin-form-actions">
+
+                            <button
+                                class="admin-primary-button"
+                                type="submit"
+                            >
+                                Сохранить
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 CONTACTS
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="section-contacts"
+            >
+
+                <div class="page-heading">
+
+                    <div class="page-kicker">
+                        КЛИЕНТЫ
+                    </div>
+
+                    <h1>
+                        Контакты
+                    </h1>
+
+                    <p>
+                        Контактные данные,
+                        которые используются на сайте.
+                    </p>
+
+                </div>
+
+
+                <div class="admin-card">
+
+                    <form
+                        class="admin-form"
+                        id="contactsForm"
+                    >
+
+                        <div class="admin-field">
+
+                            <label for="contactEmail">
+                                Email
+                            </label>
+
+                            <input
+                                type="email"
+                                id="contactEmail"
+                                placeholder="oksanchik2170@yandex.ru"
+                            >
+
+                        </div>
+
+
+                        <div class="admin-field">
+
+                            <label for="contactSite">
+                                Адрес сайта
+                            </label>
+
+                            <input
+                                type="url"
+                                id="contactSite"
+                                placeholder="https://oksanabannova.github.io/frilance/"
+                            >
+
+                        </div>
+
+
+                        <div class="admin-form-actions">
+
+                            <button
+                                class="admin-primary-button"
+                                type="submit"
+                            >
+                                Сохранить
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 LEADS
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="section-leads"
+            >
+
+                <div class="page-heading page-heading-row">
+
+                    <div>
+
+                        <div class="page-kicker">
+                            КЛИЕНТЫ
+                        </div>
+
+                        <h1>
+                            Заявки
+                        </h1>
+
+                        <p>
+                            Все обращения, отправленные
+                            посетителями через форму сайта.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        class="admin-secondary-button"
+                        id="refreshLeadsButton"
+                        type="button"
+                    >
+                        ↻ Обновить
+                    </button>
+
+                </div>
+
+
+                <div class="admin-card leads-card">
+
+                    <div class="admin-card-header">
+
+                        <div>
+
+                            <span class="card-kicker">
+                                ОБРАЩЕНИЯ
+                            </span>
+
+                            <h2>
+                                Все заявки
+                            </h2>
+
+                        </div>
+
+
+                        <div
+                            class="leads-total"
+                            id="leadsTotal"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+
+                    <div class="leads-table-wrapper">
+
+                        <table class="leads-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Имя
+                                    </th>
+
+                                    <th>
+                                        Контакт
+                                    </th>
+
+                                    <th>
+                                        Услуга
+                                    </th>
+
+                                    <th>
+                                        Сообщение
+                                    </th>
+
+                                    <th>
+                                        Дата
+                                    </th>
+
+                                    <th>
+                                        Действие
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody id="leadsTableBody">
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 SEO
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="section-seo"
+            >
+
+                <div class="page-heading">
+
+                    <div class="page-kicker">
+                        СИСТЕМА
+                    </div>
+
+                    <h1>
+                        SEO
+                    </h1>
+
+                    <p>
+                        Основные SEO-настройки сайта.
+                    </p>
+
+                </div>
+
+
+                <div class="admin-card">
+
+                    <div class="empty-state small">
+
+                        <div class="empty-state-icon">
+                            ⌕
+                        </div>
+
+                        <h3>
+                            Раздел готовится
+                        </h3>
+
+                        <p>
+                            SEO-настройки будут добавлены
+                            в следующем обновлении панели.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 SETTINGS
+            ================================================== -->
+
+            <section
+                class="admin-section"
+                id="section-settings"
+            >
+
+                <div class="page-heading">
+
+                    <div class="page-kicker">
+                        СИСТЕМА
+                    </div>
+
+                    <h1>
+                        Настройки
+                    </h1>
+
+                    <p>
+                        Информация о панели управления
+                        и текущем сайте.
+                    </p>
+
+                </div>
+
+
+                <div class="admin-card">
+
+                    <div class="settings-list">
+
+
+                        <div class="settings-row">
+
+                            <div>
+
+                                <strong>
+                                    Сайт
+                                </strong>
+
+                                <span>
+                                    Основной адрес сайта
+                                </span>
+
+                            </div>
+
+                            <a
+                                class="settings-link"
+                                href="https://oksanabannova.github.io/frilance/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                oksanabannova.github.io ↗
+                            </a>
+
+                        </div>
+
+
+                        <div class="settings-row">
+
+                            <div>
+
+                                <strong>
+                                    Email
+                                </strong>
+
+                                <span>
+                                    Основной контакт
+                                </span>
+
+                            </div>
+
+                            <a
+                                class="settings-link"
+                                href="mailto:oksanchik2170@yandex.ru"
+                            >
+                                oksanchik2170@yandex.ru
+                            </a>
+
+                        </div>
+
+
+                        <div class="settings-row">
+
+                            <div>
+
+                                <strong>
+                                    Версия панели
+                                </strong>
+
+                                <span>
+                                    FRILANCE ADMIN
+                                </span>
+
+                            </div>
+
+                            <span class="settings-status">
+                                v1.0
+                            </span>
+
+                        </div>
+
+
+                        <div class="settings-row">
+
+                            <div>
+
+                                <strong>
+                                    База данных
+                                </strong>
+
+                                <span>
+                                    Supabase
+                                </span>
+
+                            </div>
+
+                            <span class="settings-status">
+                                ONLINE
+                            </span>
+
+                        </div>
+
+
+                        <div class="settings-row">
+
+                            <div>
+
+                                <strong>
+                                    Авторизация
+                                </strong>
+
+                                <span>
+                                    Защищённая панель администратора
+                                </span>
+
+                            </div>
+
+                            <span class="settings-status">
+                                ACTIVE
+                            </span>
+
+                        </div>
+
+
+                        <div class="settings-row">
+
+                            <div>
+
+                                <strong>
+                                    Выход
+                                </strong>
+
+                                <span>
+                                    Завершить текущую сессию
+                                </span>
+
+                            </div>
+
+                            <button
+                                class="admin-danger-button"
+                                id="logoutButton"
+                                type="button"
+                            >
+                                Выйти
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+
+<!-- =========================================================
+     PORTFOLIO MODAL
+========================================================== -->
+
+<div
+    class="admin-modal-overlay"
+    id="portfolioModal"
+>
+
+    <div class="admin-modal">
+
+        <button
+            class="admin-modal-close"
+            id="closePortfolioModal"
+            type="button"
+            aria-label="Закрыть"
+        >
+            ×
+        </button>
+
+
+        <div class="admin-modal-header">
+
+            <h2 id="portfolioModalTitle">
+                Добавить работу
+            </h2>
+
+            <p>
+                Заполните информацию о работе.
+            </p>
+
+        </div>
+
+
+        <form
+            class="admin-form"
+            id="portfolioForm"
+        >
+
+            <input
+                type="hidden"
+                id="portfolioId"
+            >
+
+
+            <div class="admin-field">
+
+                <label for="portfolioTitle">
+                    Название
+                </label>
+
+                <input
+                    type="text"
+                    id="portfolioTitle"
+                    required
+                    placeholder="Например: LUMI HAIR"
+                >
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="admin-field">
+
+                    <label for="portfolioCategory">
+                        Категория
+                    </label>
+
+                    <select id="portfolioCategory">
+
+                        <option value="Сайты">
+                            Сайты
+                        </option>
+
+                        <option value="Нейрофото">
+                            Нейрофото
+                        </option>
+
+                        <option value="Карточки товаров">
+                            Карточки товаров
+                        </option>
+
+                        <option value="Другое">
+                            Другое
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="admin-field">
+
+                    <label for="portfolioPrice">
+                        Цена
+                    </label>
+
+                    <input
+                        type="text"
+                        id="portfolioPrice"
+                        placeholder="от 15 000 ₽"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-field">
+
+                <label for="portfolioDescription">
+                    Описание
+                </label>
+
+                <textarea
+                    id="portfolioDescription"
+                    placeholder="Краткое описание проекта"
+                ></textarea>
+
+            </div>
+
+
+            <div class="admin-field">
+
+                <label>
+                    Изображение
+                </label>
+
+
+                <div
+                    class="upload-box"
+                    id="portfolioUploadBox"
+                >
+
+                    <input
+                        type="file"
+                        id="portfolioImage"
+                        accept="image/*"
+                    >
+
+
+                    <div class="upload-box-content">
+
+                        <div class="upload-icon">
+                            ↑
+                        </div>
+
+                        <strong>
+                            Выберите изображение
+                        </strong>
+
+                        <span>
+                            JPG, PNG, WEBP
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="image-preview"
+                    id="portfolioImagePreview"
+                >
+                </div>
+
+            </div>
+
+
+            <div class="admin-form-actions">
+
+                <button
+                    class="admin-secondary-button"
+                    id="cancelPortfolioButton"
+                    type="button"
+                >
+                    Отмена
+                </button>
+
+
+                <button
+                    class="admin-primary-button"
+                    type="submit"
+                >
+                    Сохранить
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     LEAD DETAILS MODAL
+========================================================== -->
+
+<div
+    class="admin-modal-overlay"
+    id="leadDetailsModal"
+>
+
+    <div class="admin-modal lead-details-window">
+
+        <button
+            class="admin-modal-close"
+            id="closeLeadDetailsModal"
+            type="button"
+            aria-label="Закрыть"
+        >
+            ×
+        </button>
+
+
+        <div class="admin-modal-header">
+
+            <h2 id="leadDetailsTitle">
+                Заявка
+            </h2>
+
+            <p>
+                Подробная информация об обращении.
+            </p>
+
+        </div>
+
+
+        <div class="lead-details-content">
+
+
+            <div class="lead-detail-item">
+
+                <span>
+                    Имя
+                </span>
+
+                <strong id="leadDetailsName">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="lead-detail-item">
+
+                <span>
+                    Контакт
+                </span>
+
+                <strong id="leadDetailsContact">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="lead-detail-item">
+
+                <span>
+                    Услуга
+                </span>
+
+                <strong id="leadDetailsService">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="lead-detail-item">
+
+                <span>
+                    Дата
+                </span>
+
+                <strong id="leadDetailsDate">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="lead-detail-item lead-details-message">
+
+                <span>
+                    Сообщение
+                </span>
+
+                <div id="leadDetailsMessage">
+                    —
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="admin-form-actions lead-details-footer">
+
+            <button
+                class="admin-secondary-button"
+                id="closeLeadDetailsButton"
+                type="button"
+            >
+                Закрыть
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     NOTIFICATION
+========================================================== -->
+
+<div
+    class="admin-notification"
+    id="adminNotification"
+>
+</div>
+
+
+
+<!-- =========================================================
+     SCRIPTS
+========================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
+
+<script src="admin-auth.js"></script>
+
+<script src="admin.js"></script>
+
+</body>
+</html>
