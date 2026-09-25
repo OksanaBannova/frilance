@@ -2,20 +2,11 @@
 
 /* =========================================================
    FRILANCE ADMIN
-   Supabase admin panel
-========================================================= */
-
-
-/* =========================================================
-   CONFIG
 ========================================================= */
 
 const ADMIN_CONFIG = {
-
     siteUrl: "https://oksanabannova.github.io/frilance/",
-
     email: "oksanchik2170@yandex.ru"
-
 };
 
 
@@ -24,87 +15,47 @@ const ADMIN_CONFIG = {
 ========================================================= */
 
 let portfolio = [];
-
 let services = null;
-
 let texts = null;
-
 let contacts = null;
-
 let leads = [];
 
 let editingPortfolioId = null;
-
 let selectedPortfolioImage = "";
-
 let notificationTimer = null;
 
 
 /* =========================================================
-   DEFAULTS
+   DEFAULT DATA
 ========================================================= */
 
 const DEFAULT_SERVICES = {
-
     neuro_price: "от 700 ₽",
-
     website_price: "от 15 000 ₽",
-
     marketplace_price: "от 1 500 ₽",
-
     start_price: "15 000 ₽",
-
     business_price: "25 000 ₽"
-
 };
-
 
 const DEFAULT_TEXTS = {
-
-    hero_title:
-        "Цифровая упаковка, которая помогает продавать",
-
+    hero_title: "Цифровая упаковка, которая помогает продавать",
     hero_subtitle:
         "Сайты, нейрофото и карточки товаров для мастеров, специалистов и малого бизнеса.",
-
-    hero_primary_button:
-        "Обсудить проект",
-
-    hero_secondary_button:
-        "Смотреть работы",
-
-    services_title:
-        "Услуги",
-
-    portfolio_title:
-        "Портфолио",
-
-    process_title:
-        "Как работаю",
-
-    faq_title:
-        "FAQ",
-
-    final_title:
-        "Готовы обсудить проект?",
-
-    final_button:
-        "Обсудить проект",
-
+    hero_primary_button: "Обсудить проект",
+    hero_secondary_button: "Смотреть работы",
+    services_title: "Услуги",
+    portfolio_title: "Портфолио",
+    process_title: "Как работаю",
+    faq_title: "FAQ",
+    final_title: "Готовы обсудить проект?",
+    final_button: "Обсудить проект",
     about:
         "Создаю сайты, нейрофото и карточки товаров, которые помогают специалистам и небольшому бизнесу выглядеть профессионально в интернете."
-
 };
 
-
 const DEFAULT_CONTACTS = {
-
-    email:
-        ADMIN_CONFIG.email,
-
-    site:
-        ADMIN_CONFIG.siteUrl
-
+    email: ADMIN_CONFIG.email,
+    site: ADMIN_CONFIG.siteUrl
 };
 
 
@@ -113,41 +64,26 @@ const DEFAULT_CONTACTS = {
 ========================================================= */
 
 function $(selector, root = document) {
-
     return root.querySelector(selector);
-
 }
-
 
 function $$(selector, root = document) {
-
     return Array.from(root.querySelectorAll(selector));
-
 }
-
 
 function escapeHtml(value) {
 
     if (value === null || value === undefined) {
-
         return "";
-
     }
 
     return String(value)
-
         .replace(/&/g, "&amp;")
-
         .replace(/</g, "&lt;")
-
         .replace(/>/g, "&gt;")
-
         .replace(/"/g, "&quot;")
-
         .replace(/'/g, "&#039;");
-
 }
-
 
 function setText(selector, value) {
 
@@ -156,74 +92,52 @@ function setText(selector, value) {
     if (!element) return;
 
     element.textContent =
-        value === null || value === undefined || value === ""
+        value === null ||
+        value === undefined ||
+        value === ""
             ? "—"
             : String(value);
-
 }
-
 
 function formatDate(dateValue) {
 
     if (!dateValue) {
-
         return "—";
-
     }
 
     const date = new Date(dateValue);
 
     if (Number.isNaN(date.getTime())) {
-
         return "—";
-
     }
 
     return date.toLocaleString("ru-RU", {
-
         day: "2-digit",
-
         month: "2-digit",
-
         year: "numeric",
-
         hour: "2-digit",
-
         minute: "2-digit"
-
     });
-
 }
-
 
 function formatDateShort(dateValue) {
 
     if (!dateValue) {
-
         return "—";
-
     }
 
     const date = new Date(dateValue);
 
     if (Number.isNaN(date.getTime())) {
-
         return "—";
-
     }
 
     return date.toLocaleDateString("ru-RU", {
-
         day: "2-digit",
-
         month: "2-digit",
-
         year: "numeric"
-
     });
-
 }
-
 
 function showNotification(message, type = "success") {
 
@@ -235,10 +149,10 @@ function showNotification(message, type = "success") {
 
         notification.id = "adminNotification";
 
-        notification.className = "admin-notification";
+        notification.className =
+            "admin-notification";
 
         document.body.appendChild(notification);
-
     }
 
     notification.textContent = message;
@@ -255,17 +169,20 @@ function showNotification(message, type = "success") {
         notification.classList.remove("show");
 
     }, 3500);
-
 }
 
-
-function setButtonLoading(button, loading, loadingText = "Сохранение...") {
+function setButtonLoading(
+    button,
+    loading,
+    loadingText = "Сохранение..."
+) {
 
     if (!button) return;
 
     if (loading) {
 
-        button.dataset.originalText = button.textContent;
+        button.dataset.originalText =
+            button.textContent;
 
         button.disabled = true;
 
@@ -280,43 +197,57 @@ function setButtonLoading(button, loading, loadingText = "Сохранение..
         button.classList.remove("is-loading");
 
         button.textContent =
-            button.dataset.originalText || "Сохранить";
-
+            button.dataset.originalText ||
+            "Сохранить";
     }
-
 }
 
+
+/* =========================================================
+   SUPABASE SESSION
+========================================================= */
 
 async function getCurrentSession() {
 
-    if (
-        !window.frilanceSupabase ||
-        !frilanceSupabase.auth
-    ) {
+    try {
+
+        if (
+            !window.frilanceSupabase ||
+            !frilanceSupabase.auth
+        ) {
+            return null;
+        }
+
+        const result =
+            await frilanceSupabase.auth.getSession();
+
+        if (result.error) {
+
+            console.error(
+                "Ошибка получения сессии:",
+                result.error
+            );
+
+            return null;
+        }
+
+        return result.data?.session || null;
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка проверки сессии:",
+            error
+        );
 
         return null;
-
     }
-
-    const { data, error } =
-        await frilanceSupabase.auth.getSession();
-
-    if (error) {
-
-        console.error("Auth error:", error);
-
-        return null;
-
-    }
-
-    return data?.session || null;
-
 }
-
 
 async function requireSession() {
 
-    const session = await getCurrentSession();
+    const session =
+        await getCurrentSession();
 
     if (!session) {
 
@@ -326,115 +257,166 @@ async function requireSession() {
         );
 
         return false;
-
     }
 
     return true;
-
 }
 
 
 /* =========================================================
-   INIT
+   START
 ========================================================= */
-document.addEventListener("DOMContentLoaded", () => {
 
-    initNavigation();
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
-    initQuickActions();
+        initNavigation();
 
-    initPortfolio();
+        initQuickActions();
 
-    initServices();
+        initPortfolio();
 
-    initTexts();
+        initServices();
 
-    initContacts();
+        initTexts();
 
-    initLeads();
+        initContacts();
 
-    initGeneralButtons();
+        initLeads();
 
-    showSection("dashboard");
+        initGeneralButtons();
 
-    loadAllData();
+        showSection("dashboard");
 
-    /*
-       После авторизации заново загружаем данные.
-       Это важно, потому что admin.js может
-       запуститься раньше, чем Supabase установит сессию.
-    */
-    if (
-        window.frilanceSupabase &&
-        frilanceSupabase.auth
-    ) {
+        loadAllData();
 
-        frilanceSupabase.auth.onAuthStateChange(
-            (event, session) => {
+        /*
+         * Если авторизация завершается уже после загрузки
+         * страницы — повторно загружаем данные.
+         */
 
-                console.log(
-                    "FRILANCE AUTH:",
-                    event
-                );
+        if (
+            window.frilanceSupabase &&
+            frilanceSupabase.auth
+        ) {
 
-                if (
-                    event === "SIGNED_IN" &&
-                    session
-                ) {
+            frilanceSupabase.auth.onAuthStateChange(
+                (event, session) => {
 
-                    setTimeout(() => {
+                    console.log(
+                        "FRILANCE AUTH:",
+                        event
+                    );
 
-                        loadAllData();
+                    if (
+                        event === "SIGNED_IN" &&
+                        session
+                    ) {
 
-                    }, 300);
+                        setTimeout(() => {
 
+                            loadAllData();
+
+                        }, 500);
+                    }
                 }
-
-            }
-        );
-
+            );
+        }
     }
+);
 
-});
 
 /* =========================================================
    LOAD ALL DATA
+   ВАЖНО:
+   каждая таблица загружается отдельно.
+   Ошибка одной таблицы НЕ ломает остальные.
 ========================================================= */
 
 async function loadAllData() {
 
+    console.log(
+        "FRILANCE ADMIN: начинаем загрузку данных"
+    );
+
+
+    /*
+     * Не используем Promise.all().
+     * Каждый запрос обрабатывается отдельно.
+     */
+
     try {
 
-        await Promise.all([
-
-            loadPortfolio(),
-
-            loadServices(),
-
-            loadTexts(),
-
-            loadContacts(),
-
-            loadLeads()
-
-        ]);
-
-        updateDashboard();
+        await loadPortfolio();
 
     } catch (error) {
 
         console.error(
-            "Ошибка загрузки данных:",
+            "Ошибка загрузки портфолио:",
             error
         );
-
-        showNotification(
-            "Не удалось загрузить данные.",
-            "error"
-        );
-
     }
 
+
+    try {
+
+        await loadServices();
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка загрузки услуг:",
+            error
+        );
+    }
+
+
+    try {
+
+        await loadTexts();
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка загрузки текстов:",
+            error
+        );
+    }
+
+
+    try {
+
+        await loadContacts();
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка загрузки контактов:",
+            error
+        );
+    }
+
+
+    try {
+
+        await loadLeads();
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка загрузки заявок:",
+            error
+        );
+    }
+
+
+    updateDashboard();
+
+
+    console.log(
+        "FRILANCE ADMIN: загрузка завершена"
+    );
 }
 
 
@@ -444,38 +426,39 @@ async function loadAllData() {
 
 function initNavigation() {
 
-    const navItems = $$(".admin-nav-item");
+    const navItems =
+        $$(".admin-nav-item");
 
     navItems.forEach(item => {
 
-        item.addEventListener("click", event => {
+        item.addEventListener(
+            "click",
+            event => {
 
-            event.preventDefault();
+                event.preventDefault();
 
-            const section =
-                item.dataset.section;
+                const section =
+                    item.dataset.section;
 
-            if (!section) return;
+                if (!section) return;
 
-            showSection(section);
-
-        });
-
+                showSection(section);
+            }
+        );
     });
-
 }
 
 
 function showSection(sectionName) {
 
-    const sections =
-        $$(".admin-section");
+    $$(".admin-section").forEach(
+        section => {
 
-    sections.forEach(section => {
-
-        section.classList.remove("active");
-
-    });
+            section.classList.remove(
+                "active"
+            );
+        }
+    );
 
 
     const target =
@@ -484,32 +467,32 @@ function showSection(sectionName) {
     if (target) {
 
         target.classList.add("active");
-
     }
 
 
-    const navItems =
-        $$(".admin-nav-item");
+    $$(".admin-nav-item").forEach(
+        item => {
 
-    navItems.forEach(item => {
-
-        item.classList.toggle(
-
-            "active",
-
-            item.dataset.section === sectionName
-
-        );
-
-    });
+            item.classList.toggle(
+                "active",
+                item.dataset.section ===
+                    sectionName
+            );
+        }
+    );
 
 
-    if (sectionName === "leads") {
+    /*
+     * При открытии заявок сразу
+     * перечитываем их из Supabase.
+     */
+
+    if (
+        sectionName === "leads"
+    ) {
 
         loadLeads();
-
     }
-
 }
 
 
@@ -519,21 +502,22 @@ function showSection(sectionName) {
 
 function initQuickActions() {
 
-    $$("[data-open-section]").forEach(button => {
+    $$("[data-open-section]")
+        .forEach(button => {
 
-        button.addEventListener("click", () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-            const section =
-                button.dataset.openSection;
+                    const section =
+                        button.dataset.openSection;
 
-            if (!section) return;
+                    if (!section) return;
 
-            showSection(section);
-
+                    showSection(section);
+                }
+            );
         });
-
-    });
-
 }
 
 
@@ -550,7 +534,6 @@ function updateDashboard() {
     updateLeadsCount();
 
     renderRecentLeads();
-
 }
 
 
@@ -560,7 +543,6 @@ function updatePortfolioCount() {
         "#dashboardPortfolioCount",
         portfolio.length
     );
-
 }
 
 
@@ -571,14 +553,15 @@ function updateServicesCount() {
 
     if (!element) return;
 
-    element.textContent = services ? "5" : "0";
-
+    element.textContent =
+        services ? "5" : "0";
 }
 
 
 function updateLeadsCount() {
 
-    const count = leads.length;
+    const count =
+        leads.length;
 
     setText(
         "#dashboardLeadsCount",
@@ -594,7 +577,6 @@ function updateLeadsCount() {
         "#leadsTotal",
         count
     );
-
 }
 
 
@@ -632,7 +614,6 @@ function initPortfolio() {
             "click",
             () => openPortfolioModal()
         );
-
     }
 
 
@@ -642,7 +623,6 @@ function initPortfolio() {
             "click",
             () => openPortfolioModal()
         );
-
     }
 
 
@@ -652,7 +632,6 @@ function initPortfolio() {
             "click",
             closePortfolioModal
         );
-
     }
 
 
@@ -662,7 +641,6 @@ function initPortfolio() {
             "click",
             closePortfolioModal
         );
-
     }
 
 
@@ -672,7 +650,6 @@ function initPortfolio() {
             "submit",
             savePortfolioItem
         );
-
     }
 
 
@@ -682,7 +659,6 @@ function initPortfolio() {
             "change",
             handlePortfolioImage
         );
-
     }
 
 
@@ -693,14 +669,10 @@ function initPortfolio() {
             () => {
 
                 if (imageInput) {
-
                     imageInput.click();
-
                 }
-
             }
         );
-
     }
 
 
@@ -718,31 +690,28 @@ function initPortfolio() {
                 ) {
 
                     closePortfolioModal();
-
                 }
-
             }
         );
-
     }
-
 }
 
 
 async function loadPortfolio() {
 
+    console.log(
+        "FRILANCE: загружаем portfolio..."
+    );
+
+
     const { data, error } =
         await frilanceSupabase
-
             .from("portfolio")
-
             .select("*")
-
             .order(
                 "sort_order",
                 { ascending: true }
             )
-
             .order(
                 "created_at",
                 { ascending: false }
@@ -752,16 +721,24 @@ async function loadPortfolio() {
     if (error) {
 
         throw error;
-
     }
 
 
-    portfolio = data || [];
+    portfolio =
+        Array.isArray(data)
+            ? data
+            : [];
+
+
+    console.log(
+        "FRILANCE: portfolio загружено:",
+        portfolio.length
+    );
+
 
     renderPortfolio();
 
     updatePortfolioCount();
-
 }
 
 
@@ -784,19 +761,18 @@ function renderPortfolio() {
 
         if (emptyState) {
 
-            emptyState.style.display = "block";
-
+            emptyState.style.display =
+                "block";
         }
 
         return;
-
     }
 
 
     if (emptyState) {
 
-        emptyState.style.display = "none";
-
+        emptyState.style.display =
+            "none";
     }
 
 
@@ -809,61 +785,115 @@ function renderPortfolio() {
             "portfolio-admin-card";
 
 
-        const image =
-            item.image_url
+        let imageHtml = "";
 
-                ? `
-                    <div class="portfolio-admin-image">
-                        <img
-                            src="${escapeHtml(item.image_url)}"
-                            alt="${escapeHtml(item.title)}"
-                        >
-                    </div>
-                `
 
-                : `
-                    <div class="portfolio-admin-image portfolio-admin-image-empty">
-                        <span>Нет изображения</span>
-                    </div>
-                `;
+        if (item.image_url) {
+
+            imageHtml = `
+
+                <div class="portfolio-admin-image">
+
+                    <img
+                        src="${escapeHtml(
+                            item.image_url
+                        )}"
+                        alt="${escapeHtml(
+                            item.title
+                        )}"
+                        onerror="
+                            this.parentElement.classList.add('image-error');
+                            this.style.display='none';
+                        "
+                    >
+
+                </div>
+
+            `;
+
+        } else {
+
+            imageHtml = `
+
+                <div class="
+                    portfolio-admin-image
+                    portfolio-admin-image-empty
+                ">
+
+                    <span>
+                        Нет изображения
+                    </span>
+
+                </div>
+
+            `;
+        }
 
 
         card.innerHTML = `
 
-            ${image}
+            ${imageHtml}
 
             <div class="portfolio-admin-content">
 
                 <div class="portfolio-admin-category">
-                    ${escapeHtml(item.category || "—")}
+
+                    ${escapeHtml(
+                        item.category || "—"
+                    )}
+
                 </div>
+
 
                 <h3>
-                    ${escapeHtml(item.title || "Без названия")}
+
+                    ${escapeHtml(
+                        item.title ||
+                        "Без названия"
+                    )}
+
                 </h3>
 
+
                 <div class="portfolio-admin-price">
-                    ${escapeHtml(item.price || "—")}
+
+                    ${escapeHtml(
+                        item.price || "—"
+                    )}
+
                 </div>
 
+
                 <p>
-                    ${escapeHtml(item.description || "")}
+
+                    ${escapeHtml(
+                        item.description || ""
+                    )}
+
                 </p>
 
-                <div class="portfolio-admin-actions">
+
+                <div class="
+                    portfolio-admin-actions
+                ">
 
                     <button
                         type="button"
                         class="admin-button secondary"
-                        data-edit-portfolio="${escapeHtml(item.id)}"
+                        data-edit-portfolio="${escapeHtml(
+                            item.id
+                        )}"
                     >
                         Изменить
                     </button>
 
+
                     <button
                         type="button"
                         class="admin-button danger"
-                        data-delete-portfolio="${escapeHtml(item.id)}"
+                        data-delete-portfolio="${escapeHtml(
+                            item.id
+                        )}"
                     >
                         Удалить
                     </button>
@@ -875,41 +905,37 @@ function renderPortfolio() {
 
 
         grid.appendChild(card);
-
     });
 
 
-    $$("[data-edit-portfolio]").forEach(button => {
+    $$("[data-edit-portfolio]")
+        .forEach(button => {
 
-        button.addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                openPortfolioModal(
-                    button.dataset.editPortfolio
-                );
-
-            }
-        );
-
-    });
+                    openPortfolioModal(
+                        button.dataset.editPortfolio
+                    );
+                }
+            );
+        });
 
 
-    $$("[data-delete-portfolio]").forEach(button => {
+    $$("[data-delete-portfolio]")
+        .forEach(button => {
 
-        button.addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                deletePortfolioItem(
-                    button.dataset.deletePortfolio
-                );
-
-            }
-        );
-
-    });
-
+                    deletePortfolioItem(
+                        button.dataset.deletePortfolio
+                    );
+                }
+            );
+        });
 }
 
 
@@ -925,9 +951,11 @@ function openPortfolioModal(id = null) {
     if (!modal || !form) return;
 
 
-    editingPortfolioId = id;
+    editingPortfolioId =
+        id;
 
-    selectedPortfolioImage = "";
+    selectedPortfolioImage =
+        "";
 
 
     form.reset();
@@ -938,8 +966,8 @@ function openPortfolioModal(id = null) {
 
     if (idInput) {
 
-        idInput.value = id || "";
-
+        idInput.value =
+            id || "";
     }
 
 
@@ -952,7 +980,6 @@ function openPortfolioModal(id = null) {
             id
                 ? "Редактировать работу"
                 : "Добавить работу";
-
     }
 
 
@@ -963,8 +990,8 @@ function openPortfolioModal(id = null) {
 
         preview.innerHTML = "";
 
-        preview.style.display = "none";
-
+        preview.style.display =
+            "none";
     }
 
 
@@ -996,7 +1023,6 @@ function openPortfolioModal(id = null) {
 
                 titleInput.value =
                     item.title || "";
-
             }
 
 
@@ -1004,7 +1030,6 @@ function openPortfolioModal(id = null) {
 
                 categoryInput.value =
                     item.category || "";
-
             }
 
 
@@ -1012,7 +1037,6 @@ function openPortfolioModal(id = null) {
 
                 priceInput.value =
                     item.price || "";
-
             }
 
 
@@ -1020,7 +1044,6 @@ function openPortfolioModal(id = null) {
 
                 descriptionInput.value =
                     item.description || "";
-
             }
 
 
@@ -1034,18 +1057,20 @@ function openPortfolioModal(id = null) {
             ) {
 
                 preview.innerHTML = `
+
                     <img
-                        src="${escapeHtml(item.image_url)}"
+                        src="${escapeHtml(
+                            item.image_url
+                        )}"
                         alt=""
                     >
+
                 `;
 
-                preview.style.display = "block";
-
+                preview.style.display =
+                    "block";
             }
-
         }
-
     }
 
 
@@ -1054,7 +1079,6 @@ function openPortfolioModal(id = null) {
     document.body.classList.add(
         "modal-open"
     );
-
 }
 
 
@@ -1065,16 +1089,19 @@ function closePortfolioModal() {
 
     if (!modal) return;
 
+
     modal.classList.remove("active");
 
     document.body.classList.remove(
         "modal-open"
     );
 
-    editingPortfolioId = null;
 
-    selectedPortfolioImage = "";
+    editingPortfolioId =
+        null;
 
+    selectedPortfolioImage =
+        "";
 }
 
 
@@ -1086,7 +1113,9 @@ function handlePortfolioImage(event) {
     if (!file) return;
 
 
-    if (!file.type.startsWith("image/")) {
+    if (
+        !file.type.startsWith("image/")
+    ) {
 
         showNotification(
             "Выберите изображение.",
@@ -1094,7 +1123,6 @@ function handlePortfolioImage(event) {
         );
 
         return;
-
     }
 
 
@@ -1115,22 +1143,21 @@ function handlePortfolioImage(event) {
         if (preview) {
 
             preview.innerHTML = `
+
                 <img
                     src="${reader.result}"
                     alt="Предпросмотр"
                 >
+
             `;
 
             preview.style.display =
                 "block";
-
         }
-
     };
 
 
     reader.readAsDataURL(file);
-
 }
 
 
@@ -1140,9 +1167,7 @@ async function savePortfolioItem(event) {
 
 
     if (!(await requireSession())) {
-
         return;
-
     }
 
 
@@ -1151,23 +1176,32 @@ async function savePortfolioItem(event) {
 
 
     const title =
-        $("#portfolioTitle")?.value.trim() || "";
+        $("#portfolioTitle")
+            ?.value
+            .trim() || "";
 
 
     const category =
-        $("#portfolioCategory")?.value.trim() || "";
+        $("#portfolioCategory")
+            ?.value
+            .trim() || "";
 
 
     const price =
-        $("#portfolioPrice")?.value.trim() || "";
+        $("#portfolioPrice")
+            ?.value
+            .trim() || "";
 
 
     const description =
-        $("#portfolioDescription")?.value.trim() || "";
+        $("#portfolioDescription")
+            ?.value
+            .trim() || "";
 
 
     const id =
-        $("#portfolioId")?.value || "";
+        $("#portfolioId")
+            ?.value || "";
 
 
     if (!title) {
@@ -1178,7 +1212,6 @@ async function savePortfolioItem(event) {
         );
 
         return;
-
     }
 
 
@@ -1190,7 +1223,6 @@ async function savePortfolioItem(event) {
         );
 
         return;
-
     }
 
 
@@ -1202,7 +1234,6 @@ async function savePortfolioItem(event) {
         );
 
         return;
-
     }
 
 
@@ -1235,7 +1266,6 @@ async function savePortfolioItem(event) {
 
             updated_at:
                 new Date().toISOString()
-
         };
 
 
@@ -1243,18 +1273,13 @@ async function savePortfolioItem(event) {
 
             const { error } =
                 await frilanceSupabase
-
                     .from("portfolio")
-
                     .update(payload)
-
                     .eq("id", id);
 
 
             if (error) {
-
                 throw error;
-
             }
 
 
@@ -1270,23 +1295,18 @@ async function savePortfolioItem(event) {
 
             const { error } =
                 await frilanceSupabase
-
                     .from("portfolio")
-
                     .insert(payload);
 
 
             if (error) {
-
                 throw error;
-
             }
 
 
             showNotification(
                 "Работа добавлена."
             );
-
         }
 
 
@@ -1295,7 +1315,6 @@ async function savePortfolioItem(event) {
         await loadPortfolio();
 
         updateDashboard();
-
 
     } catch (error) {
 
@@ -1316,18 +1335,14 @@ async function savePortfolioItem(event) {
             submitButton,
             false
         );
-
     }
-
 }
 
 
 async function deletePortfolioItem(id) {
 
     if (!(await requireSession())) {
-
         return;
-
     }
 
 
@@ -1339,7 +1354,8 @@ async function deletePortfolioItem(id) {
 
 
     const title =
-        item?.title || "эту работу";
+        item?.title ||
+        "эту работу";
 
 
     if (
@@ -1347,9 +1363,7 @@ async function deletePortfolioItem(id) {
             `Удалить «${title}»?`
         )
     ) {
-
         return;
-
     }
 
 
@@ -1357,18 +1371,13 @@ async function deletePortfolioItem(id) {
 
         const { error } =
             await frilanceSupabase
-
                 .from("portfolio")
-
                 .delete()
-
                 .eq("id", id);
 
 
         if (error) {
-
             throw error;
-
         }
 
 
@@ -1380,7 +1389,6 @@ async function deletePortfolioItem(id) {
         await loadPortfolio();
 
         updateDashboard();
-
 
     } catch (error) {
 
@@ -1394,9 +1402,7 @@ async function deletePortfolioItem(id) {
             "Не удалось удалить работу.",
             "error"
         );
-
     }
-
 }
 
 
@@ -1409,7 +1415,6 @@ function initServices() {
     const form =
         $("#servicesForm");
 
-
     if (!form) return;
 
 
@@ -1417,7 +1422,6 @@ function initServices() {
         "submit",
         saveServices
     );
-
 }
 
 
@@ -1425,28 +1429,23 @@ async function loadServices() {
 
     const { data, error } =
         await frilanceSupabase
-
             .from("services")
-
             .select("*")
-
             .order(
                 "created_at",
                 { ascending: true }
             )
-
             .limit(1);
 
 
     if (error) {
-
         throw error;
-
     }
 
 
     services =
-        data?.[0] || {
+        data?.[0] ||
+        {
             ...DEFAULT_SERVICES
         };
 
@@ -1454,7 +1453,6 @@ async function loadServices() {
     fillServicesForm();
 
     updateServicesCount();
-
 }
 
 
@@ -1479,26 +1477,23 @@ function fillServicesForm() {
 
         "#serviceBusinessPrice":
             services.business_price
-
     };
 
 
-    Object.entries(fields).forEach(
-        ([selector, value]) => {
+    Object.entries(fields)
+        .forEach(
+            ([selector, value]) => {
 
-            const element =
-                $(selector);
+                const element =
+                    $(selector);
 
-            if (element) {
+                if (element) {
 
-                element.value =
-                    value || "";
-
+                    element.value =
+                        value || "";
+                }
             }
-
-        }
-    );
-
+        );
 }
 
 
@@ -1508,9 +1503,7 @@ async function saveServices(event) {
 
 
     if (!(await requireSession())) {
-
         return;
-
     }
 
 
@@ -1525,28 +1518,42 @@ async function saveServices(event) {
     const payload = {
 
         neuro_price:
-            $("#serviceNeuroPrice")?.value.trim()
-            || DEFAULT_SERVICES.neuro_price,
+            $("#serviceNeuroPrice")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_SERVICES.neuro_price,
 
         website_price:
-            $("#serviceWebsitePrice")?.value.trim()
-            || DEFAULT_SERVICES.website_price,
+            $("#serviceWebsitePrice")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_SERVICES.website_price,
 
         marketplace_price:
-            $("#serviceMarketplacePrice")?.value.trim()
-            || DEFAULT_SERVICES.marketplace_price,
+            $("#serviceMarketplacePrice")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_SERVICES.marketplace_price,
 
         start_price:
-            $("#serviceStartPrice")?.value.trim()
-            || DEFAULT_SERVICES.start_price,
+            $("#serviceStartPrice")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_SERVICES.start_price,
 
         business_price:
-            $("#serviceBusinessPrice")?.value.trim()
-            || DEFAULT_SERVICES.business_price,
+            $("#serviceBusinessPrice")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_SERVICES.business_price,
 
         updated_at:
             new Date().toISOString()
-
     };
 
 
@@ -1562,51 +1569,39 @@ async function saveServices(event) {
 
             const { data, error } =
                 await frilanceSupabase
-
                     .from("services")
-
                     .update(payload)
-
-                    .eq("id", services.id)
-
+                    .eq(
+                        "id",
+                        services.id
+                    )
                     .select()
-
                     .single();
 
 
             if (error) {
-
                 throw error;
-
             }
 
 
             services = data;
-
 
         } else {
 
             const { data, error } =
                 await frilanceSupabase
-
                     .from("services")
-
                     .insert(payload)
-
                     .select()
-
                     .single();
 
 
             if (error) {
-
                 throw error;
-
             }
 
 
             services = data;
-
         }
 
 
@@ -1615,7 +1610,6 @@ async function saveServices(event) {
         showNotification(
             "Цены сохранены."
         );
-
 
     } catch (error) {
 
@@ -1636,9 +1630,7 @@ async function saveServices(event) {
             button,
             false
         );
-
     }
-
 }
 
 
@@ -1648,15 +1640,14 @@ async function saveServices(event) {
 
 function initTexts() {
 
-    $$("form[id^='texts']").forEach(form => {
+    $$("form[id^='texts']")
+        .forEach(form => {
 
-        form.addEventListener(
-            "submit",
-            saveTexts
-        );
-
-    });
-
+            form.addEventListener(
+                "submit",
+                saveTexts
+            );
+        });
 }
 
 
@@ -1664,34 +1655,28 @@ async function loadTexts() {
 
     const { data, error } =
         await frilanceSupabase
-
             .from("texts")
-
             .select("*")
-
             .order(
                 "created_at",
                 { ascending: true }
             )
-
             .limit(1);
 
 
     if (error) {
-
         throw error;
-
     }
 
 
     texts =
-        data?.[0] || {
+        data?.[0] ||
+        {
             ...DEFAULT_TEXTS
         };
 
 
     fillTextsForms();
-
 }
 
 
@@ -1734,26 +1719,23 @@ function fillTextsForms() {
 
         "#textAbout":
             texts.about
-
     };
 
 
-    Object.entries(fields).forEach(
-        ([selector, value]) => {
+    Object.entries(fields)
+        .forEach(
+            ([selector, value]) => {
 
-            const element =
-                $(selector);
+                const element =
+                    $(selector);
 
-            if (element) {
+                if (element) {
 
-                element.value =
-                    value || "";
-
+                    element.value =
+                        value || "";
+                }
             }
-
-        }
-    );
-
+        );
 }
 
 
@@ -1763,9 +1745,7 @@ async function saveTexts(event) {
 
 
     if (!(await requireSession())) {
-
         return;
-
     }
 
 
@@ -1776,52 +1756,84 @@ async function saveTexts(event) {
     const payload = {
 
         hero_title:
-            $("#textHeroTitle")?.value.trim()
-            || DEFAULT_TEXTS.hero_title,
+            $("#textHeroTitle")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_TEXTS.hero_title,
 
         hero_subtitle:
-            $("#textHeroSubtitle")?.value.trim()
-            || DEFAULT_TEXTS.hero_subtitle,
+            $("#textHeroSubtitle")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_TEXTS.hero_subtitle,
 
         hero_primary_button:
-            $("#textHeroPrimaryButton")?.value.trim()
-            || DEFAULT_TEXTS.hero_primary_button,
+            $("#textHeroPrimaryButton")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_TEXTS.hero_primary_button,
 
         hero_secondary_button:
-            $("#textHeroSecondaryButton")?.value.trim()
-            || DEFAULT_TEXTS.hero_secondary_button,
+            $("#textHeroSecondaryButton")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_TEXTS.hero_secondary_button,
 
         services_title:
-            $("#textServicesTitle")?.value.trim()
-            || DEFAULT_TEXTS.services_title,
+            $("#textServicesTitle")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_TEXTS.services_title,
 
         portfolio_title:
-            $("#textPortfolioTitle")?.value.trim()
-            || DEFAULT_TEXTS.portfolio_title,
+            $("#textPortfolioTitle")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_TEXTS.portfolio_title,
 
         process_title:
-            $("#textProcessTitle")?.value.trim()
-            || DEFAULT_TEXTS.process_title,
+            $("#textProcessTitle")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_TEXTS.process_title,
 
         faq_title:
-            $("#textFaqTitle")?.value.trim()
-            || DEFAULT_TEXTS.faq_title,
+            $("#textFaqTitle")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_TEXTS.faq_title,
 
         final_title:
-            $("#textFinalTitle")?.value.trim()
-            || DEFAULT_TEXTS.final_title,
+            $("#textFinalTitle")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_TEXTS.final_title,
 
         final_button:
-            $("#textFinalButton")?.value.trim()
-            || DEFAULT_TEXTS.final_button,
+            $("#textFinalButton")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_TEXTS.final_button,
 
         about:
-            $("#textAbout")?.value.trim()
-            || DEFAULT_TEXTS.about,
+            $("#textAbout")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_TEXTS.about,
 
         updated_at:
             new Date().toISOString()
-
     };
 
 
@@ -1843,51 +1855,39 @@ async function saveTexts(event) {
 
             const { data, error } =
                 await frilanceSupabase
-
                     .from("texts")
-
                     .update(payload)
-
-                    .eq("id", texts.id)
-
+                    .eq(
+                        "id",
+                        texts.id
+                    )
                     .select()
-
                     .single();
 
 
             if (error) {
-
                 throw error;
-
             }
 
 
             texts = data;
-
 
         } else {
 
             const { data, error } =
                 await frilanceSupabase
-
                     .from("texts")
-
                     .insert(payload)
-
                     .select()
-
                     .single();
 
 
             if (error) {
-
                 throw error;
-
             }
 
 
             texts = data;
-
         }
 
 
@@ -1896,7 +1896,6 @@ async function saveTexts(event) {
         showNotification(
             "Тексты сохранены."
         );
-
 
     } catch (error) {
 
@@ -1917,9 +1916,7 @@ async function saveTexts(event) {
             button,
             false
         );
-
     }
-
 }
 
 
@@ -1932,7 +1929,6 @@ function initContacts() {
     const form =
         $("#contactsForm");
 
-
     if (!form) return;
 
 
@@ -1940,7 +1936,6 @@ function initContacts() {
         "submit",
         saveContacts
     );
-
 }
 
 
@@ -1948,34 +1943,28 @@ async function loadContacts() {
 
     const { data, error } =
         await frilanceSupabase
-
             .from("contacts")
-
             .select("*")
-
             .order(
                 "created_at",
                 { ascending: true }
             )
-
             .limit(1);
 
 
     if (error) {
-
         throw error;
-
     }
 
 
     contacts =
-        data?.[0] || {
+        data?.[0] ||
+        {
             ...DEFAULT_CONTACTS
         };
 
 
     fillContactsForm();
-
 }
 
 
@@ -1995,7 +1984,6 @@ function fillContactsForm() {
 
         email.value =
             contacts.email || "";
-
     }
 
 
@@ -2003,9 +1991,7 @@ function fillContactsForm() {
 
         site.value =
             contacts.site || "";
-
     }
-
 }
 
 
@@ -2015,9 +2001,7 @@ async function saveContacts(event) {
 
 
     if (!(await requireSession())) {
-
         return;
-
     }
 
 
@@ -2028,16 +2012,21 @@ async function saveContacts(event) {
     const payload = {
 
         email:
-            $("#contactEmail")?.value.trim()
-            || DEFAULT_CONTACTS.email,
+            $("#contactEmail")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_CONTACTS.email,
 
         site:
-            $("#contactSite")?.value.trim()
-            || DEFAULT_CONTACTS.site,
+            $("#contactSite")
+                ?.value
+                .trim()
+            ||
+            DEFAULT_CONTACTS.site,
 
         updated_at:
             new Date().toISOString()
-
     };
 
 
@@ -2059,51 +2048,39 @@ async function saveContacts(event) {
 
             const { data, error } =
                 await frilanceSupabase
-
                     .from("contacts")
-
                     .update(payload)
-
-                    .eq("id", contacts.id)
-
+                    .eq(
+                        "id",
+                        contacts.id
+                    )
                     .select()
-
                     .single();
 
 
             if (error) {
-
                 throw error;
-
             }
 
 
             contacts = data;
-
 
         } else {
 
             const { data, error } =
                 await frilanceSupabase
-
                     .from("contacts")
-
                     .insert(payload)
-
                     .select()
-
                     .single();
 
 
             if (error) {
-
                 throw error;
-
             }
 
 
             contacts = data;
-
         }
 
 
@@ -2112,7 +2089,6 @@ async function saveContacts(event) {
         showNotification(
             "Контакты сохранены."
         );
-
 
     } catch (error) {
 
@@ -2133,9 +2109,7 @@ async function saveContacts(event) {
             button,
             false
         );
-
     }
-
 }
 
 
@@ -2156,16 +2130,13 @@ function initLeads() {
             async () => {
 
                 await loadLeads(true);
-
             }
         );
-
     }
 
 
     const closeButton =
         $("#closeLeadDetailsModal");
-
 
     const closeDetailsButton =
         $("#closeLeadDetailsButton");
@@ -2177,7 +2148,6 @@ function initLeads() {
             "click",
             closeLeadDetails
         );
-
     }
 
 
@@ -2187,7 +2157,6 @@ function initLeads() {
             "click",
             closeLeadDetails
         );
-
     }
 
 
@@ -2206,12 +2175,9 @@ function initLeads() {
                 ) {
 
                     closeLeadDetails();
-
                 }
-
             }
         );
-
     }
 
 
@@ -2224,16 +2190,15 @@ function initLeads() {
             ) {
 
                 closeLeadDetails();
-
             }
-
         }
     );
-
 }
 
 
-async function loadLeads(showMessage = false) {
+async function loadLeads(
+    showMessage = false
+) {
 
     const tbody =
         $("#leadsTableBody");
@@ -2249,53 +2214,29 @@ async function loadLeads(showMessage = false) {
 
                     <div class="leads-loading">
 
-                        <span class="leads-loading-spinner"></span>
+                        <span class="
+                            leads-loading-spinner
+                        "></span>
 
-                        <span>Загрузка заявок...</span>
+                        <span>
+                            Загрузка заявок...
+                        </span>
 
                     </div>
 
                 </td>
 
             </tr>
-
         `;
-
     }
 
 
     try {
 
-        const session =
-            await getCurrentSession();
-
-
-        if (!session) {
-
-            console.warn(
-                "Нет активной сессии администратора."
-            );
-
-            leads = [];
-
-            renderLeads();
-
-            updateLeadsCount();
-
-            renderRecentLeads();
-
-            return;
-
-        }
-
-
         const { data, error } =
             await frilanceSupabase
-
                 .from("leads")
-
                 .select("*")
-
                 .order(
                     "created_at",
                     { ascending: false }
@@ -2303,13 +2244,20 @@ async function loadLeads(showMessage = false) {
 
 
         if (error) {
-
             throw error;
-
         }
 
 
-        leads = data || [];
+        leads =
+            Array.isArray(data)
+                ? data
+                : [];
+
+
+        console.log(
+            "FRILANCE: заявок загружено:",
+            leads.length
+        );
 
 
         renderLeads();
@@ -2324,7 +2272,6 @@ async function loadLeads(showMessage = false) {
             showNotification(
                 "Заявки обновлены."
             );
-
         }
 
 
@@ -2365,16 +2312,12 @@ async function loadLeads(showMessage = false) {
                     </td>
 
                 </tr>
-
             `;
-
         }
 
 
         updateLeadsCount();
-
     }
-
 }
 
 
@@ -2416,11 +2359,9 @@ function renderLeads() {
                 </td>
 
             </tr>
-
         `;
 
         return;
-
     }
 
 
@@ -2433,14 +2374,11 @@ function renderLeads() {
         const name =
             lead.name || "Без имени";
 
-
         const contact =
             lead.contact || "—";
 
-
         const service =
             lead.service || "—";
-
 
         const message =
             lead.message || "—";
@@ -2470,12 +2408,10 @@ function renderLeads() {
                 <a
                     class="lead-contact-link"
                     href="${escapeHtml(
-                        getContactHref(contact)
+                        getContactHref(
+                            contact
+                        )
                     )}"
-                    ${getContactHref(contact) !== "#"
-                        ? 'target="_blank" rel="noopener noreferrer"'
-                        : ""
-                    }
                 >
 
                     ${escapeHtml(contact)}
@@ -2487,7 +2423,9 @@ function renderLeads() {
 
             <td>
 
-                <span class="lead-service-badge">
+                <span class="
+                    lead-service-badge
+                ">
 
                     ${escapeHtml(service)}
 
@@ -2499,11 +2437,17 @@ function renderLeads() {
             <td>
 
                 <div
-                    class="lead-message-preview"
-                    title="${escapeHtml(message)}"
+                    class="
+                        lead-message-preview
+                    "
+                    title="${escapeHtml(
+                        message
+                    )}"
                 >
 
-                    ${escapeHtml(shortMessage)}
+                    ${escapeHtml(
+                        shortMessage
+                    )}
 
                 </div>
 
@@ -2514,7 +2458,9 @@ function renderLeads() {
 
                 <div class="lead-date">
 
-                    ${formatDate(lead.created_at)}
+                    ${formatDate(
+                        lead.created_at
+                    )}
 
                 </div>
 
@@ -2526,47 +2472,41 @@ function renderLeads() {
                 <button
                     type="button"
                     class="lead-view-button"
-                    data-lead-id="${escapeHtml(lead.id)}"
+                    data-lead-id="${escapeHtml(
+                        lead.id
+                    )}"
                 >
-
                     Подробнее
-
                 </button>
 
             </td>
-
         `;
 
 
         tbody.appendChild(tr);
-
     });
 
 
-    $$("[data-lead-id]").forEach(button => {
+    $$("[data-lead-id]")
+        .forEach(button => {
 
-        button.addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                openLeadDetails(
-                    button.dataset.leadId
-                );
-
-            }
-        );
-
-    });
-
+                    openLeadDetails(
+                        button.dataset.leadId
+                    );
+                }
+            );
+        });
 }
 
 
 function getContactHref(contact) {
 
     if (!contact) {
-
         return "#";
-
     }
 
 
@@ -2580,7 +2520,6 @@ function getContactHref(contact) {
     ) {
 
         return `mailto:${value}`;
-
     }
 
 
@@ -2589,7 +2528,6 @@ function getContactHref(contact) {
     ) {
 
         return value;
-
     }
 
 
@@ -2605,12 +2543,10 @@ function getContactHref(contact) {
     ) {
 
         return `tel:${phone}`;
-
     }
 
 
     return "#";
-
 }
 
 
@@ -2651,7 +2587,9 @@ function openLeadDetails(id) {
 
     setText(
         "#leadDetailsDate",
-        formatDate(lead.created_at)
+        formatDate(
+            lead.created_at
+        )
     );
 
 
@@ -2673,7 +2611,6 @@ function openLeadDetails(id) {
     document.body.classList.add(
         "modal-open"
     );
-
 }
 
 
@@ -2686,12 +2623,13 @@ function closeLeadDetails() {
     if (!modal) return;
 
 
-    modal.classList.remove("active");
+    modal.classList.remove(
+        "active"
+    );
 
     document.body.classList.remove(
         "modal-open"
     );
-
 }
 
 
@@ -2726,11 +2664,9 @@ function renderRecentLeads() {
                 </p>
 
             </div>
-
         `;
 
         return;
-
     }
 
 
@@ -2746,20 +2682,28 @@ function renderRecentLeads() {
 
         item.innerHTML = `
 
-            <div class="recent-lead-main">
+            <div class="
+                recent-lead-main
+            ">
 
-                <div class="recent-lead-name">
+                <div class="
+                    recent-lead-name
+                ">
 
                     ${escapeHtml(
-                        lead.name || "Без имени"
+                        lead.name ||
+                        "Без имени"
                     )}
 
                 </div>
 
-                <div class="recent-lead-contact">
+                <div class="
+                    recent-lead-contact
+                ">
 
                     ${escapeHtml(
-                        lead.contact || "—"
+                        lead.contact ||
+                        "—"
                     )}
 
                 </div>
@@ -2767,12 +2711,15 @@ function renderRecentLeads() {
             </div>
 
 
-            <div class="recent-lead-meta">
+            <div class="
+                recent-lead-meta
+            ">
 
                 <span>
 
                     ${escapeHtml(
-                        lead.service || "—"
+                        lead.service ||
+                        "—"
                     )}
 
                 </span>
@@ -2786,7 +2733,6 @@ function renderRecentLeads() {
                 </time>
 
             </div>
-
         `;
 
 
@@ -2798,18 +2744,17 @@ function renderRecentLeads() {
 
                 setTimeout(() => {
 
-                    openLeadDetails(lead.id);
+                    openLeadDetails(
+                        lead.id
+                    );
 
-                }, 50);
-
+                }, 100);
             }
         );
 
 
         container.appendChild(item);
-
     });
-
 }
 
 
@@ -2819,73 +2764,65 @@ function renderRecentLeads() {
 
 function initGeneralButtons() {
 
-    const siteButtons =
-        $$("[data-site-link]");
+    $$("[data-site-link]")
+        .forEach(button => {
 
+            button.addEventListener(
+                "click",
+                event => {
 
-    siteButtons.forEach(button => {
+                    if (
+                        button.tagName.toLowerCase()
+                        === "a"
+                    ) {
+                        return;
+                    }
 
-        button.addEventListener(
-            "click",
-            event => {
+                    event.preventDefault();
 
-                if (
-                    button.tagName.toLowerCase()
-                    === "a"
-                ) {
-
-                    return;
-
+                    window.open(
+                        ADMIN_CONFIG.siteUrl,
+                        "_blank"
+                    );
                 }
-
-                event.preventDefault();
-
-                window.open(
-                    ADMIN_CONFIG.siteUrl,
-                    "_blank"
-                );
-
-            }
-        );
-
-    });
+            );
+        });
 
 
-    const logoutButtons =
-        $$("[data-logout]");
+    $$("[data-logout]")
+        .forEach(button => {
 
+            button.addEventListener(
+                "click",
+                async () => {
 
-    logoutButtons.forEach(button => {
+                    if (
+                        typeof window.frilanceLogout
+                        === "function"
+                    ) {
 
-        button.addEventListener(
-            "click",
-            async () => {
-
-                if (
-                    typeof window.frilanceLogout
-                    === "function"
-                ) {
-
-                    await window.frilanceLogout();
-
+                        await window.frilanceLogout();
+                    }
                 }
-
-            }
-        );
-
-    });
-
+            );
+        });
 }
 
 
 /* =========================================================
-   DEBUG / PUBLIC API
+   DEBUG API
 ========================================================= */
 
 window.FRILANCE_ADMIN = {
 
     reload:
         loadAllData,
+
+    reloadPortfolio:
+        loadPortfolio,
+
+    reloadLeads:
+        loadLeads,
 
     showSection:
         showSection,
@@ -2903,9 +2840,5 @@ window.FRILANCE_ADMIN = {
         () => contacts,
 
     leads:
-        () => leads,
-
-    reloadLeads:
-        loadLeads
-
+        () => leads
 };
