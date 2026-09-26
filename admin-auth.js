@@ -4,56 +4,91 @@
    FRILANCE ADMIN — SUPABASE AUTH
 ========================================================= */
 
-const SUPABASE_URL = "https://vmiehkctmtpmpmizhkzt.supabase.co";
+const SUPABASE_URL =
+    "https://vmiehkctmtpmpmizhkzt.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_XeGc3k4Wl67a0MSXzSufYA_L0Zl-sRS";
 
-const frilanceSupabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-);
+
+/* =========================================================
+   SUPABASE CLIENT
+========================================================= */
+
+if (!window.supabase) {
+
+    console.error(
+        "FRILANCE AUTH: библиотека Supabase не загружена."
+    );
+
+} else {
+
+    try {
+
+        window.frilanceSupabase =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_PUBLISHABLE_KEY,
+                {
+                    auth: {
+                        persistSession: true,
+                        autoRefreshToken: true,
+                        detectSessionInUrl: true
+                    },
+                    global: {
+                        headers: {
+                            "X-Client-Info": "frilance-admin"
+                        }
+                    }
+                }
+            );
+
+        console.log(
+            "FRILANCE AUTH: Supabase client создан."
+        );
+
+    } catch (error) {
+
+        console.error(
+            "FRILANCE AUTH: ошибка создания Supabase client:",
+            error
+        );
+
+    }
+}
 
 
 /* =========================================================
-   СОЗДАНИЕ ЭКРАНА ВХОДА
+   LOGIN OVERLAY
 ========================================================= */
 
-function createLoginScreen() {
+function createLoginOverlay() {
 
-    if (document.getElementById("frilanceLoginScreen")) {
+    if (document.getElementById("frilanceLoginOverlay")) {
         return;
     }
 
-    const loginScreen = document.createElement("div");
+    const overlay = document.createElement("div");
 
-    loginScreen.id = "frilanceLoginScreen";
+    overlay.id = "frilanceLoginOverlay";
 
-    loginScreen.innerHTML = `
-        <div class="frilance-login-card">
+    overlay.innerHTML = `
+        <div class="frilance-login-box">
 
             <div class="frilance-login-logo">
-                <div class="frilance-login-logo-mark">OB</div>
-
-                <div>
-                    <div class="frilance-login-logo-title">
-                        FRILANCE
-                    </div>
-
-                    <div class="frilance-login-logo-subtitle">
-                        Панель управления
-                    </div>
-                </div>
+                FRILANCE
             </div>
 
-            <div class="frilance-login-header">
-                <h1>Вход в админку</h1>
-                <p>Введите данные администратора</p>
-            </div>
+            <h2>Вход в админ-панель</h2>
+
+            <p class="frilance-login-subtitle">
+                Введите данные администратора
+            </p>
 
             <form id="frilanceLoginForm">
 
                 <div class="frilance-login-field">
+
                     <label for="frilanceLoginEmail">
                         Email
                     </label>
@@ -61,13 +96,14 @@ function createLoginScreen() {
                     <input
                         type="email"
                         id="frilanceLoginEmail"
-                        placeholder="Введите email"
-                        autocomplete="email"
+                        autocomplete="username"
                         required
                     >
+
                 </div>
 
                 <div class="frilance-login-field">
+
                     <label for="frilanceLoginPassword">
                         Пароль
                     </label>
@@ -75,10 +111,10 @@ function createLoginScreen() {
                     <input
                         type="password"
                         id="frilanceLoginPassword"
-                        placeholder="Введите пароль"
                         autocomplete="current-password"
                         required
                     >
+
                 </div>
 
                 <div
@@ -89,7 +125,6 @@ function createLoginScreen() {
                 <button
                     type="submit"
                     class="frilance-login-button"
-                    id="frilanceLoginButton"
                 >
                     Войти
                 </button>
@@ -99,36 +134,32 @@ function createLoginScreen() {
         </div>
     `;
 
-    document.body.prepend(loginScreen);
+    document.body.appendChild(overlay);
 
-    document
-        .getElementById("frilanceLoginForm")
-        .addEventListener("submit", handleLogin);
-
-    injectLoginStyles();
+    return overlay;
 }
 
 
 /* =========================================================
-   СТИЛИ ЭКРАНА ВХОДА
+   LOGIN STYLES
 ========================================================= */
 
-function injectLoginStyles() {
+function addLoginStyles() {
 
-    if (document.getElementById("frilanceAuthStyles")) {
+    if (document.getElementById("frilanceLoginStyles")) {
         return;
     }
 
     const style = document.createElement("style");
 
-    style.id = "frilanceAuthStyles";
+    style.id = "frilanceLoginStyles";
 
     style.textContent = `
 
-        #frilanceLoginScreen {
+        #frilanceLoginOverlay {
             position: fixed;
             inset: 0;
-            z-index: 999999;
+            z-index: 99999;
 
             display: flex;
             align-items: center;
@@ -138,103 +169,52 @@ function injectLoginStyles() {
 
             background:
                 radial-gradient(
-                    circle at top left,
-                    rgba(98, 200, 255, .12),
-                    transparent 35%
+                    circle at top,
+                    rgba(124, 108, 255, 0.12),
+                    transparent 45%
                 ),
-                radial-gradient(
-                    circle at bottom right,
-                    rgba(255, 79, 154, .12),
-                    transparent 35%
-                ),
-                #08070d;
-
-            color: #fff;
+                rgba(10, 8, 20, 0.97);
         }
 
-        .frilance-login-card {
+        .frilance-login-box {
             width: 100%;
-            max-width: 430px;
+            max-width: 420px;
+            box-sizing: border-box;
 
-            padding: 34px;
+            padding: 36px;
 
-            background: rgba(255,255,255,.055);
+            border-radius: 20px;
 
-            border: 1px solid rgba(255,255,255,.1);
-
-            border-radius: 24px;
+            background: #171324;
+            border: 1px solid rgba(255,255,255,0.08);
 
             box-shadow:
-                0 25px 80px rgba(0,0,0,.55);
+                0 30px 80px rgba(0,0,0,0.55);
 
-            backdrop-filter: blur(20px);
+            color: #ffffff;
         }
 
         .frilance-login-logo {
-            display: flex;
-            align-items: center;
-            gap: 14px;
+            margin-bottom: 20px;
 
-            margin-bottom: 38px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 3px;
+
+            color: #aeb8ff;
         }
 
-        .frilance-login-logo-mark {
-            width: 48px;
-            height: 48px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            border-radius: 14px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #55c8ff,
-                    #8d6cff,
-                    #ff4f9a
-                );
-
-            color: #fff;
-
-            font-size: 15px;
-            font-weight: 800;
-
-            box-shadow:
-                0 10px 30px rgba(98,200,255,.2);
-        }
-
-        .frilance-login-logo-title {
-            font-size: 18px;
-            font-weight: 800;
-            letter-spacing: .08em;
-        }
-
-        .frilance-login-logo-subtitle {
-            margin-top: 3px;
-
-            color: #858092;
-
-            font-size: 12px;
-        }
-
-        .frilance-login-header {
-            margin-bottom: 26px;
-        }
-
-        .frilance-login-header h1 {
+        .frilance-login-box h2 {
             margin: 0 0 8px;
 
-            font-size: 28px;
+            font-size: 26px;
             line-height: 1.2;
         }
 
-        .frilance-login-header p {
-            margin: 0;
+        .frilance-login-subtitle {
+            margin: 0 0 28px;
 
-            color: #b8b4c5;
-
+            color: #9d98aa;
             font-size: 14px;
         }
 
@@ -245,46 +225,39 @@ function injectLoginStyles() {
         .frilance-login-field label {
             display: block;
 
-            margin-bottom: 8px;
-
-            color: #b8b4c5;
+            margin-bottom: 7px;
 
             font-size: 13px;
-            font-weight: 600;
+            color: #aaa4b8;
         }
 
         .frilance-login-field input {
+            display: block;
+
             width: 100%;
             box-sizing: border-box;
 
-            padding: 14px 15px;
+            padding: 13px 14px;
 
-            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
 
-            border-radius: 12px;
+            background: #0f0d17;
+
+            color: #ffffff;
 
             outline: none;
 
-            background: rgba(255,255,255,.045);
-
-            color: #fff;
-
-            font: inherit;
-
-            transition: .25s ease;
-        }
-
-        .frilance-login-field input::placeholder {
-            color: #858092;
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
         }
 
         .frilance-login-field input:focus {
-            border-color: #62c8ff;
-
-            background: rgba(255,255,255,.065);
+            border-color: #8d7cff;
 
             box-shadow:
-                0 0 0 3px rgba(98,200,255,.1);
+                0 0 0 3px rgba(141,124,255,0.12);
         }
 
         .frilance-login-button {
@@ -295,62 +268,43 @@ function injectLoginStyles() {
             padding: 14px 18px;
 
             border: 0;
+            border-radius: 10px;
 
-            border-radius: 12px;
+            background: #7c6cff;
 
-            background:
-                linear-gradient(
-                    135deg,
-                    #55c8ff,
-                    #8d6cff,
-                    #ff4f9a
-                );
+            color: #ffffff;
 
-            color: #fff;
-
-            font: inherit;
             font-weight: 700;
 
             cursor: pointer;
 
-            transition: .25s ease;
+            transition:
+                opacity 0.2s ease,
+                transform 0.2s ease;
         }
 
         .frilance-login-button:hover {
-            transform: translateY(-1px);
+            opacity: 0.92;
+        }
 
-            box-shadow:
-                0 12px 30px rgba(141,108,255,.25);
+        .frilance-login-button:active {
+            transform: translateY(1px);
         }
 
         .frilance-login-button:disabled {
-            opacity: .6;
+            opacity: 0.6;
             cursor: wait;
-            transform: none;
         }
 
         .frilance-login-error {
             min-height: 20px;
 
-            margin: 4px 0 8px;
+            margin-bottom: 8px;
 
-            color: #ff6fae;
+            color: #ff7f96;
 
             font-size: 13px;
             line-height: 1.4;
-        }
-
-        @media (max-width: 500px) {
-
-            .frilance-login-card {
-                padding: 25px;
-                border-radius: 20px;
-            }
-
-            .frilance-login-header h1 {
-                font-size: 24px;
-            }
-
         }
 
     `;
@@ -360,168 +314,308 @@ function injectLoginStyles() {
 
 
 /* =========================================================
-   ВХОД
+   LOGIN
 ========================================================= */
 
 async function handleLogin(event) {
 
     event.preventDefault();
 
-    const email =
-        document.getElementById("frilanceLoginEmail").value.trim();
+    const emailInput =
+        document.getElementById(
+            "frilanceLoginEmail"
+        );
 
-    const password =
-        document.getElementById("frilanceLoginPassword").value;
+    const passwordInput =
+        document.getElementById(
+            "frilanceLoginPassword"
+        );
 
-    const errorElement =
-        document.getElementById("frilanceLoginError");
+    const errorBox =
+        document.getElementById(
+            "frilanceLoginError"
+        );
 
     const button =
-        document.getElementById("frilanceLoginButton");
+        document.querySelector(
+            ".frilance-login-button"
+        );
 
-    errorElement.textContent = "";
+    if (!emailInput || !passwordInput) {
+        return;
+    }
 
-    button.disabled = true;
-    button.textContent = "Входим...";
+    const email =
+        emailInput.value.trim();
+
+    const password =
+        passwordInput.value;
+
+    if (errorBox) {
+        errorBox.textContent = "";
+    }
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = "Вход...";
+    }
 
     try {
 
-        const { error } =
-            await frilanceSupabase.auth.signInWithPassword({
-                email,
-                password
-            });
+        if (!window.frilanceSupabase) {
+            throw new Error(
+                "Supabase не инициализирован."
+            );
+        }
+
+        const {
+            data,
+            error
+        } =
+            await window.frilanceSupabase.auth
+                .signInWithPassword({
+                    email,
+                    password
+                });
 
         if (error) {
             throw error;
         }
 
-        hideLoginScreen();
+        if (!data || !data.session) {
+            throw new Error(
+                "Сессия не создана."
+            );
+        }
+
+        console.log(
+            "FRILANCE AUTH: вход выполнен."
+        );
+
+        const overlay =
+            document.getElementById(
+                "frilanceLoginOverlay"
+            );
+
+        if (overlay) {
+            overlay.remove();
+        }
 
     } catch (error) {
 
-        console.error("FRILANCE AUTH ERROR:", error);
-
-        errorElement.textContent =
-            "Неверный email или пароль.";
-
-        button.disabled = false;
-        button.textContent = "Войти";
-    }
-}
-
-
-/* =========================================================
-   СКРЫТЬ ЭКРАН ВХОДА
-========================================================= */
-
-function hideLoginScreen() {
-
-    const loginScreen =
-        document.getElementById("frilanceLoginScreen");
-
-    if (!loginScreen) {
-        return;
-    }
-
-    loginScreen.style.opacity = "0";
-
-    loginScreen.style.pointerEvents = "none";
-
-    setTimeout(() => {
-        loginScreen.remove();
-    }, 250);
-}
-
-
-/* =========================================================
-   ПОКАЗАТЬ ЭКРАН ВХОДА
-========================================================= */
-
-function showLoginScreen() {
-
-    createLoginScreen();
-
-    const loginScreen =
-        document.getElementById("frilanceLoginScreen");
-
-    if (loginScreen) {
-        loginScreen.style.opacity = "1";
-        loginScreen.style.pointerEvents = "auto";
-    }
-}
-
-
-/* =========================================================
-   ПРОВЕРКА АВТОРИЗАЦИИ
-========================================================= */
-
-async function checkAdminAuth() {
-
-    createLoginScreen();
-
-    const {
-        data,
-        error
-    } = await frilanceSupabase.auth.getSession();
-
-    if (error) {
-
         console.error(
-            "Ошибка проверки сессии:",
+            "FRILANCE AUTH: ошибка входа:",
             error
         );
 
-        showLoginScreen();
+        if (errorBox) {
+            errorBox.textContent =
+                error?.message ||
+                "Не удалось выполнить вход.";
+        }
+
+    } finally {
+
+        if (button) {
+            button.disabled = false;
+            button.textContent = "Войти";
+        }
+
+    }
+}
+
+
+/* =========================================================
+   CHECK SESSION
+========================================================= */
+
+async function checkSession() {
+
+    try {
+
+        if (!window.frilanceSupabase) {
+            return false;
+        }
+
+        const {
+            data,
+            error
+        } =
+            await window.frilanceSupabase.auth
+                .getSession();
+
+        if (error) {
+            throw error;
+        }
+
+        const session =
+            data?.session || null;
+
+        if (session) {
+
+            console.log(
+                "FRILANCE AUTH: активная сессия найдена."
+            );
+
+            return true;
+        }
+
+        console.log(
+            "FRILANCE AUTH: активной сессии нет."
+        );
+
+        return false;
+
+    } catch (error) {
+
+        console.error(
+            "FRILANCE AUTH: ошибка проверки сессии:",
+            error
+        );
+
+        return false;
+    }
+}
+
+
+/* =========================================================
+   SHOW LOGIN
+========================================================= */
+
+function showLogin() {
+
+    addLoginStyles();
+
+    const overlay =
+        createLoginOverlay();
+
+    if (!overlay) {
+        return;
+    }
+
+    const form =
+        document.getElementById(
+            "frilanceLoginForm"
+        );
+
+    if (form) {
+
+        form.addEventListener(
+            "submit",
+            handleLogin
+        );
+
+    }
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+window.frilanceLogout =
+    async function () {
+
+        try {
+
+            if (!window.frilanceSupabase) {
+                return;
+            }
+
+            const { error } =
+                await window.frilanceSupabase.auth
+                    .signOut();
+
+            if (error) {
+                throw error;
+            }
+
+            console.log(
+                "FRILANCE AUTH: выход выполнен."
+            );
+
+            window.location.reload();
+
+        } catch (error) {
+
+            console.error(
+                "FRILANCE AUTH: ошибка выхода:",
+                error
+            );
+
+        }
+
+    };
+
+
+/* =========================================================
+   AUTH STATE
+========================================================= */
+
+if (window.frilanceSupabase) {
+
+    window.frilanceSupabase.auth.onAuthStateChange(
+        (event, session) => {
+
+            console.log(
+                "FRILANCE AUTH:",
+                event
+            );
+
+            if (session) {
+
+                const overlay =
+                    document.getElementById(
+                        "frilanceLoginOverlay"
+                    );
+
+                if (overlay) {
+                    overlay.remove();
+                }
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   START AUTH
+========================================================= */
+
+(async function initAuth() {
+
+    console.log(
+        "FRILANCE AUTH: запуск..."
+    );
+
+    if (
+        !window.frilanceSupabase ||
+        !window.frilanceSupabase.auth
+    ) {
+
+        console.error(
+            "FRILANCE AUTH: Supabase недоступен."
+        );
 
         return;
     }
 
-    if (data.session) {
-        hideLoginScreen();
+    const hasSession =
+        await checkSession();
+
+    if (!hasSession) {
+
+        showLogin();
+
     } else {
-        showLoginScreen();
-    }
-}
 
-
-/* =========================================================
-   СЛЕДИМ ЗА СОСТОЯНИЕМ АВТОРИЗАЦИИ
-========================================================= */
-
-frilanceSupabase.auth.onAuthStateChange(
-    (event, session) => {
-
-        if (session) {
-            hideLoginScreen();
-        } else {
-            showLoginScreen();
-        }
+        console.log(
+            "FRILANCE AUTH: админка готова."
+        );
 
     }
-);
 
-
-/* =========================================================
-   ВЫХОД
-   Можно вызвать из консоли:
-   frilanceLogout()
-========================================================= */
-
-async function frilanceLogout() {
-
-    await frilanceSupabase.auth.signOut();
-
-    showLoginScreen();
-}
-
-
-/* =========================================================
-   ЗАПУСК
-========================================================= */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    checkAdminAuth();
-
-});
+})();

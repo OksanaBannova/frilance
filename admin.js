@@ -11,6 +11,10 @@
    - Тексты
    - Контакты
    - Заявки
+   - Проверка авторизации перед загрузкой
+   - Повторные запросы при сетевых ошибках
+   - Последовательная загрузка данных
+   - Сохранение уже загруженных данных при временной ошибке
    - Встроенные превью без изображений
 ========================================================= */
 
@@ -34,9 +38,11 @@ function $(selector, root = document) {
     return root.querySelector(selector);
 }
 
+
 function $$(selector, root = document) {
     return [...root.querySelectorAll(selector)];
 }
+
 
 function escapeHtml(value) {
     if (value === null || value === undefined) {
@@ -50,6 +56,7 @@ function escapeHtml(value) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
+
 
 function formatDate(date) {
     if (!date) {
@@ -68,6 +75,7 @@ function formatDate(date) {
         year: "numeric"
     });
 }
+
 
 function formatDateTime(date) {
     if (!date) {
@@ -89,18 +97,264 @@ function formatDateTime(date) {
     });
 }
 
-function showNotification(message, type = "success") {
-    let notification = $("#adminNotification");
 
-    if (!notification) {
-        notification = document.createElement("div");
-        notification.id = "adminNotification";
-        notification.className = "admin-notification";
+function sleep(ms) {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    });
+}
 
-        document.body.appendChild(notification);
+
+/* =========================================================
+   ПРОВЕРКА ВРЕМЕННЫХ СЕТЕВЫХ ОШИБОК
+========================================================= */
+
+function isRetryableSupabaseError(error) {
+
+    const message =
+        String(error?.message || "").toLowerCase();
+
+    const details =
+        String(error?.details || "").toLowerCase();
+
+    const hint =
+        String(error?.hint || "").toLowerCase();
+
+    const code =
+        String(error?.code || "").toLowerCase();
+
+    const combined =
+        `${message} ${details} ${hint} ${code}`;
+
+
+    return (
+        combined.includes("failed to fetch") ||
+        combined.includes("networkerror") ||
+        combined.includes("network error") ||
+        combined.includes("err_http2_ping_failed") ||
+        combined.includes("http2") ||
+        combined.includes("timeout") ||
+        combined.includes("502") ||
+        combined.includes("503") ||
+        combined.includes("504") ||
+        combined.includes("connection reset") ||
+        combined.includes("connection closed") ||
+        combined.includes("network request failed")
+    );
+}
+
+
+/* =========================================================
+   ПОВТОРНЫЙ SUPABASE ЗАПРОС
+========================================================= */
+
+async function withSupabaseRetry(
+    operation,
+    label,
+    options = {}
+) {
+
+    const attempts =
+        Number(options.attempts) || 5;
+
+    const baseDelay =
+        Number(options.baseDelay) || 800;
+
+    let lastError = null;
+
+
+    for (
+        let attempt = 1;
+        attempt <= attempts;
+        attempt++
+    ) {
+
+        try {
+
+            console.log(
+                `FRILANCE: запрос ${label}, попытка ${attempt}/${attempts}`
+            );
+
+
+            const result =
+                await operation();
+
+
+            /*
+               Supabase может вернуть объект
+               с error вместо throw.
+            */
+
+            if (result?.error) {
+
+                lastError =
+                    result.error;
+
+
+                /*
+                   Если ошибка не сетевая —
+                   повторять бессмысленно.
+                */
+
+                if (
+                    !isRetryableSupabaseError(
+                        result.error
+                    ) ||
+                    attempt === attempts
+                ) {
+
+                    return result;
+                }
+
+            } else {
+
+                return result;
+            }
+
+
+        } catch (error) {
+
+            lastError =
+                error;
+
+
+            if (
+                !isRetryableSupabaseError(error) ||
+                attempt === attempts
+            ) {
+
+                throw error;
+            }
+        }
+
+
+        const delay =
+            baseDelay * attempt;
+
+
+        console.warn(
+            `FRILANCE: временная ошибка ${label}. ` +
+            `Повтор через ${delay} мс.`
+        );
+
+
+        await sleep(delay);
     }
 
-    notification.textContent = message;
+
+    throw (
+        lastError ||
+        new Error(
+            `Не удалось выполнить запрос: ${label}`
+        )
+    );
+}
+
+
+/* =========================================================
+   ПРОВЕРКА SUPABASE-СЕССИИ
+========================================================= */
+
+async function waitForAuthSession(
+    timeout = 10000
+) {
+
+    if (
+        typeof frilanceSupabase === "undefined" ||
+        !frilanceSupabase
+    ) {
+
+        console.warn(
+            "FRILANCE AUTH: Supabase client пока недоступен."
+        );
+
+        return null;
+    }
+
+
+    const started =
+        Date.now();
+
+
+    while (
+        Date.now() - started < timeout
+    ) {
+
+        try {
+
+            const result =
+                await frilanceSupabase.auth.getSession();
+
+
+            const session =
+                result?.data?.session;
+
+
+            if (session) {
+
+                console.log(
+                    "FRILANCE AUTH: активная сессия подтверждена."
+                );
+
+                return session;
+            }
+
+
+        } catch (error) {
+
+            console.warn(
+                "FRILANCE AUTH: ошибка проверки сессии:",
+                error
+            );
+        }
+
+
+        await sleep(300);
+    }
+
+
+    console.warn(
+        "FRILANCE AUTH: активная сессия не найдена."
+    );
+
+
+    return null;
+}
+
+
+/* =========================================================
+   УВЕДОМЛЕНИЯ
+========================================================= */
+
+function showNotification(
+    message,
+    type = "success"
+) {
+
+    let notification =
+        $("#adminNotification");
+
+
+    if (!notification) {
+
+        notification =
+            document.createElement("div");
+
+        notification.id =
+            "adminNotification";
+
+        notification.className =
+            "admin-notification";
+
+        document.body.appendChild(
+            notification
+        );
+    }
+
+
+    notification.textContent =
+        message;
+
 
     notification.classList.remove(
         "show",
@@ -108,16 +362,28 @@ function showNotification(message, type = "success") {
         "error"
     );
 
+
     notification.classList.add(
         "show",
-        type === "error" ? "error" : "success"
+        type === "error"
+            ? "error"
+            : "success"
     );
 
-    clearTimeout(notification._timer);
 
-    notification._timer = setTimeout(() => {
-        notification.classList.remove("show");
-    }, 3000);
+    clearTimeout(
+        notification._timer
+    );
+
+
+    notification._timer =
+        setTimeout(() => {
+
+            notification.classList.remove(
+                "show"
+            );
+
+        }, 3000);
 }
 
 
@@ -125,17 +391,8 @@ function showNotification(message, type = "success") {
    ВСТРОЕННЫЕ ПРЕВЬЮ ПОРТФОЛИО
 ========================================================= */
 
-/*
-   Картинки нам больше не нужны.
-
-   Если в Supabase есть image_url, сначала пробуем показать
-   реальную картинку.
-
-   Если её нет или она отдаёт 404 —
-   автоматически показываем встроенное превью.
-*/
-
 function getPortfolioPreviewType(item) {
+
     const text = [
         item?.title || "",
         item?.category || "",
@@ -144,13 +401,16 @@ function getPortfolioPreviewType(item) {
         .join(" ")
         .toLowerCase();
 
+
     if (
         text.includes("нейро") ||
         text.includes("фото") ||
         text.includes("ai")
     ) {
+
         return "neuro";
     }
+
 
     if (
         text.includes("карточ") ||
@@ -158,8 +418,10 @@ function getPortfolioPreviewType(item) {
         text.includes("market") ||
         text.includes("маркет")
     ) {
+
         return "marketplace";
     }
+
 
     return "website";
 }
@@ -168,34 +430,46 @@ function getPortfolioPreviewType(item) {
 function getBuiltInPreview(type) {
 
     if (type === "neuro") {
+
         return `
             <div class="portfolio-built-preview portfolio-preview-neuro">
+
                 <div class="preview-glow preview-glow-one"></div>
                 <div class="preview-glow preview-glow-two"></div>
 
                 <div class="neuro-preview-content">
+
                     <div class="neuro-spark">✦</div>
 
                     <div class="neuro-face">
+
                         <div class="neuro-hair"></div>
+
                         <div class="neuro-face-shape">
+
                             <div class="neuro-eye left"></div>
                             <div class="neuro-eye right"></div>
+
                             <div class="neuro-mouth"></div>
+
                         </div>
+
                     </div>
 
                     <div class="neuro-label">
                         <span>AI</span>
                         <strong>НЕЙРОФОТО</strong>
                     </div>
+
                 </div>
+
             </div>
         `;
     }
 
 
     if (type === "marketplace") {
+
         return `
             <div class="portfolio-built-preview portfolio-preview-marketplace">
 
@@ -205,28 +479,37 @@ function getBuiltInPreview(type) {
                 </div>
 
                 <div class="market-product">
+
                     <div class="product-box">
+
                         <div class="product-shine"></div>
                         <div class="product-line"></div>
                         <div class="product-circle"></div>
+
                     </div>
+
                 </div>
 
                 <div class="market-info">
+
                     <div class="market-lines">
+
                         <span></span>
                         <span></span>
                         <span></span>
+
                     </div>
 
                     <div class="market-price">
                         от 1 500 ₽
                     </div>
+
                 </div>
 
                 <div class="market-badge">
                     КАРТОЧКА ТОВАРА
                 </div>
+
             </div>
         `;
     }
@@ -238,6 +521,7 @@ function getBuiltInPreview(type) {
             <div class="browser-window">
 
                 <div class="browser-top">
+
                     <div class="browser-dots">
                         <i></i>
                         <i></i>
@@ -247,11 +531,13 @@ function getBuiltInPreview(type) {
                     <div class="browser-address">
                         your-site.ru
                     </div>
+
                 </div>
 
                 <div class="browser-content">
 
                     <div class="site-nav">
+
                         <strong>BRAND</strong>
 
                         <div class="site-nav-lines">
@@ -259,12 +545,16 @@ function getBuiltInPreview(type) {
                             <span></span>
                             <span></span>
                         </div>
+
                     </div>
 
                     <div class="site-hero">
 
                         <div class="site-hero-text">
-                            <small>САЙТ ПОД КЛЮЧ</small>
+
+                            <small>
+                                САЙТ ПОД КЛЮЧ
+                            </small>
 
                             <strong>
                                 Цифровая<br>
@@ -274,11 +564,14 @@ function getBuiltInPreview(type) {
                             <div class="site-button">
                                 Обсудить проект
                             </div>
+
                         </div>
 
                         <div class="site-hero-card">
+
                             <div class="site-card-glow"></div>
                             <div class="site-card-circle"></div>
+
                         </div>
 
                     </div>
@@ -290,6 +583,7 @@ function getBuiltInPreview(type) {
                     </div>
 
                 </div>
+
             </div>
 
             <div class="website-label">
@@ -303,7 +597,7 @@ function getBuiltInPreview(type) {
 
 
 /* =========================================================
-   ДОБАВЛЯЕМ СТИЛИ ВСТРОЕННЫХ ПРЕВЬЮ
+   СТИЛИ ПРЕВЬЮ
 ========================================================= */
 
 function injectPortfolioPreviewStyles() {
@@ -312,9 +606,14 @@ function injectPortfolioPreviewStyles() {
         return;
     }
 
-    const style = document.createElement("style");
 
-    style.id = "portfolioBuiltPreviewStyles";
+    const style =
+        document.createElement("style");
+
+
+    style.id =
+        "portfolioBuiltPreviewStyles";
+
 
     style.textContent = `
 
@@ -327,18 +626,12 @@ function injectPortfolioPreviewStyles() {
             background: #0d0a16;
         }
 
-
         .portfolio-built-preview {
             width: 100%;
             height: 100%;
             position: relative;
             overflow: hidden;
         }
-
-
-        /* ================================
-           WEBSITE
-        ================================= */
 
         .portfolio-preview-website {
             background:
@@ -541,11 +834,6 @@ function injectPortfolioPreviewStyles() {
             letter-spacing: 1px;
         }
 
-
-        /* ================================
-           MARKETPLACE
-        ================================= */
-
         .portfolio-preview-marketplace {
             background:
                 radial-gradient(
@@ -672,11 +960,6 @@ function injectPortfolioPreviewStyles() {
             font-size: 6px;
             letter-spacing: .7px;
         }
-
-
-        /* ================================
-           NEURO PHOTO
-        ================================= */
 
         .portfolio-preview-neuro {
             background:
@@ -818,11 +1101,6 @@ function injectPortfolioPreviewStyles() {
             letter-spacing: 1px;
         }
 
-
-        /* ================================
-           FALLBACK
-        ================================= */
-
         .portfolio-image-error {
             width: 100%;
             height: 100%;
@@ -834,11 +1112,6 @@ function injectPortfolioPreviewStyles() {
             object-fit: cover;
             display: block;
         }
-
-
-        /* ================================
-           LEADS LOADING
-        ================================= */
 
         .leads-loading {
             display: flex;
@@ -863,31 +1136,39 @@ function injectPortfolioPreviewStyles() {
                 transform: rotate(360deg);
             }
         }
-
     `;
+
 
     document.head.appendChild(style);
 }
 
 
 /* =========================================================
-   ИНИЦИАЛИЗАЦИЯ
+   DOM READY
 ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
-    injectPortfolioPreviewStyles();
+        console.log(
+            "FRILANCE ADMIN: запуск..."
+        );
 
-    initNavigation();
-    initPortfolio();
-    initServices();
-    initTexts();
-    initContacts();
-    initLeads();
-    initQuickActions();
 
-    waitForSupabase();
-});
+        injectPortfolioPreviewStyles();
+
+        initNavigation();
+        initPortfolio();
+        initServices();
+        initTexts();
+        initContacts();
+        initLeads();
+        initQuickActions();
+
+        waitForSupabase();
+    }
+);
 
 
 /* =========================================================
@@ -896,22 +1177,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function waitForSupabase() {
 
-    if (typeof frilanceSupabase !== "undefined") {
+    if (
+        typeof frilanceSupabase !== "undefined" &&
+        frilanceSupabase
+    ) {
 
         console.log(
-            "FRILANCE ADMIN: Supabase готов"
+            "FRILANCE ADMIN: Supabase готов."
         );
+
 
         loadAllData();
 
         return;
     }
 
+
     console.log(
         "FRILANCE ADMIN: ждём Supabase..."
     );
 
-    setTimeout(waitForSupabase, 100);
+
+    setTimeout(
+        waitForSupabase,
+        100
+    );
 }
 
 
@@ -922,64 +1212,108 @@ function waitForSupabase() {
 async function loadAllData() {
 
     console.log(
-        "FRILANCE ADMIN: начинаем загрузку данных"
+        "FRILANCE ADMIN: начинаем загрузку данных..."
     );
 
 
-    try {
-        await loadPortfolio();
-    } catch (error) {
+    /*
+       Сначала убеждаемся, что авторизация
+       действительно готова.
+    */
+
+    const session =
+        await waitForAuthSession();
+
+
+    if (!session) {
+
         console.error(
-            "Ошибка загрузки портфолио:",
-            error
+            "FRILANCE ADMIN: активная Supabase-сессия не найдена."
+        );
+
+
+        /*
+           Не прекращаем работу полностью.
+           admin-auth.js уже отвечает за доступ
+           к админке, поэтому пробуем выполнить
+           запросы ещё раз.
+        */
+
+    } else {
+
+        console.log(
+            "FRILANCE ADMIN: пользователь:",
+            session.user?.email || "без email"
         );
     }
 
 
-    try {
-        await loadServices();
-    } catch (error) {
-        console.error(
-            "Ошибка загрузки услуг:",
-            error
-        );
-    }
+    const loaders = [
+
+        [
+            "портфолио",
+            loadPortfolio
+        ],
+
+        [
+            "услуги",
+            loadServices
+        ],
+
+        [
+            "тексты",
+            loadTexts
+        ],
+
+        [
+            "контакты",
+            loadContacts
+        ],
+
+        [
+            "заявки",
+            loadLeads
+        ]
+
+    ];
 
 
-    try {
-        await loadTexts();
-    } catch (error) {
-        console.error(
-            "Ошибка загрузки текстов:",
-            error
-        );
-    }
+    /*
+       ВАЖНО:
 
+       Никаких Promise.all.
 
-    try {
-        await loadContacts();
-    } catch (error) {
-        console.error(
-            "Ошибка загрузки контактов:",
-            error
-        );
-    }
+       Все запросы выполняются строго
+       последовательно.
 
+       Это уменьшает вероятность проблем
+       HTTP/2 в браузере.
+    */
 
-    try {
-        await loadLeads();
-    } catch (error) {
-        console.error(
-            "Ошибка загрузки заявок:",
-            error
-        );
+    for (
+        const [name, loader]
+        of loaders
+    ) {
+
+        try {
+
+            await loader();
+
+        } catch (error) {
+
+            console.error(
+                `FRILANCE: ошибка загрузки ${name}:`,
+                error
+            );
+        }
     }
 
 
     updateDashboard();
 
+
     console.log(
-        "FRILANCE ADMIN: загрузка завершена"
+        "FRILANCE ADMIN: загрузка завершена."
     );
 }
 
@@ -990,50 +1324,68 @@ async function loadAllData() {
 
 function initNavigation() {
 
-    $$(".admin-nav-item").forEach(item => {
+    $$(".admin-nav-item")
+        .forEach(item => {
 
-        item.addEventListener("click", event => {
+            item.addEventListener(
+                "click",
+                event => {
 
-            event.preventDefault();
+                    event.preventDefault();
 
-            const section =
-                item.dataset.section ||
-                item.getAttribute("data-section");
 
-            if (section) {
-                showSection(section);
+                    const section =
+                        item.dataset.section ||
+                        item.getAttribute(
+                            "data-section"
+                        );
+
+
+                    if (section) {
+                        showSection(section);
+                    }
+                }
+            );
+        });
+
+
+    $$("[data-section]")
+        .forEach(item => {
+
+            if (
+                item.classList.contains(
+                    "admin-nav-item"
+                )
+            ) {
+                return;
+            }
+
+
+            if (
+                item.dataset.section &&
+                item.tagName === "BUTTON"
+            ) {
+
+                item.addEventListener(
+                    "click",
+                    () => {
+
+                        showSection(
+                            item.dataset.section
+                        );
+
+                    }
+                );
             }
         });
-    });
-
-
-    $$("[data-section]").forEach(item => {
-
-        if (
-            item.classList.contains("admin-nav-item")
-        ) {
-            return;
-        }
-
-        if (
-            item.dataset.section &&
-            item.tagName === "BUTTON"
-        ) {
-
-            item.addEventListener("click", () => {
-
-                showSection(
-                    item.dataset.section
-                );
-
-            });
-        }
-
-    });
 
 
     const hash =
-        window.location.hash.replace("#", "");
+        window.location.hash.replace(
+            "#",
+            ""
+        );
+
 
     if (hash) {
         showSection(hash);
@@ -1049,7 +1401,10 @@ function showSection(sectionName) {
         return;
     }
 
-    const sections = $$(".admin-section");
+
+    const sections =
+        $$(".admin-section");
+
 
     sections.forEach(section => {
 
@@ -1065,11 +1420,13 @@ function showSection(sectionName) {
     const navItems =
         $$(".admin-nav-item");
 
+
     navItems.forEach(item => {
 
         item.classList.toggle(
             "active",
-            item.dataset.section === sectionName
+            item.dataset.section ===
+            sectionName
         );
 
     });
@@ -1078,9 +1435,11 @@ function showSection(sectionName) {
     const title =
         $("[data-page-title]");
 
+
     if (title) {
 
         const titles = {
+
             dashboard: "Обзор",
             portfolio: "Портфолио",
             services: "Услуги",
@@ -1089,7 +1448,9 @@ function showSection(sectionName) {
             leads: "Заявки",
             seo: "SEO",
             settings: "Настройки"
+
         };
+
 
         title.textContent =
             titles[sectionName] ||
@@ -1097,14 +1458,18 @@ function showSection(sectionName) {
     }
 
 
-    window.location.hash = sectionName;
+    window.location.hash =
+        sectionName;
 
 
     if (sectionName === "leads") {
+
         renderLeads();
     }
 
+
     if (sectionName === "portfolio") {
+
         renderPortfolio();
     }
 }
@@ -1116,18 +1481,23 @@ function showSection(sectionName) {
 
 function initQuickActions() {
 
-    $$("[data-open-section]").forEach(button => {
+    $$("[data-open-section]")
+        .forEach(button => {
 
-        button.addEventListener("click", () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-            const section =
-                button.dataset.openSection;
+                    const section =
+                        button.dataset.openSection;
 
-            if (section) {
-                showSection(section);
-            }
+
+                    if (section) {
+                        showSection(section);
+                    }
+                }
+            );
         });
-    });
 }
 
 
@@ -1140,8 +1510,10 @@ function initPortfolio() {
     const addButton =
         $("#addPortfolioButton");
 
+
     const addEmptyButton =
         $("#addPortfolioButtonEmpty");
+
 
     if (addButton) {
 
@@ -1150,6 +1522,7 @@ function initPortfolio() {
             () => openPortfolioModal()
         );
     }
+
 
     if (addEmptyButton) {
 
@@ -1163,6 +1536,7 @@ function initPortfolio() {
     const closeButton =
         $("#closePortfolioModal");
 
+
     if (closeButton) {
 
         closeButton.addEventListener(
@@ -1175,6 +1549,7 @@ function initPortfolio() {
     const cancelButton =
         $("#cancelPortfolioButton");
 
+
     if (cancelButton) {
 
         cancelButton.addEventListener(
@@ -1186,6 +1561,7 @@ function initPortfolio() {
 
     const modal =
         $("#portfolioModal");
+
 
     if (modal) {
 
@@ -1206,6 +1582,7 @@ function initPortfolio() {
     const form =
         $("#portfolioForm");
 
+
     if (form) {
 
         form.addEventListener(
@@ -1217,6 +1594,7 @@ function initPortfolio() {
 
     const imageInput =
         $("#portfolioImage");
+
 
     if (imageInput) {
 
@@ -1235,26 +1613,41 @@ async function loadPortfolio() {
     );
 
 
-    const { data, error } =
-        await frilanceSupabase
-            .from("portfolio")
-            .select("*")
-            .order("sort_order", {
-                ascending: true
-            })
-            .order("created_at", {
-                ascending: false
-            });
+    const result =
+        await withSupabaseRetry(
+            () =>
+                frilanceSupabase
+                    .from("portfolio")
+                    .select("*")
+                    .order(
+                        "sort_order",
+                        {
+                            ascending: true
+                        }
+                    )
+                    .order(
+                        "created_at",
+                        {
+                            ascending: false
+                        }
+                    ),
+            "portfolio"
+        );
 
 
-    if (error) {
-        throw error;
+    if (result.error) {
+        throw result.error;
     }
 
 
+    /*
+       Обновляем данные только после
+       успешного ответа.
+    */
+
     portfolio =
-        Array.isArray(data)
-            ? data
+        Array.isArray(result.data)
+            ? result.data
             : [];
 
 
@@ -1274,6 +1667,7 @@ function renderPortfolio() {
     const grid =
         $("#portfolioAdminGrid");
 
+
     const emptyState =
         $("#portfolioEmptyState");
 
@@ -1287,9 +1681,11 @@ function renderPortfolio() {
 
         grid.innerHTML = "";
 
+
         if (emptyState) {
             emptyState.style.display = "";
         }
+
 
         return;
     }
@@ -1318,11 +1714,13 @@ function renderPortfolio() {
                     const id =
                         button.dataset.id;
 
+
                     const item =
                         portfolio.find(
                             portfolioItem =>
                                 portfolioItem.id === id
                         );
+
 
                     if (item) {
                         openPortfolioModal(item);
@@ -1341,6 +1739,7 @@ function renderPortfolio() {
 
                     const id =
                         button.dataset.id;
+
 
                     deletePortfolio(id);
                 }
@@ -1367,6 +1766,7 @@ function createPortfolioCard(item) {
 
         preview = `
             <div class="portfolio-preview-area">
+
                 <img
                     class="portfolio-preview-image"
                     src="${escapeHtml(item.image_url)}"
@@ -1381,6 +1781,7 @@ function createPortfolioCard(item) {
                 >
                     ${getBuiltInPreview(previewType)}
                 </div>
+
             </div>
         `;
 
@@ -1404,6 +1805,7 @@ function createPortfolioCard(item) {
                 <div class="portfolio-admin-card-top">
 
                     <div>
+
                         <div class="portfolio-category">
                             ${escapeHtml(
                                 item.category || "Работа"
@@ -1412,9 +1814,11 @@ function createPortfolioCard(item) {
 
                         <h3>
                             ${escapeHtml(
-                                item.title || "Без названия"
+                                item.title ||
+                                "Без названия"
                             )}
                         </h3>
+
                     </div>
 
                     <div class="portfolio-price">
@@ -1425,13 +1829,11 @@ function createPortfolioCard(item) {
 
                 </div>
 
-
                 <p class="portfolio-description">
                     ${escapeHtml(
                         item.description || ""
                     )}
                 </p>
-
 
                 <div class="portfolio-card-actions">
 
@@ -1465,6 +1867,7 @@ function openPortfolioModal(item = null) {
     const modal =
         $("#portfolioModal");
 
+
     const form =
         $("#portfolioForm");
 
@@ -1482,6 +1885,7 @@ function openPortfolioModal(item = null) {
     const modalTitle =
         $("#portfolioModalTitle");
 
+
     const idInput =
         $("#portfolioId");
 
@@ -1489,57 +1893,73 @@ function openPortfolioModal(item = null) {
     if (item) {
 
         if (modalTitle) {
+
             modalTitle.textContent =
                 "Редактировать работу";
         }
 
+
         if (idInput) {
+
             idInput.value =
                 item.id || "";
         }
 
+
         const title =
             $("#portfolioTitle");
+
 
         const category =
             $("#portfolioCategory");
 
+
         const price =
             $("#portfolioPrice");
+
 
         const description =
             $("#portfolioDescription");
 
 
         if (title) {
+
             title.value =
                 item.title || "";
         }
 
+
         if (category) {
+
             category.value =
                 item.category || "";
         }
 
+
         if (price) {
+
             price.value =
                 item.price || "";
         }
 
+
         if (description) {
+
             description.value =
                 item.description || "";
         }
 
-
     } else {
 
         if (modalTitle) {
+
             modalTitle.textContent =
                 "Добавить работу";
         }
 
+
         if (idInput) {
+
             idInput.value = "";
         }
     }
@@ -1555,9 +1975,11 @@ function closePortfolioModal() {
     const modal =
         $("#portfolioModal");
 
+
     if (!modal) {
         return;
     }
+
 
     modal.classList.remove("active");
     modal.style.display = "none";
@@ -1568,6 +1990,7 @@ function previewPortfolioImage(event) {
 
     const file =
         event.target.files?.[0];
+
 
     const preview =
         $("#portfolioImagePreview");
@@ -1587,6 +2010,7 @@ function previewPortfolioImage(event) {
         preview.src =
             reader.result;
 
+
         preview.style.display =
             "block";
     };
@@ -1602,23 +2026,28 @@ async function savePortfolio(event) {
 
 
     const id =
-        $("#portfolioId")?.value.trim() || "";
+        $("#portfolioId")?.value.trim() ||
+        "";
 
 
     const title =
-        $("#portfolioTitle")?.value.trim() || "";
+        $("#portfolioTitle")?.value.trim() ||
+        "";
 
 
     const category =
-        $("#portfolioCategory")?.value.trim() || "";
+        $("#portfolioCategory")?.value.trim() ||
+        "";
 
 
     const price =
-        $("#portfolioPrice")?.value.trim() || "";
+        $("#portfolioPrice")?.value.trim() ||
+        "";
 
 
     const description =
-        $("#portfolioDescription")?.value.trim() || "";
+        $("#portfolioDescription")?.value.trim() ||
+        "";
 
 
     if (!title || !category || !price) {
@@ -1648,10 +2077,14 @@ async function savePortfolio(event) {
         if (id) {
 
             result =
-                await frilanceSupabase
-                    .from("portfolio")
-                    .update(payload)
-                    .eq("id", id);
+                await withSupabaseRetry(
+                    () =>
+                        frilanceSupabase
+                            .from("portfolio")
+                            .update(payload)
+                            .eq("id", id),
+                    "обновление portfolio"
+                );
 
         } else {
 
@@ -1671,9 +2104,13 @@ async function savePortfolio(event) {
 
 
             result =
-                await frilanceSupabase
-                    .from("portfolio")
-                    .insert(payload);
+                await withSupabaseRetry(
+                    () =>
+                        frilanceSupabase
+                            .from("portfolio")
+                            .insert(payload),
+                    "добавление portfolio"
+                );
         }
 
 
@@ -1684,9 +2121,12 @@ async function savePortfolio(event) {
 
         closePortfolioModal();
 
+
         await loadPortfolio();
 
+
         updateDashboard();
+
 
         showNotification(
             id
@@ -1701,6 +2141,7 @@ async function savePortfolio(event) {
             "Ошибка сохранения портфолио:",
             error
         );
+
 
         showNotification(
             "Не удалось сохранить работу.",
@@ -1737,21 +2178,27 @@ async function deletePortfolio(id) {
 
     try {
 
-        const { error } =
-            await frilanceSupabase
-                .from("portfolio")
-                .delete()
-                .eq("id", id);
+        const result =
+            await withSupabaseRetry(
+                () =>
+                    frilanceSupabase
+                        .from("portfolio")
+                        .delete()
+                        .eq("id", id),
+                "удаление portfolio"
+            );
 
 
-        if (error) {
-            throw error;
+        if (result.error) {
+            throw result.error;
         }
 
 
         await loadPortfolio();
 
+
         updateDashboard();
+
 
         showNotification(
             "Работа удалена."
@@ -1765,6 +2212,7 @@ async function deletePortfolio(id) {
             error
         );
 
+
         showNotification(
             "Не удалось удалить работу.",
             "error"
@@ -1776,14 +2224,17 @@ async function deletePortfolio(id) {
 function updatePortfolioCount() {
 
     const elements = [
+
         $("#dashboardPortfolioCount"),
         $("#portfolioCount")
+
     ];
 
 
     elements.forEach(element => {
 
         if (element) {
+
             element.textContent =
                 portfolio.length;
         }
@@ -1801,6 +2252,7 @@ function initServices() {
     const form =
         $("#servicesForm");
 
+
     if (!form) {
         return;
     }
@@ -1815,27 +2267,33 @@ function initServices() {
 
 async function loadServices() {
 
-    const { data, error } =
-        await frilanceSupabase
-            .from("services")
-            .select("*")
-            .order("created_at", {
-                ascending: true
-            })
-            .limit(1);
+    const result =
+        await withSupabaseRetry(
+            () =>
+                frilanceSupabase
+                    .from("services")
+                    .select("*")
+                    .order(
+                        "created_at",
+                        {
+                            ascending: true
+                        }
+                    )
+                    .limit(1),
+            "services"
+        );
 
 
-    if (error) {
-        throw error;
+    if (result.error) {
+        throw result.error;
     }
 
 
     services =
-        data?.[0] || null;
+        result.data?.[0] || null;
 
 
     fillServicesForm();
-
     updateServicesCount();
 }
 
@@ -1848,6 +2306,7 @@ function fillServicesForm() {
 
 
     const fields = {
+
         serviceNeuroPrice:
             services.neuro_price,
 
@@ -1862,6 +2321,7 @@ function fillServicesForm() {
 
         serviceBusinessPrice:
             services.business_price
+
     };
 
 
@@ -1871,10 +2331,13 @@ function fillServicesForm() {
             const field =
                 $(`#${id}`);
 
+
             if (field) {
+
                 field.value =
                     value || "";
             }
+
         });
 }
 
@@ -1905,6 +2368,7 @@ async function saveServices(event) {
         business_price:
             $("#serviceBusinessPrice")?.value.trim()
             || "25 000 ₽"
+
     };
 
 
@@ -1916,17 +2380,25 @@ async function saveServices(event) {
         if (services?.id) {
 
             result =
-                await frilanceSupabase
-                    .from("services")
-                    .update(payload)
-                    .eq("id", services.id);
+                await withSupabaseRetry(
+                    () =>
+                        frilanceSupabase
+                            .from("services")
+                            .update(payload)
+                            .eq("id", services.id),
+                    "обновление services"
+                );
 
         } else {
 
             result =
-                await frilanceSupabase
-                    .from("services")
-                    .insert(payload);
+                await withSupabaseRetry(
+                    () =>
+                        frilanceSupabase
+                            .from("services")
+                            .insert(payload),
+                    "добавление services"
+                );
         }
 
 
@@ -1936,6 +2408,7 @@ async function saveServices(event) {
 
 
         await loadServices();
+
 
         showNotification(
             "Цены сохранены."
@@ -1948,6 +2421,7 @@ async function saveServices(event) {
             "Ошибка сохранения услуг:",
             error
         );
+
 
         showNotification(
             "Не удалось сохранить цены.",
@@ -1962,7 +2436,9 @@ function updateServicesCount() {
     const element =
         $("#dashboardServicesCount");
 
+
     if (element) {
+
         element.textContent =
             services ? "5" : "0";
     }
@@ -1976,15 +2452,19 @@ function updateServicesCount() {
 function initTexts() {
 
     const forms = [
+
         "#textsHeroForm",
         "#textsSectionsForm",
         "#textsAdditionalForm"
+
     ];
 
 
     forms.forEach(selector => {
 
-        const form = $(selector);
+        const form =
+            $(selector);
+
 
         if (!form) {
             return;
@@ -2001,23 +2481,30 @@ function initTexts() {
 
 async function loadTexts() {
 
-    const { data, error } =
-        await frilanceSupabase
-            .from("texts")
-            .select("*")
-            .order("created_at", {
-                ascending: true
-            })
-            .limit(1);
+    const result =
+        await withSupabaseRetry(
+            () =>
+                frilanceSupabase
+                    .from("texts")
+                    .select("*")
+                    .order(
+                        "created_at",
+                        {
+                            ascending: true
+                        }
+                    )
+                    .limit(1),
+            "texts"
+        );
 
 
-    if (error) {
-        throw error;
+    if (result.error) {
+        throw result.error;
     }
 
 
     texts =
-        data?.[0] || null;
+        result.data?.[0] || null;
 
 
     fillTextsForms();
@@ -2065,6 +2552,7 @@ function fillTextsForms() {
 
         textAbout:
             texts.about
+
     };
 
 
@@ -2074,10 +2562,13 @@ function fillTextsForms() {
             const field =
                 $(`#${id}`);
 
+
             if (field) {
+
                 field.value =
                     value || "";
             }
+
         });
 }
 
@@ -2132,6 +2623,7 @@ async function saveTexts(event) {
         about:
             $("#textAbout")?.value.trim()
             || ""
+
     };
 
 
@@ -2143,17 +2635,25 @@ async function saveTexts(event) {
         if (texts?.id) {
 
             result =
-                await frilanceSupabase
-                    .from("texts")
-                    .update(payload)
-                    .eq("id", texts.id);
+                await withSupabaseRetry(
+                    () =>
+                        frilanceSupabase
+                            .from("texts")
+                            .update(payload)
+                            .eq("id", texts.id),
+                    "обновление texts"
+                );
 
         } else {
 
             result =
-                await frilanceSupabase
-                    .from("texts")
-                    .insert(payload);
+                await withSupabaseRetry(
+                    () =>
+                        frilanceSupabase
+                            .from("texts")
+                            .insert(payload),
+                    "добавление texts"
+                );
         }
 
 
@@ -2163,6 +2663,7 @@ async function saveTexts(event) {
 
 
         await loadTexts();
+
 
         showNotification(
             "Тексты сохранены."
@@ -2175,6 +2676,7 @@ async function saveTexts(event) {
             "Ошибка сохранения текстов:",
             error
         );
+
 
         showNotification(
             "Не удалось сохранить тексты.",
@@ -2193,6 +2695,7 @@ function initContacts() {
     const form =
         $("#contactsForm");
 
+
     if (!form) {
         return;
     }
@@ -2207,23 +2710,30 @@ function initContacts() {
 
 async function loadContacts() {
 
-    const { data, error } =
-        await frilanceSupabase
-            .from("contacts")
-            .select("*")
-            .order("created_at", {
-                ascending: true
-            })
-            .limit(1);
+    const result =
+        await withSupabaseRetry(
+            () =>
+                frilanceSupabase
+                    .from("contacts")
+                    .select("*")
+                    .order(
+                        "created_at",
+                        {
+                            ascending: true
+                        }
+                    )
+                    .limit(1),
+            "contacts"
+        );
 
 
-    if (error) {
-        throw error;
+    if (result.error) {
+        throw result.error;
     }
 
 
     contacts =
-        data?.[0] || null;
+        result.data?.[0] || null;
 
 
     fillContactsForm();
@@ -2240,17 +2750,20 @@ function fillContactsForm() {
     const email =
         $("#contactEmail");
 
+
     const site =
         $("#contactSite");
 
 
     if (email) {
+
         email.value =
             contacts.email || "";
     }
 
 
     if (site) {
+
         site.value =
             contacts.site || "";
     }
@@ -2271,6 +2784,7 @@ async function saveContacts(event) {
         site:
             $("#contactSite")?.value.trim()
             || ""
+
     };
 
 
@@ -2282,17 +2796,25 @@ async function saveContacts(event) {
         if (contacts?.id) {
 
             result =
-                await frilanceSupabase
-                    .from("contacts")
-                    .update(payload)
-                    .eq("id", contacts.id);
+                await withSupabaseRetry(
+                    () =>
+                        frilanceSupabase
+                            .from("contacts")
+                            .update(payload)
+                            .eq("id", contacts.id),
+                    "обновление contacts"
+                );
 
         } else {
 
             result =
-                await frilanceSupabase
-                    .from("contacts")
-                    .insert(payload);
+                await withSupabaseRetry(
+                    () =>
+                        frilanceSupabase
+                            .from("contacts")
+                            .insert(payload),
+                    "добавление contacts"
+                );
         }
 
 
@@ -2302,6 +2824,7 @@ async function saveContacts(event) {
 
 
         await loadContacts();
+
 
         showNotification(
             "Контакты сохранены."
@@ -2314,6 +2837,7 @@ async function saveContacts(event) {
             "Ошибка сохранения контактов:",
             error
         );
+
 
         showNotification(
             "Не удалось сохранить контакты.",
@@ -2381,6 +2905,7 @@ function initLeads() {
                 if (
                     event.target === modal
                 ) {
+
                     closeLeadDetailsModal();
                 }
             }
@@ -2389,21 +2914,46 @@ function initLeads() {
 }
 
 
-async function loadLeads(showMessage = false) {
+/* =========================================================
+   ЗАГРУЗКА ЗАЯВОК
+========================================================= */
+
+async function loadLeads(
+    showMessage = false
+) {
 
     const tbody =
         $("#leadsTableBody");
 
 
-    if (tbody) {
+    /*
+       Если заявок пока нет,
+       показываем индикатор загрузки.
+
+       Если заявки уже есть,
+       НЕ очищаем таблицу во время
+       повторного запроса.
+    */
+
+    if (
+        tbody &&
+        !leads.length
+    ) {
 
         tbody.innerHTML = `
             <tr>
                 <td colspan="6">
+
                     <div class="leads-loading">
+
                         <span class="leads-loading-spinner"></span>
-                        <span>Загрузка заявок...</span>
+
+                        <span>
+                            Загрузка заявок...
+                        </span>
+
                     </div>
+
                 </td>
             </tr>
         `;
@@ -2412,23 +2962,49 @@ async function loadLeads(showMessage = false) {
 
     try {
 
-        const { data, error } =
-            await frilanceSupabase
-                .from("leads")
-                .select("*")
-                .order("created_at", {
-                    ascending: false
-                });
+        /*
+           Каждый повтор создаёт НОВЫЙ
+           Supabase query builder.
+
+           Это важно для корректной
+           повторной попытки запроса.
+        */
+
+        const result =
+            await withSupabaseRetry(
+                () =>
+                    frilanceSupabase
+                        .from("leads")
+                        .select("*")
+                        .order(
+                            "created_at",
+                            {
+                                ascending: false
+                            }
+                        ),
+                "leads",
+                {
+                    attempts: 6,
+                    baseDelay: 1000
+                }
+            );
 
 
-        if (error) {
-            throw error;
+        if (result.error) {
+            throw result.error;
         }
 
 
+        /*
+           КЛЮЧЕВОЙ МОМЕНТ:
+
+           Массив leads заменяется ТОЛЬКО
+           после успешного ответа Supabase.
+        */
+
         leads =
-            Array.isArray(data)
-                ? data
+            Array.isArray(result.data)
+                ? result.data
                 : [];
 
 
@@ -2446,43 +3022,71 @@ async function loadLeads(showMessage = false) {
         if (showMessage) {
 
             showNotification(
-                "Заявки обновлены."
+                `Заявки обновлены. Найдено: ${leads.length}`
             );
         }
+
+
+        return leads;
 
 
     } catch (error) {
 
         console.error(
-            "Ошибка загрузки заявок:",
+            "FRILANCE: ошибка загрузки заявок:",
             error
         );
 
 
-        leads = [];
+        /*
+           НИКОГДА не делаем:
 
+           leads = [];
 
-        if (tbody) {
+           при ошибке запроса.
+
+           Если заявки уже были загружены,
+           оставляем их на экране.
+        */
+
+        if (tbody && !leads.length) {
 
             tbody.innerHTML = `
                 <tr>
                     <td colspan="6">
+
                         <div class="admin-empty-state">
-                            Не удалось загрузить заявки.
+
+                            Не удалось загрузить заявки.<br>
+
+                            <small>
+                                Повторите обновление через несколько секунд.
+                            </small>
+
                         </div>
+
                     </td>
                 </tr>
             `;
+        } else {
+
+            /*
+               Если старые заявки уже есть,
+               снова показываем их.
+            */
+
+            renderLeads();
         }
 
 
         updateLeadsCount();
+        renderRecentLeads();
 
 
         if (showMessage) {
 
             showNotification(
-                "Ошибка загрузки заявок.",
+                "Не удалось обновить заявки. Повторите попытку.",
                 "error"
             );
         }
@@ -2493,10 +3097,15 @@ async function loadLeads(showMessage = false) {
 }
 
 
+/* =========================================================
+   ОТОБРАЖЕНИЕ ЗАЯВОК
+========================================================= */
+
 function renderLeads() {
 
     const tbody =
         $("#leadsTableBody");
+
 
     const total =
         $("#leadsTotal");
@@ -2519,9 +3128,11 @@ function renderLeads() {
         tbody.innerHTML = `
             <tr>
                 <td colspan="6">
+
                     <div class="admin-empty-state">
                         Пока нет заявок.
                     </div>
+
                 </td>
             </tr>
         `;
@@ -2552,13 +3163,16 @@ function renderLeads() {
                     const id =
                         button.dataset.id;
 
+
                     const lead =
                         leads.find(
                             item =>
                                 item.id === id
                         );
 
+
                     if (lead) {
+
                         openLeadDetailsModal(
                             lead
                         );
@@ -2578,6 +3192,7 @@ function renderLeads() {
                     const id =
                         button.dataset.id;
 
+
                     deleteLead(id);
                 }
             );
@@ -2585,49 +3200,66 @@ function renderLeads() {
 }
 
 
-function createLeadRow(lead, index) {
+function createLeadRow(
+    lead,
+    index
+) {
 
     return `
         <tr>
 
             <td>
+
                 <div class="lead-name">
                     ${escapeHtml(
-                        lead.name || "Без имени"
+                        lead.name ||
+                        "Без имени"
                     )}
                 </div>
+
             </td>
 
             <td>
+
                 <div class="lead-contact">
                     ${escapeHtml(
-                        lead.contact || "—"
+                        lead.contact ||
+                        "—"
                     )}
                 </div>
+
             </td>
 
             <td>
+
                 <div class="lead-service">
                     ${escapeHtml(
-                        lead.service || "—"
+                        lead.service ||
+                        "—"
                     )}
                 </div>
+
             </td>
 
             <td>
+
                 <div class="lead-message">
                     ${escapeHtml(
-                        lead.message || "—"
+                        lead.message ||
+                        "—"
                     )}
                 </div>
+
             </td>
 
             <td>
+
                 <div class="lead-date">
                     ${formatDateTime(
                         lead.created_at
                     )}
                 </div>
+
             </td>
 
             <td>
@@ -2659,6 +3291,10 @@ function createLeadRow(lead, index) {
 }
 
 
+/* =========================================================
+   ПОСЛЕДНИЕ ЗАЯВКИ НА ГЛАВНОМ ЭКРАНЕ
+========================================================= */
+
 function renderRecentLeads() {
 
     const container =
@@ -2687,36 +3323,46 @@ function renderRecentLeads() {
             .slice(0, 5)
             .map(
                 lead => `
+
                     <div class="recent-lead-item">
 
                         <div class="recent-lead-main">
 
                             <strong>
                                 ${escapeHtml(
-                                    lead.name || "Без имени"
+                                    lead.name ||
+                                    "Без имени"
                                 )}
                             </strong>
 
                             <span>
                                 ${escapeHtml(
-                                    lead.service || "Запрос"
+                                    lead.service ||
+                                    "Запрос"
                                 )}
                             </span>
 
                         </div>
 
                         <div class="recent-lead-date">
+
                             ${formatDate(
                                 lead.created_at
                             )}
+
                         </div>
 
                     </div>
+
                 `
             )
             .join("");
 }
 
+
+/* =========================================================
+   СЧЁТЧИК ЗАЯВОК
+========================================================= */
 
 function updateLeadsCount() {
 
@@ -2725,8 +3371,10 @@ function updateLeadsCount() {
 
 
     const elements = [
+
         $("#dashboardLeadsCount"),
         $("#leadsCount")
+
     ];
 
 
@@ -2736,11 +3384,16 @@ function updateLeadsCount() {
             return;
         }
 
+
         element.textContent =
             count;
     });
 }
 
+
+/* =========================================================
+   МОДАЛЬНОЕ ОКНО ЗАЯВКИ
+========================================================= */
 
 function openLeadDetailsModal(lead) {
 
@@ -2768,10 +3421,14 @@ function openLeadDetailsModal(lead) {
             lead.service || "—",
 
         leadDetailsDate:
-            formatDateTime(lead.created_at),
+            formatDateTime(
+                lead.created_at
+            ),
 
         leadDetailsMessage:
-            lead.message || "Сообщение отсутствует."
+            lead.message ||
+            "Сообщение отсутствует."
+
     };
 
 
@@ -2781,10 +3438,13 @@ function openLeadDetailsModal(lead) {
             const element =
                 $(`#${id}`);
 
+
             if (element) {
+
                 element.textContent =
                     value;
             }
+
         });
 
 
@@ -2808,6 +3468,10 @@ function closeLeadDetailsModal() {
     modal.style.display = "none";
 }
 
+
+/* =========================================================
+   УДАЛЕНИЕ ЗАЯВКИ
+========================================================= */
 
 async function deleteLead(id) {
 
@@ -2836,21 +3500,27 @@ async function deleteLead(id) {
 
     try {
 
-        const { error } =
-            await frilanceSupabase
-                .from("leads")
-                .delete()
-                .eq("id", id);
+        const result =
+            await withSupabaseRetry(
+                () =>
+                    frilanceSupabase
+                        .from("leads")
+                        .delete()
+                        .eq("id", id),
+                "удаление заявки"
+            );
 
 
-        if (error) {
-            throw error;
+        if (result.error) {
+            throw result.error;
         }
 
 
         await loadLeads();
 
+
         updateDashboard();
+
 
         showNotification(
             "Заявка удалена."
@@ -2863,6 +3533,7 @@ async function deleteLead(id) {
             "Ошибка удаления заявки:",
             error
         );
+
 
         showNotification(
             "Не удалось удалить заявку.",
@@ -2886,7 +3557,7 @@ function updateDashboard() {
 
 
 /* =========================================================
-   ESC — ЗАКРЫТЬ МОДАЛЬНЫЕ ОКНА
+   ESC
 ========================================================= */
 
 document.addEventListener(
@@ -2910,28 +3581,32 @@ document.addEventListener(
 
 window.FRILANCE_ADMIN = {
 
-    reload: loadAllData,
+    reload:
+        loadAllData,
 
-    reloadPortfolio: loadPortfolio,
+    reloadPortfolio:
+        loadPortfolio,
 
-    reloadLeads: loadLeads,
+    reloadLeads:
+        loadLeads,
 
     showSection,
 
-    getPortfolio: () =>
-        [...portfolio],
+    getPortfolio:
+        () => [...portfolio],
 
-    getServices: () =>
-        services,
+    getServices:
+        () => services,
 
-    getTexts: () =>
-        texts,
+    getTexts:
+        () => texts,
 
-    getContacts: () =>
-        contacts,
+    getContacts:
+        () => contacts,
 
-    getLeads: () =>
-        [...leads]
+    getLeads:
+        () => [...leads]
+
 };
 
 
@@ -2940,5 +3615,5 @@ window.FRILANCE_ADMIN = {
 ========================================================= */
 
 console.log(
-    "FRILANCE ADMIN: admin.js загружен"
+    "FRILANCE ADMIN: admin.js загружен."
 );

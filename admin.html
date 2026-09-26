@@ -22,7 +22,7 @@
 
     <link
         rel="preconnect"
-        href="https://fonts.gstatic.com"
+        href="https://fonts.googleapis.com"
         crossorigin
     >
 
@@ -259,8 +259,6 @@
                 </div>
 
 
-                <!-- STATS -->
-
                 <div class="stats-grid">
 
                     <div class="stat-card">
@@ -349,8 +347,6 @@
                 </div>
 
 
-                <!-- DASHBOARD GRID -->
-
                 <div class="dashboard-grid">
 
 
@@ -374,7 +370,6 @@
 
 
                         <div class="quick-actions">
-
 
                             <button
                                 class="quick-action"
@@ -653,7 +648,6 @@
 
                         <div class="form-grid">
 
-
                             <div class="admin-field">
 
                                 <label for="serviceNeuroPrice">
@@ -778,8 +772,6 @@
                 </div>
 
 
-                <!-- HERO -->
-
                 <div class="admin-card">
 
                     <div class="admin-card-header">
@@ -879,8 +871,6 @@
                 </div>
 
 
-                <!-- SECTION TITLES -->
-
                 <div
                     class="admin-card"
                     style="margin-top: 22px;"
@@ -909,7 +899,6 @@
                     >
 
                         <div class="form-grid">
-
 
                             <div class="admin-field">
 
@@ -1012,8 +1001,6 @@
 
                 </div>
 
-
-                <!-- ABOUT -->
 
                 <div
                     class="admin-card"
@@ -1232,29 +1219,12 @@
 
                                 <tr>
 
-                                    <th>
-                                        Имя
-                                    </th>
-
-                                    <th>
-                                        Контакт
-                                    </th>
-
-                                    <th>
-                                        Услуга
-                                    </th>
-
-                                    <th>
-                                        Сообщение
-                                    </th>
-
-                                    <th>
-                                        Дата
-                                    </th>
-
-                                    <th>
-                                        Действие
-                                    </th>
+                                    <th>Имя</th>
+                                    <th>Контакт</th>
+                                    <th>Услуга</th>
+                                    <th>Сообщение</th>
+                                    <th>Дата</th>
+                                    <th>Действие</th>
 
                                 </tr>
 
@@ -1262,7 +1232,6 @@
 
 
                             <tbody id="leadsTableBody">
-
                             </tbody>
 
                         </table>
@@ -1357,7 +1326,6 @@
 
                     <div class="settings-list">
 
-
                         <div class="settings-row">
 
                             <div>
@@ -1423,7 +1391,7 @@
                             </div>
 
                             <span class="settings-status">
-                                v1.0
+                                v1.1
                             </span>
 
                         </div>
@@ -1518,7 +1486,7 @@
     id="portfolioModal"
 >
 
-    <div class="admin-modal">
+    <div class="admin-modal portfolio-modal">
 
         <button
             class="admin-modal-close"
@@ -1537,7 +1505,7 @@
             </h2>
 
             <p>
-                Заполните информацию о работе.
+                Заполните информацию о работе и добавьте изображения проекта.
             </p>
 
         </div>
@@ -1554,6 +1522,8 @@
             >
 
 
+            <!-- НАЗВАНИЕ -->
+
             <div class="admin-field">
 
                 <label for="portfolioTitle">
@@ -1564,11 +1534,13 @@
                     type="text"
                     id="portfolioTitle"
                     required
-                    placeholder="Например: LUMI HAIR"
+                    placeholder="Например: MOTORLAB"
                 >
 
             </div>
 
+
+            <!-- КАТЕГОРИЯ + ЦЕНА -->
 
             <div class="form-grid">
 
@@ -1618,10 +1590,12 @@
             </div>
 
 
+            <!-- ОПИСАНИЕ ПРОЕКТА -->
+
             <div class="admin-field">
 
                 <label for="portfolioDescription">
-                    Описание
+                    Описание проекта
                 </label>
 
                 <textarea
@@ -1632,22 +1606,27 @@
             </div>
 
 
+            <!-- =================================================
+                 МНОГОФАЙЛОВАЯ ЗАГРУЗКА
+            ================================================== -->
+
             <div class="admin-field">
 
                 <label>
-                    Изображение
+                    Изображения проекта
                 </label>
 
 
                 <div
-                    class="upload-box"
+                    class="portfolio-upload-box upload-box"
                     id="portfolioUploadBox"
                 >
 
                     <input
                         type="file"
-                        id="portfolioImage"
+                        id="portfolioImages"
                         accept="image/*"
+                        multiple
                     >
 
 
@@ -1658,26 +1637,61 @@
                         </div>
 
                         <strong>
-                            Выберите изображение
+                            Выберите изображения
                         </strong>
 
                         <span>
-                            JPG, PNG, WEBP
+                            Можно выбрать несколько файлов сразу
                         </span>
+
+                        <small>
+                            JPG, PNG, WEBP
+                        </small>
 
                     </div>
 
                 </div>
 
 
+                <!-- НОВЫЕ ВЫБРАННЫЕ ИЗОБРАЖЕНИЯ -->
+
                 <div
-                    class="image-preview"
-                    id="portfolioImagePreview"
+                    class="portfolio-images-editor"
+                    id="portfolioImagesEditor"
+                ></div>
+
+
+                <!-- УЖЕ СОХРАНЁННЫЕ ИЗОБРАЖЕНИЯ -->
+
+                <div
+                    class="portfolio-existing-images"
+                    id="portfolioExistingImages"
                 >
+
+                    <div class="portfolio-existing-header">
+
+                        <strong>
+                            Загруженные изображения
+                        </strong>
+
+                        <span id="portfolioExistingCount">
+                            0
+                        </span>
+
+                    </div>
+
+
+                    <div
+                        class="portfolio-existing-grid"
+                        id="portfolioExistingGrid"
+                    ></div>
+
                 </div>
 
             </div>
 
+
+            <!-- ФОРМЫ -->
 
             <div class="admin-form-actions">
 
@@ -1692,6 +1706,7 @@
 
                 <button
                     class="admin-primary-button"
+                    id="savePortfolioButton"
                     type="submit"
                 >
                     Сохранить
@@ -1845,12 +1860,8 @@
      SCRIPTS
 ========================================================== -->
 
-<script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="admin-auth.js"></script>
-
 <script src="admin.js"></script>
 
 </body>
