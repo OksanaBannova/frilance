@@ -7,6 +7,7 @@
    Версия:
    - Supabase
    - Портфолио
+   - Загрузка фотографий портфолио
    - Услуги
    - Тексты
    - Контакты
@@ -1216,11 +1217,6 @@ async function loadAllData() {
     );
 
 
-    /*
-       Сначала убеждаемся, что авторизация
-       действительно готова.
-    */
-
     const session =
         await waitForAuthSession();
 
@@ -1230,14 +1226,6 @@ async function loadAllData() {
         console.error(
             "FRILANCE ADMIN: активная Supabase-сессия не найдена."
         );
-
-
-        /*
-           Не прекращаем работу полностью.
-           admin-auth.js уже отвечает за доступ
-           к админке, поэтому пробуем выполнить
-           запросы ещё раз.
-        */
 
     } else {
 
@@ -1277,18 +1265,6 @@ async function loadAllData() {
 
     ];
 
-
-    /*
-       ВАЖНО:
-
-       Никаких Promise.all.
-
-       Все запросы выполняются строго
-       последовательно.
-
-       Это уменьшает вероятность проблем
-       HTTP/2 в браузере.
-    */
 
     for (
         const [name, loader]
@@ -1606,6 +1582,10 @@ function initPortfolio() {
 }
 
 
+/* =========================================================
+   ЗАГРУЗКА ПОРТФОЛИО
+========================================================= */
+
 async function loadPortfolio() {
 
     console.log(
@@ -1640,11 +1620,6 @@ async function loadPortfolio() {
     }
 
 
-    /*
-       Обновляем данные только после
-       успешного ответа.
-    */
-
     portfolio =
         Array.isArray(result.data)
             ? result.data
@@ -1661,6 +1636,148 @@ async function loadPortfolio() {
     updatePortfolioCount();
 }
 
+
+/* =========================================================
+   ЗАГРУЗКА ФОТОГРАФИИ ПОРТФОЛИО В STORAGE
+========================================================= */
+
+async function uploadPortfolioImage(file) {
+
+    if (!file) {
+        return null;
+    }
+
+
+    if (
+        typeof frilanceSupabase === "undefined" ||
+        !frilanceSupabase
+    ) {
+
+        throw new Error(
+            "Supabase client недоступен."
+        );
+    }
+
+
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/gif"
+    ];
+
+
+    if (!allowedTypes.includes(file.type)) {
+
+        throw new Error(
+            "Можно загружать только JPG, PNG, WEBP или GIF."
+        );
+    }
+
+
+    /*
+       Ограничение 10 МБ.
+    */
+
+    const maxSize =
+        10 * 1024 * 1024;
+
+
+    if (file.size > maxSize) {
+
+        throw new Error(
+            "Размер изображения не должен превышать 10 МБ."
+        );
+    }
+
+
+    const extension =
+        (
+            file.name.split(".").pop() ||
+            "jpg"
+        )
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "");
+
+
+    const randomPart =
+        Math.random()
+            .toString(36)
+            .slice(2, 10);
+
+
+    const timestamp =
+        Date.now();
+
+
+    const storagePath =
+        `portfolio/${timestamp}-${randomPart}.${extension}`;
+
+
+    console.log(
+        "FRILANCE: загружаем изображение:",
+        storagePath
+    );
+
+
+    const uploadResult =
+        await frilanceSupabase
+            .storage
+            .from("portfolio-images")
+            .upload(
+                storagePath,
+                file,
+                {
+                    cacheControl: "3600",
+                    upsert: false,
+                    contentType: file.type
+                }
+            );
+
+
+    if (uploadResult.error) {
+
+        throw uploadResult.error;
+    }
+
+
+    const publicResult =
+        frilanceSupabase
+            .storage
+            .from("portfolio-images")
+            .getPublicUrl(
+                storagePath
+            );
+
+
+    const publicUrl =
+        publicResult?.data?.publicUrl;
+
+
+    if (!publicUrl) {
+
+        throw new Error(
+            "Не удалось получить публичный URL изображения."
+        );
+    }
+
+
+    console.log(
+        "FRILANCE: изображение загружено:",
+        publicUrl
+    );
+
+
+    return {
+        publicUrl,
+        storagePath
+    };
+}
+
+
+/* =========================================================
+   ОТОБРАЖЕНИЕ ПОРТФОЛИО
+========================================================= */
 
 function renderPortfolio() {
 
@@ -1862,6 +1979,10 @@ function createPortfolioCard(item) {
 }
 
 
+/* =========================================================
+   МОДАЛЬНОЕ ОКНО ПОРТФОЛИО
+========================================================= */
+
 function openPortfolioModal(item = null) {
 
     const modal =
@@ -1888,6 +2009,24 @@ function openPortfolioModal(item = null) {
 
     const idInput =
         $("#portfolioId");
+
+
+    const imagePreview =
+        $("#portfolioImagePreview");
+
+
+    /*
+       При открытии нового элемента
+       скрываем старое изображение предпросмотра.
+    */
+
+    if (imagePreview) {
+
+        imagePreview.removeAttribute("src");
+
+        imagePreview.style.display =
+            "none";
+    }
 
 
     if (item) {
@@ -1949,6 +2088,24 @@ function openPortfolioModal(item = null) {
                 item.description || "";
         }
 
+
+        /*
+           Если у работы уже есть фотография,
+           показываем её при редактировании.
+        */
+
+        if (
+            imagePreview &&
+            item.image_url
+        ) {
+
+            imagePreview.src =
+                item.image_url;
+
+            imagePreview.style.display =
+                "block";
+        }
+
     } else {
 
         if (modalTitle) {
@@ -1986,6 +2143,10 @@ function closePortfolioModal() {
 }
 
 
+/* =========================================================
+   ПРЕДПРОСМОТР ФОТОГРАФИИ
+========================================================= */
+
 function previewPortfolioImage(event) {
 
     const file =
@@ -1997,6 +2158,62 @@ function previewPortfolioImage(event) {
 
 
     if (!file || !preview) {
+        return;
+    }
+
+
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/gif"
+    ];
+
+
+    if (!allowedTypes.includes(file.type)) {
+
+        showNotification(
+            "Можно выбрать JPG, PNG, WEBP или GIF.",
+            "error"
+        );
+
+
+        event.target.value =
+            "";
+
+
+        preview.removeAttribute("src");
+
+        preview.style.display =
+            "none";
+
+
+        return;
+    }
+
+
+    const maxSize =
+        10 * 1024 * 1024;
+
+
+    if (file.size > maxSize) {
+
+        showNotification(
+            "Размер изображения не должен превышать 10 МБ.",
+            "error"
+        );
+
+
+        event.target.value =
+            "";
+
+
+        preview.removeAttribute("src");
+
+        preview.style.display =
+            "none";
+
+
         return;
     }
 
@@ -2020,6 +2237,9 @@ function previewPortfolioImage(event) {
 }
 
 
+/* =========================================================
+   СОХРАНЕНИЕ ПОРТФОЛИО
+========================================================= */
 async function savePortfolio(event) {
 
     event.preventDefault();
@@ -2050,6 +2270,14 @@ async function savePortfolio(event) {
         "";
 
 
+    const imageInput =
+        $("#portfolioImage");
+
+
+    const imageFile =
+        imageInput?.files?.[0] || null;
+
+
     if (!title || !category || !price) {
 
         showNotification(
@@ -2071,8 +2299,47 @@ async function savePortfolio(event) {
 
     try {
 
-        let result;
+        /*
+           Если выбрана новая фотография —
+           загружаем её в Storage.
+        */
 
+        let uploaded = null;
+
+
+        if (imageFile) {
+
+            showNotification(
+                "Загружаем фотографию..."
+            );
+
+
+            uploaded =
+                await uploadPortfolioImage(
+                    imageFile
+                );
+
+
+            if (!uploaded?.publicUrl) {
+
+                throw new Error(
+                    "Фотография загружена, но URL не получен."
+                );
+            }
+
+
+            payload.image_url =
+                uploaded.publicUrl;
+        }
+
+
+        let result;
+        let portfolioId = id;
+
+
+        /* =====================================================
+           ОБНОВЛЕНИЕ СУЩЕСТВУЮЩЕЙ РАБОТЫ
+        ===================================================== */
 
         if (id) {
 
@@ -2085,6 +2352,19 @@ async function savePortfolio(event) {
                             .eq("id", id),
                     "обновление portfolio"
                 );
+
+
+            if (result.error) {
+                throw result.error;
+            }
+
+
+            portfolioId = id;
+
+
+        /* =====================================================
+           ДОБАВЛЕНИЕ НОВОЙ РАБОТЫ
+        ===================================================== */
 
         } else {
 
@@ -2103,19 +2383,87 @@ async function savePortfolio(event) {
                 maxSort + 1;
 
 
+            /*
+               Важно:
+               получаем созданную запись обратно,
+               чтобы узнать её id.
+            */
+
             result =
                 await withSupabaseRetry(
                     () =>
                         frilanceSupabase
                             .from("portfolio")
-                            .insert(payload),
+                            .insert(payload)
+                            .select()
+                            .single(),
                     "добавление portfolio"
                 );
+
+
+            if (result.error) {
+                throw result.error;
+            }
+
+
+            portfolioId =
+                result.data?.id || "";
         }
 
 
-        if (result.error) {
-            throw result.error;
+        /* =====================================================
+           ЗАПИСЬ ФОТОГРАФИИ В portfolio_images
+        ===================================================== */
+
+        if (
+            uploaded &&
+            portfolioId
+        ) {
+
+            console.log(
+                "FRILANCE: сохраняем изображение в portfolio_images..."
+            );
+
+
+            const imageRecord = {
+
+                portfolio_id:
+                    portfolioId,
+
+                image_url:
+                    uploaded.publicUrl,
+
+                storage_path:
+                    uploaded.storagePath,
+
+                description:
+                    description || "",
+
+                sort_order:
+                    0
+
+            };
+
+
+            const imageResult =
+                await withSupabaseRetry(
+                    () =>
+                        frilanceSupabase
+                            .from("portfolio_images")
+                            .insert(imageRecord),
+                    "добавление portfolio_images"
+                );
+
+
+            if (imageResult.error) {
+
+                throw imageResult.error;
+            }
+
+
+            console.log(
+                "FRILANCE: изображение сохранено в portfolio_images."
+            );
         }
 
 
@@ -2130,8 +2478,8 @@ async function savePortfolio(event) {
 
         showNotification(
             id
-                ? "Работа обновлена."
-                : "Работа добавлена."
+                ? "Работа и фотография обновлены."
+                : "Работа и фотография добавлены."
         );
 
 
@@ -2144,12 +2492,17 @@ async function savePortfolio(event) {
 
 
         showNotification(
+            error?.message ||
             "Не удалось сохранить работу.",
             "error"
         );
     }
 }
 
+
+/* =========================================================
+   УДАЛЕНИЕ ПОРТФОЛИО
+========================================================= */
 
 async function deletePortfolio(id) {
 

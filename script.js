@@ -19,7 +19,7 @@ const frilancePublicSupabase =
 
 
 /* =========================================================
-   НАСТРОЙКИ
+   НАСТРОЙКИ ПО УМОЛЧАНИЮ
    ========================================================= */
 
 const CONFIG = {
@@ -29,16 +29,18 @@ const CONFIG = {
 
 
 /* =========================================================
-   ДАННЫЕ
+   ДАННЫЕ ПО УМОЛЧАНИЮ
+   Используются, если Supabase ещё не заполнен.
    ========================================================= */
 
-const services = [
+const DEFAULT_SERVICES = [
   {
     id: "website",
     number: "01",
     icon: "◈",
     title: "Сайты",
-    short: "Современные сайты для мастеров, экспертов и бизнеса.",
+    short:
+      "Современные сайты для мастеров, экспертов и бизнеса.",
     description:
       "Создам сайт, который понятно рассказывает о вашем предложении, вызывает доверие и помогает получать заявки.",
     price: "от 15 000 ₽",
@@ -56,7 +58,8 @@ const services = [
     number: "02",
     icon: "✦",
     title: "Нейрофото",
-    short: "Профессиональные фотографии без студии и фотографа.",
+    short:
+      "Профессиональные фотографии без студии и фотографа.",
     description:
       "Создам серию реалистичных AI-фотографий под личный бренд, соцсети, рекламу или просто для себя.",
     price: "от 700 ₽",
@@ -74,7 +77,8 @@ const services = [
     number: "03",
     icon: "▦",
     title: "Карточки товаров",
-    short: "Визуал, который помогает товару выделиться среди конкурентов.",
+    short:
+      "Визуал, который помогает товару выделиться среди конкурентов.",
     description:
       "Создам современную карточку товара для Wildberries, Ozon и других площадок.",
     price: "от 1 500 ₽",
@@ -90,31 +94,35 @@ const services = [
 ];
 
 
-const businessTypes = [
+const DEFAULT_BUSINESS_TYPES = [
   {
     icon: "✂",
     title: "Мастерам",
-    text: "Сайт, портфолио, нейрофото и визуал для продвижения услуг."
+    text:
+      "Сайт, портфолио, нейрофото и визуал для продвижения услуг."
   },
   {
     icon: "◉",
     title: "Экспертам",
-    text: "Упаковка личного бренда и современная презентация услуг."
+    text:
+      "Упаковка личного бренда и современная презентация услуг."
   },
   {
     icon: "▣",
     title: "Малому бизнесу",
-    text: "Сайт и визуал, которые помогают выглядеть профессионально."
+    text:
+      "Сайт и визуал, которые помогают выглядеть профессионально."
   },
   {
     icon: "◆",
     title: "Магазинам",
-    text: "Карточки товаров и визуальная упаковка для маркетплейсов."
+    text:
+      "Карточки товаров и визуальная упаковка для маркетплейсов."
   }
 ];
 
 
-const prices = [
+const DEFAULT_PRICES = [
   {
     category: "САЙТ",
     title: "Старт",
@@ -162,7 +170,7 @@ const prices = [
 ];
 
 
-const neuroPrices = [
+const DEFAULT_NEURO_PRICES = [
   ["Индивидуальная нейрофотосессия", "от 1 500 ₽"],
   ["Портрет / деловой образ", "от 1 000 ₽"],
   ["Beauty-съёмка", "от 1 500 ₽"],
@@ -172,126 +180,794 @@ const neuroPrices = [
 ];
 
 
-const faq = [
+const DEFAULT_TEXTS = {
+  hero_title:
+    "Цифровая упаковка, которая помогает продавать",
+
+  hero_subtitle:
+    "Помогаю мастерам, экспертам и небольшому бизнесу выглядеть профессионально в интернете — от сайта и фотографий до визуала товаров.",
+
+  hero_primary_button:
+    "Обсудить проект",
+
+  hero_secondary_button:
+    "Смотреть работы",
+
+  services_title:
+    "Всё, что нужно, чтобы выглядеть профессионально.",
+
+  portfolio_title:
+    "Работы, которые решают задачу.",
+
+  process_title:
+    "От идеи до готового результата",
+
+  faq_title:
+    "Остались вопросы?",
+
+  final_title:
+    "Давайте создадим что-то сильное",
+
+  final_button:
+    "Обсудить проект",
+
+  about:
+    "Создаю сайты, нейрофото и карточки товаров, которые помогают специалистам и небольшому бизнесу выглядеть профессионально в интернете."
+};
+
+
+const DEFAULT_FAQ = [
   {
-    q: "Сколько времени занимает создание сайта?",
-    a:
-      "Обычно небольшой сайт можно подготовить за 5–10 рабочих дней. Точный срок зависит от количества блоков, материалов и объёма задач."
+    question: "Сколько времени занимает создание сайта?",
+    answer:
+      "Срок зависит от объёма проекта. Небольшой сайт обычно можно подготовить за несколько дней после согласования структуры, содержания и дизайна."
   },
   {
-    q: "Нужно ли мне самостоятельно писать тексты?",
-    a:
-      "Нет. Я помогу со структурой и формулировками. От вас понадобятся только основные сведения о бизнесе, услуге или товаре."
+    question: "Можно ли заказать только нейрофото?",
+    answer:
+      "Да. Можно заказать как одну фотографию по вашему запросу, так и полноценную серию: портрет, beauty-съёмку, семейные или парные фотографии."
   },
   {
-    q: "Можно ли заказать сайт, если у меня пока нет фотографий?",
-    a:
-      "Да. Можно использовать нейрофото, подготовить визуал под стиль бренда или временно использовать качественные изображения."
+    question: "Можно ли сделать сайт без готового дизайна?",
+    answer:
+      "Да. Вам не обязательно заранее знать, каким должен быть сайт. Я помогу определить структуру, визуальный стиль и основные блоки."
   },
   {
-    q: "Можно ли потом самостоятельно менять информацию на сайте?",
-    a:
-      "Да. Я объясню принцип работы с проектом. При необходимости можно также договориться о дальнейшем сопровождении."
+    question: "Вы работаете с клиентами из других городов?",
+    answer:
+      "Да. Большую часть работы можно выполнить полностью дистанционно. Общаемся онлайн, материалы передаются в электронном виде."
   },
   {
-    q: "Работаете ли вы с клиентами из других городов?",
-    a:
-      "Да. Работа проходит онлайн, поэтому город не имеет значения."
+    question: "Можно ли заказать несколько услуг сразу?",
+    answer:
+      "Да. Например, можно одновременно сделать сайт, нейрофото и визуальные материалы для соцсетей. В таком случае всё можно выдержать в едином стиле."
+  },
+  {
+    question: "Как происходит оплата?",
+    answer:
+      "Условия оплаты обсуждаем до начала работы в зависимости от выбранной услуги и объёма проекта."
   }
 ];
+
+
+/* =========================================================
+   ДАННЫЕ ПОРТФОЛИО ПО УМОЛЧАНИЮ
+   ========================================================= */
+
+const DEFAULT_PORTFOLIO = [
+  {
+    id: "default-1",
+    number: "01",
+    category: "САЙТЫ",
+    title: "Сайт для мастера",
+    description:
+      "Современный сайт для специалиста, который собирает услуги, цены, работы и запись клиента в одном месте.",
+    task:
+      "Показать мастера профессионально, сформировать доверие и сделать путь клиента до заявки максимально простым.",
+    result:
+      "Получается готовая онлайн-презентация специалиста, которую можно использовать в соцсетях, рекламе и переписке с клиентами.",
+    price: "от 15 000 ₽",
+    tags: [
+      "Дизайн",
+      "Структура",
+      "Мобильная версия"
+    ],
+    image: "images/portfolio-site.jpg",
+    imageTitle: "Сайт мастера",
+    imageText: "Современный сайт под услуги"
+  },
+  {
+    id: "default-2",
+    number: "02",
+    category: "НЕЙРОФОТО",
+    title: "Beauty-съёмка",
+    description:
+      "Профессиональный визуал для мастера красоты без студии, фотографа и сложной организации съёмки.",
+    task:
+      "Создать визуал, который выглядит профессионально и помогает мастеру красиво представить себя и свои услуги.",
+    result:
+      "Серия изображений в едином стиле для соцсетей, рекламы, сторис и личного бренда.",
+    price: "от 700 ₽",
+    tags: [
+      "Beauty",
+      "Личный бренд",
+      "Соцсети"
+    ],
+    image: "images/portfolio-neuro.jpg",
+    imageTitle: "Beauty-съёмка",
+    imageText: "Нейрофото для личного бренда"
+  },
+  {
+    id: "default-3",
+    number: "03",
+    category: "МАРКЕТПЛЕЙСЫ",
+    title: "Карточка товара",
+    description:
+      "Визуальная упаковка товара с понятной подачей преимуществ, характеристик и основных выгод для покупателя.",
+    task:
+      "Сделать товар заметнее среди конкурентов и за несколько секунд показать покупателю его основные преимущества.",
+    result:
+      "Понятная инфографика и единый визуальный стиль карточки, ориентированные на восприятие покупателя.",
+    price: "от 1 500 ₽",
+    tags: [
+      "Инфографика",
+      "Wildberries",
+      "Ozon"
+    ],
+    image: "images/portfolio-marketplace.jpg",
+    imageTitle: "Карточка товара",
+    imageText: "Визуальная упаковка товара"
+  }
+];
+
+
+/* =========================================================
+   ЗАГРУЗКА ДАННЫХ САЙТА ИЗ SUPABASE
+   ========================================================= */
+
+async function loadSiteData() {
+
+  const result = {
+    services: DEFAULT_SERVICES,
+    prices: DEFAULT_PRICES,
+    neuroPrices: DEFAULT_NEURO_PRICES,
+    texts: DEFAULT_TEXTS,
+    contacts: {
+      ...CONFIG
+    },
+    portfolio: DEFAULT_PORTFOLIO
+  };
+
+
+  /* ---------------------------------------------------------
+     SERVICES
+     --------------------------------------------------------- */
+
+  try {
+
+    const servicesResult =
+      await frilancePublicSupabase
+        .from("services")
+        .select("*")
+        .order("created_at", {
+          ascending: false
+        })
+        .limit(1)
+        .maybeSingle();
+
+
+    if (
+      !servicesResult.error &&
+      servicesResult.data
+    ) {
+
+      const dbServices =
+        servicesResult.data;
+
+
+      result.services =
+        DEFAULT_SERVICES.map((service) => {
+
+          if (service.id === "website") {
+
+            return {
+              ...service,
+              price:
+                dbServices.website_price ||
+                service.price
+            };
+
+          }
+
+
+          if (service.id === "neuro") {
+
+            return {
+              ...service,
+              price:
+                dbServices.neuro_price ||
+                service.price
+            };
+
+          }
+
+
+          if (service.id === "marketplace") {
+
+            return {
+              ...service,
+              price:
+                dbServices.marketplace_price ||
+                service.price
+            };
+
+          }
+
+
+          return service;
+
+        });
+
+
+      result.prices =
+        DEFAULT_PRICES.map((price) => {
+
+          if (
+            price.title === "Старт"
+          ) {
+
+            return {
+              ...price,
+              value:
+                dbServices.start_price ||
+                price.value
+            };
+
+          }
+
+
+          if (
+            price.title === "Бизнес"
+          ) {
+
+            return {
+              ...price,
+              value:
+                dbServices.business_price ||
+                price.value
+            };
+
+          }
+
+
+          if (
+            price.title === "Карточка"
+          ) {
+
+            return {
+              ...price,
+              value:
+                dbServices.marketplace_price ||
+                price.value
+            };
+
+          }
+
+
+          return price;
+
+        });
+
+
+      result.neuroPrices =
+        DEFAULT_NEURO_PRICES.map(
+          ([name, price], index) => {
+
+            if (
+              index ===
+              DEFAULT_NEURO_PRICES.length - 1
+            ) {
+
+              return [
+                name,
+                dbServices.neuro_price ||
+                price
+              ];
+
+            }
+
+            return [
+              name,
+              price
+            ];
+
+          }
+        );
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "FRILANCE: ошибка загрузки services:",
+      error
+    );
+
+  }
+
+
+  /* ---------------------------------------------------------
+     TEXTS
+     --------------------------------------------------------- */
+
+  try {
+
+    const textsResult =
+      await frilancePublicSupabase
+        .from("texts")
+        .select("*")
+        .order("created_at", {
+          ascending: false
+        })
+        .limit(1)
+        .maybeSingle();
+
+
+    if (
+      !textsResult.error &&
+      textsResult.data
+    ) {
+
+      result.texts = {
+        ...DEFAULT_TEXTS,
+        ...textsResult.data
+      };
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "FRILANCE: ошибка загрузки texts:",
+      error
+    );
+
+  }
+
+
+  /* ---------------------------------------------------------
+     CONTACTS
+     --------------------------------------------------------- */
+
+  try {
+
+    const contactsResult =
+      await frilancePublicSupabase
+        .from("contacts")
+        .select("*")
+        .order("created_at", {
+          ascending: false
+        })
+        .limit(1)
+        .maybeSingle();
+
+
+    if (
+      !contactsResult.error &&
+      contactsResult.data
+    ) {
+
+      result.contacts = {
+        ...CONFIG,
+        email:
+          contactsResult.data.email ||
+          CONFIG.email,
+        site:
+          contactsResult.data.site ||
+          CONFIG.site
+      };
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "FRILANCE: ошибка загрузки contacts:",
+      error
+    );
+
+  }
+
+
+  /* ---------------------------------------------------------
+     PORTFOLIO
+     --------------------------------------------------------- */
+
+  try {
+
+    const portfolioResult =
+      await frilancePublicSupabase
+        .from("portfolio")
+        .select("*")
+        .order("sort_order", {
+          ascending: true
+        })
+        .order("created_at", {
+          ascending: true
+        });
+
+
+    if (
+      !portfolioResult.error &&
+      Array.isArray(portfolioResult.data) &&
+      portfolioResult.data.length > 0
+    ) {
+
+      const portfolioRows =
+        portfolioResult.data;
+
+
+      /* -----------------------------------------------------
+         Загружаем дополнительные изображения
+         ----------------------------------------------------- */
+
+      let imageRows = [];
+
+
+      try {
+
+        const imagesResult =
+          await frilancePublicSupabase
+            .from("portfolio_images")
+            .select("*")
+            .order("sort_order", {
+              ascending: true
+            })
+            .order("created_at", {
+              ascending: true
+            });
+
+
+        if (
+          !imagesResult.error &&
+          Array.isArray(imagesResult.data)
+        ) {
+
+          imageRows =
+            imagesResult.data;
+
+        }
+
+      } catch (imageError) {
+
+        console.error(
+          "FRILANCE: ошибка загрузки portfolio_images:",
+          imageError
+        );
+
+      }
+
+
+      result.portfolio =
+        portfolioRows.map(
+          (row, index) => {
+
+            const relatedImages =
+              imageRows.filter(
+                (image) =>
+                  image.portfolio_id ===
+                  row.id
+              );
+
+
+            const firstRelatedImage =
+              relatedImages[0];
+
+
+            let category =
+              String(
+                row.category ||
+                ""
+              ).trim();
+
+
+            if (!category) {
+
+              category =
+                "ПОРТФОЛИО";
+
+            }
+
+
+            let image =
+              row.image_url ||
+              firstRelatedImage?.image_url ||
+              "";
+
+
+            let title =
+              row.title ||
+              "Работа";
+
+
+            let description =
+              row.description ||
+              "";
+
+
+            let price =
+              row.price ||
+              "";
+
+
+            const categoryUpper =
+              category.toUpperCase();
+
+
+            let defaultTags = [
+              "Дизайн",
+              "Структура",
+              "Визуал"
+            ];
+
+
+            if (
+              categoryUpper.includes(
+                "НЕЙРО"
+              )
+            ) {
+
+              defaultTags = [
+                "Beauty",
+                "Личный бренд",
+                "Соцсети"
+              ];
+
+            } else if (
+              categoryUpper.includes(
+                "МАРКЕТ"
+              )
+            ) {
+
+              defaultTags = [
+                "Инфографика",
+                "Wildberries",
+                "Ozon"
+              ];
+
+            } else if (
+              categoryUpper.includes(
+                "САЙТ"
+              )
+            ) {
+
+              defaultTags = [
+                "Дизайн",
+                "Структура",
+                "Мобильная версия"
+              ];
+
+            }
+
+
+            return {
+
+              id:
+                row.id,
+
+              number:
+                String(index + 1)
+                  .padStart(2, "0"),
+
+              category:
+                categoryUpper,
+
+              title,
+
+              description,
+
+              task:
+                description ||
+                "Создать современное решение под задачу клиента.",
+
+              result:
+                "Готовое визуальное решение, которое можно использовать для продвижения и работы с клиентами.",
+
+              price,
+
+              tags:
+                defaultTags,
+
+              image,
+
+              imageTitle:
+                title,
+
+              imageText:
+                description ||
+                title
+
+            };
+
+          }
+        );
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "FRILANCE: ошибка загрузки portfolio:",
+      error
+    );
+
+  }
+
+
+  console.log(
+    "FRILANCE: данные сайта загружены из Supabase.",
+    result
+  );
+
+
+  return result;
+}
 
 
 /* =========================================================
    HEADER
    ========================================================= */
 
-function Header({ onOrder }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+function Header({ onOrder, texts }) {
+
+  const [menuOpen, setMenuOpen] =
+    useState(false);
+
+  const [scrolled, setScrolled] =
+    useState(false);
+
 
   useEffect(() => {
+
     const handleScroll = () => {
-      setScrolled(window.scrollY > 30);
+
+      setScrolled(
+        window.scrollY > 30
+      );
+
     };
 
-    window.addEventListener("scroll", handleScroll);
+
+    window.addEventListener(
+      "scroll",
+      handleScroll
+    );
+
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      );
+
     };
+
   }, []);
 
+
   const goTo = (id) => {
+
     setMenuOpen(false);
 
+
     setTimeout(() => {
-      const element = document.getElementById(id);
+
+      const element =
+        document.getElementById(id);
+
 
       if (element) {
+
         element.scrollIntoView({
           behavior: "smooth"
         });
+
       }
+
     }, 50);
+
   };
 
+
   return (
-    <header className={`site-header ${scrolled ? "scrolled" : ""}`}>
+    <header
+      className={`site-header ${
+        scrolled ? "scrolled" : ""
+      }`}
+    >
+
       <div className="container header-inner">
 
         <a
           href="#top"
           className="logo"
           onClick={(e) => {
+
             e.preventDefault();
+
             goTo("top");
+
           }}
         >
-          <span className="logo-mark">✦</span>
+
+          <span className="logo-mark">
+            ✦
+          </span>
 
           <span>
             Оксана Баннова
           </span>
+
         </a>
 
 
-        <nav className={`nav ${menuOpen ? "open" : ""}`}>
+        <nav
+          className={`nav ${
+            menuOpen ? "open" : ""
+          }`}
+        >
 
           <a
             href="#services"
             onClick={(e) => {
+
               e.preventDefault();
+
               goTo("services");
+
             }}
           >
             Услуги
           </a>
 
+
           <a
             href="#portfolio"
             onClick={(e) => {
+
               e.preventDefault();
+
               goTo("portfolio");
+
             }}
           >
             Портфолио
           </a>
 
+
           <a
             href="#prices"
             onClick={(e) => {
+
               e.preventDefault();
+
               goTo("prices");
+
             }}
           >
             Цены
           </a>
 
+
           <a
             href="#process"
             onClick={(e) => {
+
               e.preventDefault();
+
               goTo("process");
+
             }}
           >
             Как работаю
@@ -304,19 +980,23 @@ function Header({ onOrder }) {
           className="header-button"
           onClick={onOrder}
         >
-          Обсудить проект
+          {texts?.hero_primary_button ||
+            "Обсудить проект"}
         </button>
 
 
         <button
           className="menu-button"
-          onClick={() => setMenuOpen(!menuOpen)}
+          onClick={() =>
+            setMenuOpen(!menuOpen)
+          }
           aria-label="Открыть меню"
         >
           {menuOpen ? "×" : "☰"}
         </button>
 
       </div>
+
     </header>
   );
 }
@@ -326,30 +1006,71 @@ function Header({ onOrder }) {
    HERO
    ========================================================= */
 
-function Hero({ onOrder }) {
+function Hero({
+  onOrder,
+  texts
+}) {
+
+  const heroTitle =
+    texts?.hero_title ||
+    DEFAULT_TEXTS.hero_title;
+
+
+  const heroSubtitle =
+    texts?.hero_subtitle ||
+    DEFAULT_TEXTS.hero_subtitle;
+
+
   return (
-    <section className="hero" id="home">
+    <section
+      className="hero"
+      id="home"
+    >
+
       <div className="hero-bg-glow"></div>
+
 
       <div className="container hero-grid">
 
         <div className="hero-content">
 
           <div className="hero-badge">
+
             <span className="hero-badge-dot"></span>
+
             Сайты • Нейрофото • Карточки товаров
+
           </div>
 
+
           <h1>
-            Цифровая упаковка,
-            <span> которая помогает продавать</span>
+
+            {heroTitle.includes(",") ? (
+
+              <>
+                {heroTitle.split(",")[0]},
+                <span>
+                  {heroTitle.substring(
+                    heroTitle.indexOf(",") + 1
+                  )}
+                </span>
+              </>
+
+            ) : (
+
+              <span>
+                {heroTitle}
+              </span>
+
+            )}
+
           </h1>
 
+
           <p className="hero-description">
-            Помогаю мастерам, экспертам и небольшому бизнесу
-            выглядеть профессионально в интернете —
-            от сайта и фотографий до визуала товаров.
+            {heroSubtitle}
           </p>
+
 
           <div className="hero-buttons">
 
@@ -357,38 +1078,64 @@ function Hero({ onOrder }) {
               className="btn btn-primary"
               onClick={onOrder}
             >
-              Обсудить проект
-              <span>→</span>
+              {texts?.hero_primary_button ||
+                "Обсудить проект"}
+
+              <span>
+                →
+              </span>
             </button>
+
 
             <a
               href="#portfolio"
               className="btn btn-secondary"
             >
-              Смотреть работы
+              {texts?.hero_secondary_button ||
+                "Смотреть работы"}
             </a>
 
           </div>
 
+
           <div className="hero-stats">
 
             <div className="hero-stat">
-              <strong>3</strong>
-              <span>направления</span>
+              <strong>
+                3
+              </strong>
+
+              <span>
+                направления
+              </span>
             </div>
+
 
             <div className="hero-stat-line"></div>
 
+
             <div className="hero-stat">
-              <strong>от 700 ₽</strong>
-              <span>нейрофото</span>
+              <strong>
+                от 700 ₽
+              </strong>
+
+              <span>
+                нейрофото
+              </span>
             </div>
+
 
             <div className="hero-stat-line"></div>
 
+
             <div className="hero-stat">
-              <strong>от 15 000 ₽</strong>
-              <span>сайт</span>
+              <strong>
+                от 15 000 ₽
+              </strong>
+
+              <span>
+                сайт
+              </span>
             </div>
 
           </div>
@@ -399,24 +1146,27 @@ function Hero({ onOrder }) {
         <div className="hero-visual">
 
           <div className="hero-orbit hero-orbit-1"></div>
+
           <div className="hero-orbit hero-orbit-2"></div>
 
           <div className="hero-main-glow"></div>
 
-
-          {/* Карточка сайта */}
 
           <div className="hero-card hero-card-site">
 
             <div className="hero-card-top">
 
               <div className="mini-dots">
+
                 <i></i>
                 <i></i>
                 <i></i>
+
               </div>
 
-              <span>WEBSITE</span>
+              <span>
+                WEBSITE
+              </span>
 
             </div>
 
@@ -428,9 +1178,11 @@ function Hero({ onOrder }) {
                 <div className="preview-logo"></div>
 
                 <div className="preview-menu">
+
                   <i></i>
                   <i></i>
                   <i></i>
+
                 </div>
 
               </div>
@@ -439,7 +1191,9 @@ function Hero({ onOrder }) {
               <div className="website-preview-content">
 
                 <div className="preview-line big"></div>
+
                 <div className="preview-line"></div>
+
                 <div className="preview-line short"></div>
 
                 <div className="preview-button"></div>
@@ -450,52 +1204,74 @@ function Hero({ onOrder }) {
 
 
             <div className="hero-card-label">
-              <span className="label-icon">⌘</span>
+
+              <span className="label-icon">
+                ⌘
+              </span>
+
               Сайт под ключ
+
             </div>
 
           </div>
 
-
-          {/* Карточка нейрофото */}
 
           <div className="hero-card hero-card-photo">
 
             <div className="photo-placeholder">
 
               <div className="photo-silhouette">
+
                 <div className="silhouette-head"></div>
+
                 <div className="silhouette-body"></div>
+
               </div>
 
-              <div className="photo-spark spark-1">✦</div>
-              <div className="photo-spark spark-2">✧</div>
-              <div className="photo-spark spark-3">✦</div>
+
+              <div className="photo-spark spark-1">
+                ✦
+              </div>
+
+              <div className="photo-spark spark-2">
+                ✧
+              </div>
+
+              <div className="photo-spark spark-3">
+                ✦
+              </div>
 
             </div>
 
 
             <div className="photo-label">
-              <span>✦</span>
+
+              <span>
+                ✦
+              </span>
+
               NEUROPHOTO
+
             </div>
 
           </div>
 
-
-          {/* Карточка товара */}
 
           <div className="hero-card hero-card-product">
 
             <div className="product-preview">
 
               <div className="product-image">
+
                 <div className="product-bottle"></div>
+
               </div>
+
 
               <div className="product-info">
 
                 <div className="product-line"></div>
+
                 <div className="product-line small"></div>
 
                 <div className="product-price">
@@ -508,22 +1284,37 @@ function Hero({ onOrder }) {
 
 
             <div className="product-label">
-              <span>◈</span>
+
+              <span>
+                ◈
+              </span>
+
               Карточка товара
+
             </div>
 
           </div>
 
 
           <div className="hero-floating-tag tag-1">
-            <span>✦</span>
+
+            <span>
+              ✦
+            </span>
+
             AI VISUAL
+
           </div>
 
 
           <div className="hero-floating-tag tag-2">
-            <span>✓</span>
+
+            <span>
+              ✓
+            </span>
+
             Под ключ
+
           </div>
 
         </div>
@@ -532,8 +1323,13 @@ function Hero({ onOrder }) {
 
 
       <div className="hero-scroll">
-        <span>SCROLL</span>
+
+        <span>
+          SCROLL
+        </span>
+
         <div className="scroll-line"></div>
+
       </div>
 
     </section>
@@ -545,7 +1341,11 @@ function Hero({ onOrder }) {
    SERVICES
    ========================================================= */
 
-function Services({ onService }) {
+function Services({
+  onService,
+  services,
+  texts
+}) {
 
   return (
     <section
@@ -561,19 +1361,29 @@ function Services({ onService }) {
 
 
         <h2 className="section-title">
-          Всё, что нужно,
-          <br />
-          чтобы
-          <span className="gradient-text">
-            выглядеть профессионально.
-          </span>
+
+          {texts?.services_title
+            ? texts.services_title
+            : (
+              <>
+                Всё, что нужно,
+                <br />
+                чтобы
+                <span className="gradient-text">
+                  выглядеть профессионально.
+                </span>
+              </>
+            )}
+
         </h2>
 
 
         <p className="section-description">
+
           Не просто создаю красивые картинки и сайты.
           Подбираю решение под вашу задачу —
           чтобы вас заметили, вам доверяли и к вам обращались.
+
         </p>
 
 
@@ -584,8 +1394,12 @@ function Services({ onService }) {
             <article
               className="service-card"
               key={service.id}
-              onClick={() => onService(service)}
-              style={{ cursor: "pointer" }}
+              onClick={() =>
+                onService(service)
+              }
+              style={{
+                cursor: "pointer"
+              }}
             >
 
               <div className="service-number">
@@ -604,17 +1418,7 @@ function Services({ onService }) {
 
 
               <p className="service-description">
-                {service.id === "website" &&
-                  "Сайт, который понятно рассказывает о вас, услугах и помогает получать заявки."
-                }
-
-                {service.id === "neuro" &&
-                  "Профессиональные фотографии для соцсетей, личного бренда, рекламы или просто для себя."
-                }
-
-                {service.id === "marketplace" &&
-                  "Продающий визуал товара, который помогает выделиться среди конкурентов на маркетплейсе."
-                }
+                {service.short}
               </p>
 
 
@@ -623,6 +1427,7 @@ function Services({ onService }) {
                 <div className="service-price">
                   {service.price}
                 </div>
+
 
                 <div className="service-link">
                   Подробнее →
@@ -639,17 +1444,23 @@ function Services({ onService }) {
 
         <div className="services-note">
 
-          <span className="services-note-icon">✦</span>
+          <span className="services-note-icon">
+            ✦
+          </span>
+
 
           <div>
+
             <strong>
               Не знаете, что выбрать?
             </strong>
+
 
             <p>
               Расскажите, чем занимаетесь и какая у вас задача.
               Я предложу подходящий вариант.
             </p>
+
           </div>
 
         </div>
@@ -670,17 +1481,25 @@ function ServiceModal({
   onClose,
   onOrder
 }) {
+
   if (!service) {
     return null;
   }
+
 
   return (
     <div
       className="modal-overlay"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) {
+
+        if (
+          e.target === e.currentTarget
+        ) {
+
           onClose();
+
         }
+
       }}
     >
 
@@ -711,18 +1530,22 @@ function ServiceModal({
 
         <div className="price-modal-list">
 
-          {service.details.map((item, index) => (
+          {service.details.map(
+            (item, index) => (
 
-            <div
-              className="price-modal-item"
-              key={index}
-            >
-              <span>
-                ✓ {item}
-              </span>
-            </div>
+              <div
+                className="price-modal-item"
+                key={index}
+              >
 
-          ))}
+                <span>
+                  ✓ {item}
+                </span>
+
+              </div>
+
+            )
+          )}
 
         </div>
 
@@ -741,10 +1564,17 @@ function ServiceModal({
 
         <button
           className="primary-button"
-          style={{ width: "100%" }}
+          style={{
+            width: "100%"
+          }}
           onClick={() => {
+
             onClose();
-            onOrder(service.title);
+
+            onOrder(
+              service.title
+            );
+
           }}
         >
           Обсудить проект →
@@ -761,112 +1591,76 @@ function ServiceModal({
    PORTFOLIO
    ========================================================= */
 
-function Portfolio({ onOrder }) {
-  const portfolioItems = [
-    {
-      number: "01",
-      category: "САЙТЫ",
-      title: "Сайт для мастера",
-      description:
-        "Современный сайт для специалиста, который собирает услуги, цены, работы и запись клиента в одном месте.",
+function Portfolio({
+  onOrder,
+  portfolio,
+  texts
+}) {
 
-      task:
-        "Показать мастера профессионально, сформировать доверие и сделать путь клиента до заявки максимально простым.",
+  const [active, setActive] =
+    React.useState(0);
 
-      result:
-        "Получается готовая онлайн-презентация специалиста, которую можно использовать в соцсетях, рекламе и переписке с клиентами.",
 
-      price: "от 15 000 ₽",
+  const portfolioItems =
+    portfolio &&
+    portfolio.length
+      ? portfolio
+      : DEFAULT_PORTFOLIO;
 
-      tags: [
-        "Дизайн",
-        "Структура",
-        "Мобильная версия"
-      ],
 
-      image: "images/portfolio-site.jpg",
+  useEffect(() => {
 
-      imageTitle: "Сайт мастера",
-      imageText: "Современный сайт под услуги"
-    },
+    if (
+      active >=
+      portfolioItems.length
+    ) {
 
-    {
-      number: "02",
-      category: "НЕЙРОФОТО",
-      title: "Beauty-съёмка",
+      setActive(0);
 
-      description:
-        "Профессиональный визуал для мастера красоты без студии, фотографа и сложной организации съёмки.",
-
-      task:
-        "Создать визуал, который выглядит профессионально и помогает мастеру красиво представить себя и свои услуги.",
-
-      result:
-        "Серия изображений в едином стиле для соцсетей, рекламы, сторис и личного бренда.",
-
-      price: "от 700 ₽",
-
-      tags: [
-        "Beauty",
-        "Личный бренд",
-        "Соцсети"
-      ],
-
-      image: "images/portfolio-neuro.jpg",
-
-      imageTitle: "Beauty-съёмка",
-      imageText: "Нейрофото для личного бренда"
-    },
-
-    {
-      number: "03",
-      category: "МАРКЕТПЛЕЙСЫ",
-      title: "Карточка товара",
-
-      description:
-        "Визуальная упаковка товара с понятной подачей преимуществ, характеристик и основных выгод для покупателя.",
-
-      task:
-        "Сделать товар заметнее среди конкурентов и за несколько секунд показать покупателю его основные преимущества.",
-
-      result:
-        "Понятная инфографика и единый визуальный стиль карточки, ориентированные на восприятие покупателя.",
-
-      price: "от 1 500 ₽",
-
-      tags: [
-        "Инфографика",
-        "Wildberries",
-        "Ozon"
-      ],
-
-      image: "images/portfolio-marketplace.jpg",
-
-      imageTitle: "Карточка товара",
-      imageText: "Визуальная упаковка товара"
     }
-  ];
 
-  const [active, setActive] = React.useState(0);
+  }, [
+    portfolioItems.length,
+    active
+  ]);
 
-  const item = portfolioItems[active];
+
+  const item =
+    portfolioItems[active] ||
+    portfolioItems[0];
+
+
+  if (!item) {
+    return null;
+  }
+
 
   return (
-    <section className="portfolio-section" id="portfolio">
+    <section
+      className="portfolio-section"
+      id="portfolio"
+    >
+
       <div className="container">
 
         <div className="section-heading portfolio-heading">
 
           <div>
+
             <span className="section-kicker">
               ПОРТФОЛИО
             </span>
 
+
             <h2>
-              Работы, которые
-              <span> решают задачу.</span>
+
+              {texts?.portfolio_title ||
+                "Работы, которые решают задачу."}
+
             </h2>
+
           </div>
+
 
           <p>
             Смотрим не только на внешний вид,
@@ -878,47 +1672,67 @@ function Portfolio({ onOrder }) {
 
         <div className="portfolio-tabs">
 
-          {portfolioItems.map((portfolioItem, index) => (
-            <button
-              key={portfolioItem.number}
-              className={`portfolio-tab ${
-                active === index ? "active" : ""
-              }`}
-              onClick={() => setActive(index)}
-            >
+          {portfolioItems.map(
+            (portfolioItem, index) => (
 
-              <span className="portfolio-tab-number">
-                {portfolioItem.number}
-              </span>
+              <button
+                key={
+                  portfolioItem.id ||
+                  portfolioItem.number ||
+                  index
+                }
+                className={`portfolio-tab ${
+                  active === index
+                    ? "active"
+                    : ""
+                }`}
+                onClick={() =>
+                  setActive(index)
+                }
+              >
 
-              <span>
-                {portfolioItem.category}
-              </span>
+                <span className="portfolio-tab-number">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
 
-            </button>
-          ))}
+
+                <span>
+                  {portfolioItem.category}
+                </span>
+
+              </button>
+
+            )
+          )}
 
         </div>
 
 
         <div
           className="portfolio-main-card"
-          key={item.number}
+          key={
+            item.id ||
+            item.number
+          }
         >
 
           <div className="portfolio-visual">
 
             <div className="portfolio-image-glow"></div>
 
+
             <div className="portfolio-image-frame">
 
               <div className="portfolio-browser-bar">
 
                 <div className="portfolio-browser-dots">
+
                   <span></span>
                   <span></span>
                   <span></span>
+
                 </div>
+
 
                 <div className="portfolio-browser-url">
                   oksanabannova.github.io
@@ -929,33 +1743,47 @@ function Portfolio({ onOrder }) {
 
               <div className="portfolio-image">
 
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                    e.currentTarget.parentElement.classList.add(
-                      "portfolio-image-empty"
-                    );
-                  }}
-                />
+                {item.image ? (
+
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    onError={(e) => {
+
+                      e.currentTarget.style.display =
+                        "none";
+
+                      e.currentTarget.parentElement.classList.add(
+                        "portfolio-image-empty"
+                      );
+
+                    }}
+                  />
+
+                ) : null}
+
 
                 <div className="portfolio-image-placeholder">
 
                   <span className="portfolio-placeholder-number">
-                    {item.number}
+                    {String(active + 1).padStart(2, "0")}
                   </span>
+
 
                   <span className="portfolio-placeholder-category">
                     {item.category}
                   </span>
 
+
                   <strong>
-                    {item.imageTitle}
+                    {item.imageTitle ||
+                      item.title}
                   </strong>
 
+
                   <small>
-                    {item.imageText}
+                    {item.imageText ||
+                      item.description}
                   </small>
 
                 </div>
@@ -968,6 +1796,7 @@ function Portfolio({ onOrder }) {
             <div className="portfolio-floating-label">
 
               <span className="portfolio-floating-dot"></span>
+
 
               <span>
                 {item.category}
@@ -985,6 +1814,7 @@ function Portfolio({ onOrder }) {
               <span className="portfolio-category">
                 {item.category}
               </span>
+
 
               <span className="portfolio-price">
                 {item.price}
@@ -1011,6 +1841,7 @@ function Portfolio({ onOrder }) {
                   ЗАДАЧА
                 </span>
 
+
                 <p>
                   {item.task}
                 </p>
@@ -1024,13 +1855,22 @@ function Portfolio({ onOrder }) {
                   ЧТО СДЕЛАНО
                 </span>
 
+
                 <div className="portfolio-tags">
 
-                  {item.tags.map((tag) => (
-                    <span key={tag}>
-                      {tag}
-                    </span>
-                  ))}
+                  {(item.tags || []).map(
+                    (tag, index) => (
+
+                      <span
+                        key={
+                          `${tag}-${index}`
+                        }
+                      >
+                        {tag}
+                      </span>
+
+                    )
+                  )}
 
                 </div>
 
@@ -1043,6 +1883,7 @@ function Portfolio({ onOrder }) {
                   РЕЗУЛЬТАТ
                 </span>
 
+
                 <p>
                   {item.result}
                 </p>
@@ -1054,10 +1895,16 @@ function Portfolio({ onOrder }) {
 
             <button
               className="primary-button portfolio-order-button"
-              onClick={() => onOrder(item.title)}
+              onClick={() =>
+                onOrder(item.title)
+              }
             >
               Хочу такое решение
-              <span>→</span>
+
+              <span>
+                →
+              </span>
+
             </button>
 
           </div>
@@ -1070,8 +1917,13 @@ function Portfolio({ onOrder }) {
           <div className="portfolio-bottom-text">
 
             <span>
-              {String(active + 1).padStart(2, "0")} / 03
+              {String(active + 1).padStart(2, "0")}
+              {" / "}
+              {String(
+                portfolioItems.length
+              ).padStart(2, "0")}
             </span>
+
 
             <p>
               Не нашли подходящий пример?
@@ -1084,16 +1936,23 @@ function Portfolio({ onOrder }) {
           <button
             className="secondary-button"
             onClick={() =>
-              onOrder("Индивидуальный проект")
+              onOrder(
+                "Индивидуальный проект"
+              )
             }
           >
             Обсудить мой проект
-            <span>→</span>
+
+            <span>
+              →
+            </span>
+
           </button>
 
         </div>
 
       </div>
+
     </section>
   );
 }
@@ -1104,6 +1963,7 @@ function Portfolio({ onOrder }) {
    ========================================================= */
 
 function Business({ onOrder }) {
+
   const targets = [
     {
       number: "01",
@@ -1143,22 +2003,34 @@ function Business({ onOrder }) {
     }
   ];
 
+
   return (
-    <section className="business section" id="business">
+    <section
+      className="business section"
+      id="business"
+    >
+
       <div className="container">
 
         <div className="business-heading">
 
           <div>
+
             <span className="section-kicker">
               ДЛЯ КОГО
             </span>
 
+
             <h2>
               Если вам нужно выглядеть
-              <span> профессионально</span>
+              <span>
+                {" "}
+                профессионально
+              </span>
             </h2>
+
           </div>
+
 
           <p>
             Помогаю специалистам и небольшому бизнесу
@@ -1172,6 +2044,7 @@ function Business({ onOrder }) {
         <div className="business-grid">
 
           {targets.map((item) => (
+
             <article
               className="business-card"
               key={item.number}
@@ -1182,6 +2055,7 @@ function Business({ onOrder }) {
                 <span className="business-number">
                   {item.number}
                 </span>
+
 
                 <div className="business-icon">
                   {item.icon}
@@ -1206,6 +2080,7 @@ function Business({ onOrder }) {
                   ✓
                 </span>
 
+
                 <span>
                   {item.result}
                 </span>
@@ -1216,6 +2091,7 @@ function Business({ onOrder }) {
               <div className="business-card-line"></div>
 
             </article>
+
           ))}
 
         </div>
@@ -1229,6 +2105,7 @@ function Business({ onOrder }) {
               НЕ ЗНАЕТЕ, ЧТО ИМЕННО ВАМ НУЖНО?
             </span>
 
+
             <strong>
               Расскажите о задаче — я помогу подобрать
               подходящий вариант.
@@ -1239,15 +2116,22 @@ function Business({ onOrder }) {
 
           <button
             className="btn btn-primary business-button"
-            onClick={() => onOrder("Консультация")}
+            onClick={() =>
+              onOrder("Консультация")
+            }
           >
             Обсудить задачу
-            <span>→</span>
+
+            <span>
+              →
+            </span>
+
           </button>
 
         </div>
 
       </div>
+
     </section>
   );
 }
@@ -1257,117 +2141,180 @@ function Business({ onOrder }) {
    PROCESS
    ========================================================= */
 
-function Process({ onOrder }) {
+function Process({
+  onOrder,
+  texts
+}) {
+
   const steps = [
     {
       number: "01",
       title: "Обсуждаем задачу",
-      text: "Вы рассказываете, что нужно сделать, для кого и какой результат хотите получить.",
+      text:
+        "Вы рассказываете, что нужно сделать, для кого и какой результат хотите получить.",
       label: "ЗАПРОС"
     },
     {
       number: "02",
       title: "Предлагаю решение",
-      text: "Подбираю подходящий формат, структуру, стиль и объём работы под вашу задачу.",
+      text:
+        "Подбираю подходящий формат, структуру, стиль и объём работы под вашу задачу.",
       label: "ПЛАН"
     },
     {
       number: "03",
       title: "Создаю проект",
-      text: "Разрабатываю сайт, создаю нейрофото или оформляю карточки товара.",
+      text:
+        "Разрабатываю сайт, создаю нейрофото или оформляю карточки товара.",
       label: "РАБОТА"
     },
     {
       number: "04",
       title: "Передаю готовый результат",
-      text: "Вы получаете готовый материал, который можно сразу использовать в работе и продвижении.",
+      text:
+        "Вы получаете готовый материал, который можно сразу использовать в работе и продвижении.",
       label: "РЕЗУЛЬТАТ"
     }
   ];
 
+
   return (
-    <section className="process section" id="process">
+    <section
+      className="process section"
+      id="process"
+    >
+
       <div className="container">
 
         <div className="process-heading">
+
           <div>
-            <span className="section-kicker">КАК ЭТО РАБОТАЕТ</span>
+
+            <span className="section-kicker">
+              КАК ЭТО РАБОТАЕТ
+            </span>
+
 
             <h2>
-              От идеи до
-              <span> готового результата</span>
+
+              {texts?.process_title ||
+                "От идеи до готового результата"}
+
             </h2>
+
           </div>
+
 
           <p>
             Без сложных технических заданий и бесконечных согласований.
             Вы рассказываете о задаче — я беру на себя её реализацию.
           </p>
+
         </div>
+
 
         <div className="process-steps">
-          {steps.map((step, index) => (
-            <React.Fragment key={step.number}>
 
-              <article className="process-step">
+          {steps.map(
+            (step, index) => (
 
-                <div className="process-step-top">
-                  <span className="process-number">
-                    {step.number}
-                  </span>
+              <React.Fragment
+                key={step.number}
+              >
 
-                  <span className="process-label">
-                    {step.label}
-                  </span>
-                </div>
+                <article className="process-step">
 
-                <div className="process-step-icon">
-                  {index === 0 && "✦"}
-                  {index === 1 && "◈"}
-                  {index === 2 && "✧"}
-                  {index === 3 && "✓"}
-                </div>
+                  <div className="process-step-top">
 
-                <h3>{step.title}</h3>
+                    <span className="process-number">
+                      {step.number}
+                    </span>
 
-                <p>{step.text}</p>
 
-                <div className="process-step-line"></div>
+                    <span className="process-label">
+                      {step.label}
+                    </span>
 
-              </article>
+                  </div>
 
-              {index < steps.length - 1 && (
-                <div className="process-arrow">
-                  →
-                </div>
-              )}
 
-            </React.Fragment>
-          ))}
+                  <div className="process-step-icon">
+
+                    {index === 0 && "✦"}
+                    {index === 1 && "◈"}
+                    {index === 2 && "✧"}
+                    {index === 3 && "✓"}
+
+                  </div>
+
+
+                  <h3>
+                    {step.title}
+                  </h3>
+
+
+                  <p>
+                    {step.text}
+                  </p>
+
+
+                  <div className="process-step-line"></div>
+
+                </article>
+
+
+                {index <
+                  steps.length - 1 && (
+
+                  <div className="process-arrow">
+                    →
+                  </div>
+
+                )}
+
+              </React.Fragment>
+
+            )
+          )}
+
         </div>
+
 
         <div className="process-bottom">
 
           <div className="process-bottom-text">
-            <span>ГОТОВЫ НАЧАТЬ?</span>
+
+            <span>
+              ГОТОВЫ НАЧАТЬ?
+            </span>
+
 
             <strong>
               Расскажите, что хотите создать —
               обсудим идею и варианты реализации.
             </strong>
+
           </div>
+
 
           <button
             className="btn btn-primary process-button"
-            onClick={() => onOrder("Новый проект")}
+            onClick={() =>
+              onOrder("Новый проект")
+            }
           >
             Обсудить проект
-            <span>→</span>
+
+            <span>
+              →
+            </span>
+
           </button>
 
         </div>
 
       </div>
+
     </section>
   );
 }
@@ -1377,60 +2324,91 @@ function Process({ onOrder }) {
    PRICES
    ========================================================= */
 
-function Prices({ onOrder, onNeuroPrices }) {
-  const tariffs = [
-    {
-      title: "Сайт START",
-      price: "от 15 000 ₽",
-      description: "Для специалиста, мастера или небольшого проекта.",
-      features: [
-        "Современный дизайн",
-        "Адаптация под телефон",
-        "Блоки услуг и цен",
-        "Портфолио",
-        "Форма заявки",
-        "Размещение сайта"
-      ],
-      button: "Заказать сайт",
-      type: "Сайт START"
-    },
-    {
-      title: "Сайт BUSINESS",
-      price: "от 25 000 ₽",
-      description: "Для бизнеса, которому нужен полноценный продающий сайт.",
-      features: [
-        "Индивидуальный дизайн",
-        "Продающая структура",
-        "Каталог / услуги",
-        "Портфолио",
-        "Формы заявок",
-        "Анимации и интерактив",
-        "Адаптация под телефон",
-        "Подключение аналитики"
-      ],
-      button: "Обсудить сайт",
-      type: "Сайт BUSINESS",
-      popular: true
-    },
-    {
-      title: "Карточка товара",
-      price: "от 1 500 ₽",
-      description: "Визуальная упаковка товара для маркетплейсов.",
-      features: [
-        "Главное изображение",
-        "Красивый фон",
-        "Работа с композицией",
-        "Инфографика",
-        "Акценты на преимуществах",
-        "Подготовка под маркетплейс"
-      ],
-      button: "Заказать карточку",
-      type: "Карточка товара"
-    }
-  ];
+function Prices({
+  onOrder,
+  onNeuroPrices,
+  prices,
+  neuroPrices
+}) {
+
+  const tariffs =
+    prices.map(
+      (price, index) => {
+
+        if (index === 0) {
+
+          return {
+            title: "Сайт START",
+            price: price.value,
+            description:
+              "Для специалиста, мастера или небольшого проекта.",
+            features: [
+              "Современный дизайн",
+              "Адаптация под телефон",
+              "Блоки услуг и цен",
+              "Портфолио",
+              "Форма заявки",
+              "Размещение сайта"
+            ],
+            button: "Заказать сайт",
+            type: "Сайт START"
+          };
+
+        }
+
+
+        if (index === 1) {
+
+          return {
+            title: "Сайт BUSINESS",
+            price: price.value,
+            description:
+              "Для бизнеса, которому нужен полноценный продающий сайт.",
+            features: [
+              "Индивидуальный дизайн",
+              "Продающая структура",
+              "Каталог / услуги",
+              "Портфолио",
+              "Формы заявок",
+              "Анимации и интерактив",
+              "Адаптация под телефон",
+              "Подключение аналитики"
+            ],
+            button: "Обсудить сайт",
+            type: "Сайт BUSINESS",
+            popular: true
+          };
+
+        }
+
+
+        return {
+          title: "Карточка товара",
+          price: price.value,
+          description:
+            "Визуальная упаковка товара для маркетплейсов.",
+          features: [
+            "Главное изображение",
+            "Красивый фон",
+            "Работа с композицией",
+            "Инфографика",
+            "Акценты на преимуществах",
+            "Подготовка под маркетплейс"
+          ],
+          button: "Заказать карточку",
+          type: "Карточка товара"
+        };
+
+      }
+    );
+
 
   return (
-    <section className="prices section" id="prices">
+    <section
+      className="prices section"
+      id="prices"
+    >
+
       <div className="container">
 
         <div className="section-heading prices-heading">
@@ -1439,10 +2417,15 @@ function Prices({ onOrder, onNeuroPrices }) {
             СТОИМОСТЬ
           </div>
 
+
           <h2>
             Понятные цены
-            <span> без скрытых платежей</span>
+            <span>
+              {" "}
+              без скрытых платежей
+            </span>
           </h2>
+
 
           <p>
             Стоимость зависит от объёма и сложности задачи.
@@ -1451,61 +2434,89 @@ function Prices({ onOrder, onNeuroPrices }) {
 
         </div>
 
+
         <div className="tariffs-grid">
 
-          {tariffs.map((tariff, index) => (
+          {tariffs.map(
+            (tariff, index) => (
 
-            <article
-              className={`tariff-card ${tariff.popular ? "tariff-popular" : ""}`}
-              key={index}
-            >
-
-              {tariff.popular && (
-                <div className="tariff-badge">
-                  ПОПУЛЯРНЫЙ
-                </div>
-              )}
-
-              <div className="tariff-top">
-
-                <h3>{tariff.title}</h3>
-
-                <div className="tariff-price">
-                  {tariff.price}
-                </div>
-
-                <p>
-                  {tariff.description}
-                </p>
-
-              </div>
-
-              <div className="tariff-features">
-
-                {tariff.features.map((feature, featureIndex) => (
-                  <div
-                    className="tariff-feature"
-                    key={featureIndex}
-                  >
-                    <span>✓</span>
-                    {feature}
-                  </div>
-                ))}
-
-              </div>
-
-              <button
-                className="btn btn-primary tariff-button"
-                onClick={() => onOrder(tariff.type)}
+              <article
+                className={`tariff-card ${
+                  tariff.popular
+                    ? "tariff-popular"
+                    : ""
+                }`}
+                key={index}
               >
-                {tariff.button}
-              </button>
 
-            </article>
+                {tariff.popular && (
 
-          ))}
+                  <div className="tariff-badge">
+                    ПОПУЛЯРНЫЙ
+                  </div>
+
+                )}
+
+
+                <div className="tariff-top">
+
+                  <h3>
+                    {tariff.title}
+                  </h3>
+
+
+                  <div className="tariff-price">
+                    {tariff.price}
+                  </div>
+
+
+                  <p>
+                    {tariff.description}
+                  </p>
+
+                </div>
+
+
+                <div className="tariff-features">
+
+                  {tariff.features.map(
+                    (feature, featureIndex) => (
+
+                      <div
+                        className="tariff-feature"
+                        key={featureIndex}
+                      >
+
+                        <span>
+                          ✓
+                        </span>
+
+                        {feature}
+
+                      </div>
+
+                    )
+                  )}
+
+                </div>
+
+
+                <button
+                  className="btn btn-primary tariff-button"
+                  onClick={() =>
+                    onOrder(tariff.type)
+                  }
+                >
+                  {tariff.button}
+                </button>
+
+              </article>
+
+            )
+          )}
 
         </div>
+
 
         <div className="neuro-price-block">
 
@@ -1515,10 +2526,15 @@ function Prices({ onOrder, onNeuroPrices }) {
               НЕЙРОФОТО
             </div>
 
+
             <h3>
               Фотографии, которые
-              <span> выглядят как настоящая съёмка</span>
+              <span>
+                {" "}
+                выглядят как настоящая съёмка
+              </span>
             </h3>
+
 
             <p>
               Создам нужный образ, стиль и атмосферу
@@ -1527,10 +2543,20 @@ function Prices({ onOrder, onNeuroPrices }) {
 
           </div>
 
+
           <div className="neuro-price-value">
-            <span>от</span>
-            <strong>700 ₽</strong>
+
+            <span>
+              от
+            </span>
+
+            <strong>
+              {prices?.[0]?.neuro_price ||
+                "700 ₽"}
+            </strong>
+
           </div>
+
 
           <button
             className="btn btn-primary"
@@ -1541,13 +2567,20 @@ function Prices({ onOrder, onNeuroPrices }) {
 
         </div>
 
+
         <div className="prices-note">
-          <span>✦</span>
+
+          <span>
+            ✦
+          </span>
+
           Если вашей задачи нет в списке — напишите мне.
           Рассчитаю стоимость индивидуально.
+
         </div>
 
       </div>
+
     </section>
   );
 }
@@ -1558,78 +2591,115 @@ function Prices({ onOrder, onNeuroPrices }) {
    ========================================================= */
 
 function Advantages() {
+
   const advantages = [
     {
       number: "01",
       title: "Под задачу",
-      text: "Не использую одно решение для всех. Подбираю визуал, структуру и формат под конкретный бизнес и цель."
+      text:
+        "Не использую одно решение для всех. Подбираю визуал, структуру и формат под конкретный бизнес и цель."
     },
     {
       number: "02",
       title: "Современно",
-      text: "Слежу за актуальной подачей, чтобы сайт, фотографии и карточки выглядели современно и профессионально."
+      text:
+        "Слежу за актуальной подачей, чтобы сайт, фотографии и карточки выглядели современно и профессионально."
     },
     {
       number: "03",
       title: "Понятно",
-      text: "Без сложных терминов. Вы понимаете, что мы делаем, зачем это нужно и какой результат получите."
+      text:
+        "Без сложных терминов. Вы понимаете, что мы делаем, зачем это нужно и какой результат получите."
     },
     {
       number: "04",
       title: "Всё в одном стиле",
-      text: "Можно собрать несколько инструментов в единую визуальную систему: сайт, фото и материалы для продвижения."
+      text:
+        "Можно собрать несколько инструментов в единую визуальную систему: сайт, фото и материалы для продвижения."
     }
   ];
 
+
   return (
-    <section className="advantages section" id="advantages">
+    <section
+      className="advantages section"
+      id="advantages"
+    >
+
       <div className="container">
 
         <div className="advantages-heading">
+
           <div>
-            <span className="section-kicker">МОЙ ПОДХОД</span>
+
+            <span className="section-kicker">
+              МОЙ ПОДХОД
+            </span>
+
 
             <h2>
               Не просто красиво —
-              <span> с пользой для бизнеса</span>
+              <span>
+                {" "}
+                с пользой для бизнеса
+              </span>
             </h2>
+
           </div>
+
 
           <p>
             Хорошая упаковка должна не только привлекать внимание,
             но и помогать человеку быстрее понять, кто вы,
             что предлагаете и почему стоит обратиться именно к вам.
           </p>
+
         </div>
+
 
         <div className="advantages-grid">
 
           {advantages.map((item) => (
+
             <article
               className="advantage-card"
               key={item.number}
             >
+
               <div className="advantage-top">
+
                 <span className="advantage-number">
                   {item.number}
                 </span>
 
+
                 <span className="advantage-mark">
                   ✦
                 </span>
+
               </div>
 
-              <h3>{item.title}</h3>
 
-              <p>{item.text}</p>
+              <h3>
+                {item.title}
+              </h3>
+
+
+              <p>
+                {item.text}
+              </p>
+
 
               <div className="advantage-line"></div>
+
             </article>
+
           ))}
 
         </div>
 
       </div>
+
     </section>
   );
 }
@@ -1639,111 +2709,125 @@ function Advantages() {
    FAQ
    ========================================================= */
 
-function FAQ() {
-  const questions = [
-    {
-      question: "Сколько времени занимает создание сайта?",
-      answer:
-        "Срок зависит от объёма проекта. Небольшой сайт обычно можно подготовить за несколько дней после согласования структуры, содержания и дизайна."
-    },
-    {
-      question: "Можно ли заказать только нейрофото?",
-      answer:
-        "Да. Можно заказать как одну фотографию по вашему запросу, так и полноценную серию: портрет, beauty-съёмку, семейные или парные фотографии."
-    },
-    {
-      question: "Можно ли сделать сайт без готового дизайна?",
-      answer:
-        "Да. Вам не обязательно заранее знать, каким должен быть сайт. Я помогу определить структуру, визуальный стиль и основные блоки."
-    },
-    {
-      question: "Вы работаете с клиентами из других городов?",
-      answer:
-        "Да. Большую часть работы можно выполнить полностью дистанционно. Общаемся онлайн, материалы передаются в электронном виде."
-    },
-    {
-      question: "Можно ли заказать несколько услуг сразу?",
-      answer:
-        "Да. Например, можно одновременно сделать сайт, нейрофото и визуальные материалы для соцсетей. В таком случае всё можно выдержать в едином стиле."
-    },
-    {
-      question: "Как происходит оплата?",
-      answer:
-        "Условия оплаты обсуждаем до начала работы в зависимости от выбранной услуги и объёма проекта."
-    }
-  ];
+function FAQ({
+  texts
+}) {
 
-  const [openIndex, setOpenIndex] = React.useState(null);
+  const [openIndex, setOpenIndex] =
+    React.useState(null);
+
 
   const toggleQuestion = (index) => {
+
     setOpenIndex((current) =>
-      current === index ? null : index
+      current === index
+        ? null
+        : index
     );
+
   };
 
+
   return (
-    <section className="faq section" id="faq">
+    <section
+      className="faq section"
+      id="faq"
+    >
+
       <div className="container">
 
         <div className="faq-heading">
+
           <div>
-            <span className="section-kicker">ВОПРОСЫ</span>
+
+            <span className="section-kicker">
+              ВОПРОСЫ
+            </span>
+
 
             <h2>
-              Остались
-              <span> вопросы?</span>
+
+              {texts?.faq_title ||
+                "Остались вопросы?"}
+
             </h2>
+
           </div>
+
 
           <p>
             Собрала ответы на самые частые вопросы.
             Если вашего вопроса здесь нет — просто напишите мне.
           </p>
+
         </div>
+
 
         <div className="faq-list">
 
-          {questions.map((item, index) => {
-            const isOpen = openIndex === index;
+          {DEFAULT_FAQ.map(
+            (item, index) => {
 
-            return (
-              <div
-                className={`faq-item ${isOpen ? "is-open" : ""}`}
-                key={index}
-              >
+              const isOpen =
+                openIndex === index;
 
-                <button
-                  type="button"
-                  className="faq-question"
-                  onClick={() => toggleQuestion(index)}
-                  aria-expanded={isOpen}
+
+              return (
+                <div
+                  className={`faq-item ${
+                    isOpen
+                      ? "is-open"
+                      : ""
+                  }`}
+                  key={index}
                 >
-                  <span className="faq-question-number">
-                    0{index + 1}
-                  </span>
 
-                  <span className="faq-question-text">
-                    {item.question}
-                  </span>
+                  <button
+                    type="button"
+                    className="faq-question"
+                    onClick={() =>
+                      toggleQuestion(index)
+                    }
+                    aria-expanded={isOpen}
+                  >
 
-                  <span className="faq-plus">
-                    {isOpen ? "−" : "+"}
-                  </span>
-                </button>
+                    <span className="faq-question-number">
+                      0{index + 1}
+                    </span>
 
-                {isOpen && (
-                  <div className="faq-answer-visible">
-                    {item.answer}
-                  </div>
-                )}
 
-              </div>
-            );
-          })}
+                    <span className="faq-question-text">
+                      {item.question}
+                    </span>
+
+
+                    <span className="faq-plus">
+                      {isOpen
+                        ? "−"
+                        : "+"}
+                    </span>
+
+                  </button>
+
+
+                  {isOpen && (
+
+                    <div className="faq-answer-visible">
+                      {item.answer}
+                    </div>
+
+                  )}
+
+                </div>
+              );
+
+            }
+          )}
 
         </div>
 
       </div>
+
     </section>
   );
 }
@@ -1753,15 +2837,26 @@ function FAQ() {
    CTA
    ========================================================= */
 
-function FinalCTA({ onOrder }) {
+function FinalCTA({
+  onOrder,
+  texts,
+  email
+}) {
+
   return (
-    <section className="final-cta section" id="contact">
+    <section
+      className="final-cta section"
+      id="contact"
+    >
+
       <div className="container">
 
         <div className="final-cta-card">
 
           <div className="final-cta-glow final-cta-glow-one"></div>
+
           <div className="final-cta-glow final-cta-glow-two"></div>
+
 
           <div className="final-cta-content">
 
@@ -1769,10 +2864,14 @@ function FinalCTA({ onOrder }) {
               ГОТОВЫ НАЧАТЬ?
             </span>
 
+
             <h2>
-              Давайте создадим
-              <span> что-то сильное</span>
+
+              {texts?.final_title ||
+                "Давайте создадим что-то сильное"}
+
             </h2>
+
 
             <p>
               Расскажите о своей задаче — я помогу подобрать
@@ -1780,32 +2879,46 @@ function FinalCTA({ onOrder }) {
               под ваш бюджет.
             </p>
 
+
             <div className="final-cta-actions">
 
               <button
                 className="btn btn-primary"
-                onClick={() => onOrder("Новый проект")}
+                onClick={() =>
+                  onOrder("Новый проект")
+                }
               >
-                Обсудить проект
-                <span>→</span>
+
+                {texts?.final_button ||
+                  "Обсудить проект"}
+
+                <span>
+                  →
+                </span>
+
               </button>
+
 
               <a
                 className="final-cta-email"
-                href="mailto:oksanchik2170@yandex.ru"
+                href={`mailto:${email}`}
               >
+
                 <span className="final-cta-email-label">
                   ИЛИ НАПИШИТЕ НА ПОЧТУ
                 </span>
 
+
                 <span className="final-cta-email-address">
-                  oksanchik2170@yandex.ru
+                  {email}
                 </span>
+
               </a>
 
             </div>
 
           </div>
+
 
           <div className="final-cta-side">
 
@@ -1813,10 +2926,21 @@ function FinalCTA({ onOrder }) {
               01
             </div>
 
+
             <div className="final-cta-side-text">
-              <span>САЙТЫ</span>
-              <span>НЕЙРОФОТО</span>
-              <span>КАРТОЧКИ ТОВАРОВ</span>
+
+              <span>
+                САЙТЫ
+              </span>
+
+              <span>
+                НЕЙРОФОТО
+              </span>
+
+              <span>
+                КАРТОЧКИ ТОВАРОВ
+              </span>
+
             </div>
 
           </div>
@@ -1824,6 +2948,7 @@ function FinalCTA({ onOrder }) {
         </div>
 
       </div>
+
     </section>
   );
 }
@@ -1835,24 +2960,30 @@ function FinalCTA({ onOrder }) {
 
 function OrderModal({
   onClose,
-  initialService = ""
+  initialService = "",
+  email
 }) {
 
-  const [form, setForm] = useState({
-    name: "",
-    contact: "",
-    service: initialService,
-    message: ""
-  });
+  const [form, setForm] =
+    useState({
+      name: "",
+      contact: "",
+      service: initialService,
+      message: ""
+    });
 
-  const [sent, setSent] = useState(false);
+
+  const [sent, setSent] =
+    useState(false);
 
 
   useEffect(() => {
 
     setForm((prev) => ({
       ...prev,
-      service: initialService || prev.service
+      service:
+        initialService ||
+        prev.service
     }));
 
   }, [initialService]);
@@ -1865,6 +2996,7 @@ function OrderModal({
       value
     } = e.target;
 
+
     setForm((prev) => ({
       ...prev,
       [name]: value
@@ -1872,11 +3004,6 @@ function OrderModal({
 
   };
 
-
-  /* =========================================================
-     ОТПРАВКА ЗАЯВКИ
-     Supabase + Email
-     ========================================================= */
 
   const handleSubmit = async (e) => {
 
@@ -1893,25 +3020,30 @@ function OrderModal({
       );
 
       return;
+
     }
 
-
-    /* ---------------------------------------------------------
-       Сохраняем заявку в Supabase
-       --------------------------------------------------------- */
 
     try {
 
       const {
         error
-      } = await frilancePublicSupabase
-        .from("leads")
-        .insert({
-          name: form.name.trim(),
-          contact: form.contact.trim(),
-          service: form.service || "",
-          message: form.message.trim() || ""
-        });
+      } =
+        await frilancePublicSupabase
+          .from("leads")
+          .insert({
+            name:
+              form.name.trim(),
+
+            contact:
+              form.contact.trim(),
+
+            service:
+              form.service || "",
+
+            message:
+              form.message.trim() || ""
+          });
 
 
       if (error) {
@@ -1930,20 +3062,22 @@ function OrderModal({
         error
       );
 
+
       alert(
         "Не удалось сохранить заявку. Попробуйте ещё раз."
       );
 
+
       return;
+
     }
 
 
-    /* ---------------------------------------------------------
-       Формируем письмо
-       --------------------------------------------------------- */
-
     const subject =
-      `Заявка с сайта — ${form.service || "новый проект"}`;
+      `Заявка с сайта — ${
+        form.service ||
+        "новый проект"
+      }`;
 
 
     const body =
@@ -1951,30 +3085,33 @@ function OrderModal({
 
 Имя: ${form.name}
 Контакт: ${form.contact}
-Услуга: ${form.service || "не выбрана"}
+Услуга: ${
+        form.service ||
+        "не выбрана"
+      }
 
 Задача:
-${form.message || "не указана"}`;
+${
+        form.message ||
+        "не указана"
+      }`;
 
 
     const mailto =
-      `mailto:${CONFIG.email}` +
-      `?subject=${encodeURIComponent(subject)}` +
-      `&body=${encodeURIComponent(body)}`;
+      `mailto:${email}` +
+      `?subject=${encodeURIComponent(
+        subject
+      )}` +
+      `&body=${encodeURIComponent(
+        body
+      )}`;
 
-
-    /* ---------------------------------------------------------
-       Показываем подтверждение
-       --------------------------------------------------------- */
 
     setSent(true);
 
 
-    /* ---------------------------------------------------------
-       Открываем почтовое приложение
-       --------------------------------------------------------- */
-
-    window.location.href = mailto;
+    window.location.href =
+      mailto;
 
   };
 
@@ -1993,6 +3130,7 @@ ${form.message || "не указана"}`;
             ×
           </button>
 
+
           <div
             style={{
               fontSize: "45px",
@@ -2002,18 +3140,23 @@ ${form.message || "не указана"}`;
             ✓
           </div>
 
+
           <h2 className="modal-title">
             Заявка подготовлена
           </h2>
+
 
           <p className="modal-description">
             Открылось ваше почтовое приложение.
             Осталось нажать «Отправить».
           </p>
 
+
           <button
             className="primary-button"
-            style={{ width: "100%" }}
+            style={{
+              width: "100%"
+            }}
             onClick={onClose}
           >
             Закрыть
@@ -2035,7 +3178,9 @@ ${form.message || "не указана"}`;
         if (
           e.target === e.currentTarget
         ) {
+
           onClose();
+
         }
 
       }}
@@ -2073,6 +3218,7 @@ ${form.message || "не указана"}`;
               Ваше имя *
             </label>
 
+
             <input
               type="text"
               name="name"
@@ -2090,6 +3236,7 @@ ${form.message || "не указана"}`;
             <label>
               Телефон / VK / Email *
             </label>
+
 
             <input
               type="text"
@@ -2109,6 +3256,7 @@ ${form.message || "не указана"}`;
               Что вас интересует?
             </label>
 
+
             <select
               name="service"
               value={form.service}
@@ -2119,17 +3267,21 @@ ${form.message || "не указана"}`;
                 Выберите услугу
               </option>
 
+
               <option value="Сайт">
                 Сайт
               </option>
+
 
               <option value="Нейрофото">
                 Нейрофото
               </option>
 
+
               <option value="Карточка товара">
                 Карточка товара
               </option>
+
 
               <option value="Другое">
                 Другое
@@ -2145,6 +3297,7 @@ ${form.message || "не указана"}`;
             <label>
               Расскажите о задаче
             </label>
+
 
             <textarea
               name="message"
@@ -2182,7 +3335,11 @@ ${form.message || "не указана"}`;
    NEURO PRICE MODAL
    ========================================================= */
 
-function NeuroPricesModal({ onClose, onOrder }) {
+function NeuroPricesModal({
+  onClose,
+  onOrder,
+  neuroPrices
+}) {
 
   return (
     <div
@@ -2192,7 +3349,9 @@ function NeuroPricesModal({ onClose, onOrder }) {
         if (
           e.target === e.currentTarget
         ) {
+
           onClose();
+
         }
 
       }}
@@ -2238,6 +3397,7 @@ function NeuroPricesModal({ onClose, onOrder }) {
                   {name}
                 </span>
 
+
                 <span>
                   {price}
                 </span>
@@ -2257,8 +3417,11 @@ function NeuroPricesModal({ onClose, onOrder }) {
             marginTop: "25px"
           }}
           onClick={() => {
+
             onClose();
+
             onOrder("Нейрофото");
+
           }}
         >
           Заказать нейрофото →
@@ -2275,17 +3438,27 @@ function NeuroPricesModal({ onClose, onOrder }) {
    FOOTER
    ========================================================= */
 
-function Footer() {
+function Footer({
+  email
+}) {
+
   const scrollToSection = (id) => {
-    const element = document.getElementById(id);
+
+    const element =
+      document.getElementById(id);
+
 
     if (element) {
+
       element.scrollIntoView({
         behavior: "smooth",
         block: "start"
       });
+
     }
+
   };
+
 
   return (
     <footer className="footer">
@@ -2298,13 +3471,16 @@ function Footer() {
 
             <button
               className="footer-logo"
-              onClick={() => window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-              })}
+              onClick={() =>
+                window.scrollTo({
+                  top: 0,
+                  behavior: "smooth"
+                })
+              }
             >
               Оксана Баннова
             </button>
+
 
             <p>
               Сайты, нейрофото и визуальная упаковка
@@ -2320,23 +3496,48 @@ function Footer() {
               НАВИГАЦИЯ
             </span>
 
-            <button onClick={() => scrollToSection("services")}>
+
+            <button
+              onClick={() =>
+                scrollToSection("services")
+              }
+            >
               Услуги
             </button>
 
-            <button onClick={() => scrollToSection("portfolio")}>
+
+            <button
+              onClick={() =>
+                scrollToSection("portfolio")
+              }
+            >
               Портфолио
             </button>
 
-            <button onClick={() => scrollToSection("prices")}>
+
+            <button
+              onClick={() =>
+                scrollToSection("prices")
+              }
+            >
               Цены
             </button>
 
-            <button onClick={() => scrollToSection("process")}>
+
+            <button
+              onClick={() =>
+                scrollToSection("process")
+              }
+            >
               Как работаем
             </button>
 
-            <button onClick={() => scrollToSection("faq")}>
+
+            <button
+              onClick={() =>
+                scrollToSection("faq")
+              }
+            >
               FAQ
             </button>
 
@@ -2349,15 +3550,30 @@ function Footer() {
               УСЛУГИ
             </span>
 
-            <button onClick={() => scrollToSection("services")}>
+
+            <button
+              onClick={() =>
+                scrollToSection("services")
+              }
+            >
               Сайты
             </button>
 
-            <button onClick={() => scrollToSection("services")}>
+
+            <button
+              onClick={() =>
+                scrollToSection("services")
+              }
+            >
               Нейрофото
             </button>
 
-            <button onClick={() => scrollToSection("services")}>
+
+            <button
+              onClick={() =>
+                scrollToSection("services")
+              }
+            >
               Карточки товаров
             </button>
 
@@ -2370,16 +3586,26 @@ function Footer() {
               СВЯЗАТЬСЯ
             </span>
 
-            <a href="mailto:oksanchik2170@yandex.ru">
-              oksanchik2170@yandex.ru
+
+            <a
+              href={`mailto:${email}`}
+            >
+              {email}
             </a>
+
 
             <button
               className="footer-contact-button"
-              onClick={() => scrollToSection("contact")}
+              onClick={() =>
+                scrollToSection("contact")
+              }
             >
               Обсудить проект
-              <span>→</span>
+
+              <span>
+                →
+              </span>
+
             </button>
 
           </div>
@@ -2393,15 +3619,19 @@ function Footer() {
             © {new Date().getFullYear()} Оксана Баннова
           </span>
 
+
           <span>
             Сайты • Нейрофото • Карточки товаров
           </span>
 
+
           <button
-            onClick={() => window.scrollTo({
-              top: 0,
-              behavior: "smooth"
-            })}
+            onClick={() =>
+              window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+              })
+            }
             className="footer-up"
             aria-label="Наверх"
           >
@@ -2421,7 +3651,9 @@ function Footer() {
    FLOATING CTA
    ========================================================= */
 
-function FloatingCTA({ onClick }) {
+function FloatingCTA({
+  onClick
+}) {
 
   return (
     <button
@@ -2443,23 +3675,105 @@ function App() {
   const [orderOpen, setOrderOpen] =
     useState(false);
 
+
   const [selectedService, setSelectedService] =
     useState("");
 
+
   const [serviceModal, setServiceModal] =
     useState(null);
+
 
   const [neuroModal, setNeuroModal] =
     useState(false);
 
 
-  const openOrder = (service = "") => {
+  const [siteData, setSiteData] =
+    useState({
+      services: DEFAULT_SERVICES,
+      prices: DEFAULT_PRICES,
+      neuroPrices: DEFAULT_NEURO_PRICES,
+      texts: DEFAULT_TEXTS,
+      contacts: {
+        ...CONFIG
+      },
+      portfolio: DEFAULT_PORTFOLIO
+    });
+
+
+  const [dataLoading, setDataLoading] =
+    useState(true);
+
+
+  /* ---------------------------------------------------------
+     Загрузка данных из Supabase
+     --------------------------------------------------------- */
+
+  useEffect(() => {
+
+    let mounted = true;
+
+
+    const initSiteData = async () => {
+
+      try {
+
+        const data =
+          await loadSiteData();
+
+
+        if (mounted) {
+
+          setSiteData(data);
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "FRILANCE: ошибка инициализации сайта:",
+          error
+        );
+
+      } finally {
+
+        if (mounted) {
+
+          setDataLoading(false);
+
+        }
+
+      }
+
+    };
+
+
+    initSiteData();
+
+
+    return () => {
+
+      mounted = false;
+
+    };
+
+  }, []);
+
+
+  /* ---------------------------------------------------------
+     Модальные окна
+     --------------------------------------------------------- */
+
+  const openOrder = (
+    service = ""
+  ) => {
 
     setSelectedService(service);
 
     setOrderOpen(true);
 
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow =
+      "hidden";
 
   };
 
@@ -2470,16 +3784,20 @@ function App() {
 
     setSelectedService("");
 
-    document.body.style.overflow = "";
+    document.body.style.overflow =
+      "";
 
   };
 
 
-  const openService = (service) => {
+  const openService = (
+    service
+  ) => {
 
     setServiceModal(service);
 
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow =
+      "hidden";
 
   };
 
@@ -2488,7 +3806,8 @@ function App() {
 
     setServiceModal(null);
 
-    document.body.style.overflow = "";
+    document.body.style.overflow =
+      "";
 
   };
 
@@ -2497,7 +3816,8 @@ function App() {
 
     setNeuroModal(true);
 
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow =
+      "hidden";
 
   };
 
@@ -2506,19 +3826,28 @@ function App() {
 
     setNeuroModal(false);
 
-    document.body.style.overflow = "";
+    document.body.style.overflow =
+      "";
 
   };
 
+
+  /* ---------------------------------------------------------
+     ESC
+     --------------------------------------------------------- */
 
   useEffect(() => {
 
     const handleKeyDown = (e) => {
 
-      if (e.key === "Escape") {
+      if (
+        e.key === "Escape"
+      ) {
 
         closeOrder();
+
         closeService();
+
         closeNeuro();
 
       }
@@ -2539,7 +3868,9 @@ function App() {
         handleKeyDown
       );
 
-      document.body.style.overflow = "";
+
+      document.body.style.overflow =
+        "";
 
     };
 
@@ -2550,70 +3881,137 @@ function App() {
     <>
 
       <Header
-        onOrder={() => openOrder()}
+        onOrder={() =>
+          openOrder()
+        }
+        texts={
+          siteData.texts
+        }
       />
 
 
       <main>
 
         <Hero
-          onOrder={() => openOrder()}
+          onOrder={() =>
+            openOrder()
+          }
+          texts={
+            siteData.texts
+          }
         />
 
 
         <Services
-          onService={openService}
+          onService={
+            openService
+          }
+          services={
+            siteData.services
+          }
+          texts={
+            siteData.texts
+          }
         />
 
 
         <Portfolio
-          onOrder={() => openOrder()}
+          onOrder={
+            openOrder
+          }
+          portfolio={
+            siteData.portfolio
+          }
+          texts={
+            siteData.texts
+          }
         />
 
 
         <Business
-          onOrder={openOrder}
+          onOrder={
+            openOrder
+          }
         />
 
 
         <Process
-          onOrder={openOrder}
+          onOrder={
+            openOrder
+          }
+          texts={
+            siteData.texts
+          }
         />
 
 
         <Prices
-          onOrder={openOrder}
-          onNeuroPrices={openNeuro}
+          onOrder={
+            openOrder
+          }
+          onNeuroPrices={
+            openNeuro
+          }
+          prices={
+            siteData.prices
+          }
+          neuroPrices={
+            siteData.neuroPrices
+          }
         />
 
 
         <Advantages />
 
 
-        <FAQ />
+        <FAQ
+          texts={
+            siteData.texts
+          }
+        />
 
 
         <FinalCTA
-          onOrder={() => openOrder()}
+          onOrder={
+            openOrder
+          }
+          texts={
+            siteData.texts
+          }
+          email={
+            siteData.contacts.email
+          }
         />
 
       </main>
 
 
-      <Footer />
+      <Footer
+        email={
+          siteData.contacts.email
+        }
+      />
 
 
       <FloatingCTA
-        onClick={() => openOrder()}
+        onClick={() =>
+          openOrder()
+        }
       />
 
 
       {serviceModal && (
 
         <ServiceModal
-          service={serviceModal}
-          onClose={closeService}
-          onOrder={openOrder}
+          service={
+            serviceModal
+          }
+          onClose={
+            closeService
+          }
+          onOrder={
+            openOrder
+          }
         />
 
       )}
@@ -2622,8 +4020,15 @@ function App() {
       {neuroModal && (
 
         <NeuroPricesModal
-          onClose={closeNeuro}
-          onOrder={openOrder}
+          onClose={
+            closeNeuro
+          }
+          onOrder={
+            openOrder
+          }
+          neuroPrices={
+            siteData.neuroPrices
+          }
         />
 
       )}
@@ -2632,8 +4037,15 @@ function App() {
       {orderOpen && (
 
         <OrderModal
-          onClose={closeOrder}
-          initialService={selectedService}
+          onClose={
+            closeOrder
+          }
+          initialService={
+            selectedService
+          }
+          email={
+            siteData.contacts.email
+          }
         />
 
       )}
@@ -2652,7 +4064,9 @@ const rootElement =
 
 
 const root =
-  ReactDOM.createRoot(rootElement);
+  ReactDOM.createRoot(
+    rootElement
+  );
 
 
 root.render(
