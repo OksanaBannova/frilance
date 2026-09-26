@@ -85,6 +85,7 @@ body {
     color: var(--text);
 
     font-family: "Manrope", Arial, sans-serif;
+
     font-size: 14px;
     line-height: 1.5;
 
@@ -189,7 +190,8 @@ img {
     font-size: 20px;
     font-weight: 800;
 
-    box-shadow: 0 10px 35px rgba(155, 92, 255, 0.25);
+    box-shadow:
+        0 10px 35px rgba(155, 92, 255, 0.25);
 }
 
 .admin-logo-text {
@@ -199,6 +201,7 @@ img {
 
 .admin-logo-text strong {
     color: #fff;
+
     font-size: 14px;
     font-weight: 800;
 }
@@ -245,6 +248,7 @@ img {
     border-radius: 12px;
 
     background: transparent;
+
     color: var(--text-soft);
 
     text-align: left;
@@ -271,7 +275,8 @@ img {
 
     color: #fff;
 
-    box-shadow: inset 3px 0 0 var(--blue);
+    box-shadow:
+        inset 3px 0 0 var(--blue);
 }
 
 .admin-nav-icon {
@@ -319,6 +324,7 @@ img {
 
 .admin-sidebar-bottom {
     padding: 16px;
+
     border-top: 1px solid var(--border);
 }
 
@@ -344,7 +350,9 @@ img {
 
 .back-to-site:hover {
     background: rgba(255, 255, 255, 0.05);
+
     border-color: var(--border-light);
+
     color: #fff;
 }
 
@@ -355,6 +363,7 @@ img {
 
 .admin-main {
     width: calc(100% - var(--sidebar-width));
+
     min-height: 100vh;
 
     margin-left: var(--sidebar-width);
@@ -389,6 +398,7 @@ img {
 
 .admin-mobile-brand {
     display: none;
+
     align-items: center;
     gap: 8px;
 
@@ -433,13 +443,16 @@ img {
 
 .view-site-button:hover {
     background: rgba(255, 255, 255, 0.05);
+
     border-color: var(--blue);
+
     color: #fff;
 }
 
 .admin-user {
     display: flex;
     align-items: center;
+
     gap: 10px;
 }
 
@@ -550,6 +563,7 @@ img {
     font-size: clamp(28px, 3vw, 42px);
 
     line-height: 1.1;
+
     letter-spacing: -0.035em;
 }
 
@@ -576,11 +590,13 @@ img {
         );
 
     border: 1px solid var(--border);
+
     border-radius: var(--radius-large);
 
     padding: 25px;
 
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.16);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.16);
 }
 
 .admin-card-header {
@@ -604,6 +620,7 @@ img {
     font-weight: 800;
 
     letter-spacing: 0.16em;
+
     text-transform: uppercase;
 }
 
@@ -622,7 +639,8 @@ img {
 .stats-grid {
     display: grid;
 
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
 
     gap: 16px;
 
@@ -649,6 +667,7 @@ img {
         );
 
     border: 1px solid var(--border);
+
     border-radius: var(--radius);
 
     overflow: hidden;
@@ -721,7 +740,9 @@ img {
 .stat-card-info strong {
     font-size: 25px;
     line-height: 1;
+
     font-weight: 800;
+
     letter-spacing: -0.02em;
 }
 
@@ -743,7 +764,8 @@ img {
 .quick-actions {
     display: grid;
 
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
 
     gap: 11px;
 }
@@ -761,6 +783,7 @@ img {
     background: rgba(255, 255, 255, 0.025);
 
     border: 1px solid var(--border);
+
     border-radius: 14px;
 
     color: var(--text);
@@ -772,6 +795,7 @@ img {
 
 .quick-action:hover {
     background: rgba(255, 255, 255, 0.055);
+
     border-color: rgba(98, 200, 255, 0.3);
 
     transform: translateY(-1px);
@@ -843,7 +867,8 @@ img {
     font-size: 11px;
     font-weight: 800;
 
-    box-shadow: 0 10px 30px rgba(155, 92, 255, 0.16);
+    box-shadow:
+        0 10px 30px rgba(155, 92, 255, 0.16);
 
     transition: var(--transition);
 }
@@ -851,7 +876,8 @@ img {
 .admin-primary-button:hover {
     transform: translateY(-2px);
 
-    box-shadow: 0 15px 35px rgba(155, 92, 255, 0.25);
+    box-shadow:
+        0 15px 35px rgba(155, 92, 255, 0.25);
 }
 
 .admin-secondary-button {
@@ -864,6 +890,7 @@ img {
     padding: 0 18px;
 
     border: 1px solid var(--border-light);
+
     border-radius: 11px;
 
     background: transparent;
@@ -878,6 +905,7 @@ img {
 
 .admin-secondary-button:hover {
     background: rgba(255, 255, 255, 0.05);
+
     color: #fff;
 }
 
@@ -887,6 +915,7 @@ img {
     padding: 0 15px;
 
     border: 1px solid rgba(255, 79, 154, 0.22);
+
     border-radius: 10px;
 
     background: rgba(255, 79, 154, 0.06);
@@ -901,7 +930,9 @@ img {
 
 .admin-danger-button:hover {
     background: rgba(255, 79, 154, 0.12);
-    border-color: rgba(255, 79, 154, 0.4);
+
+    border-color:
+        rgba(255, 79, 154, 0.4);
 }
 
 .text-button {
@@ -926,12 +957,6 @@ img {
    RECENT LEADS
    ========================================================= */
 
-/*
-   ВАЖНО:
-   recent-lead — это BUTTON.
-   Поэтому полностью убираем стандартный стиль браузера.
-*/
-
 .recent-leads {
     min-height: 180px;
 
@@ -943,21 +968,19 @@ img {
 
 .recent-lead {
     width: 100%;
-
     min-height: 58px;
 
     display: flex;
     align-items: center;
-
     justify-content: space-between;
 
     gap: 15px;
 
     padding: 10px 12px;
-
     margin: 0;
 
     border: 1px solid transparent;
+
     border-radius: 12px;
 
     background: rgba(255, 255, 255, 0.025);
@@ -980,7 +1003,8 @@ img {
 .recent-lead:hover {
     background: rgba(98, 200, 255, 0.055);
 
-    border-color: rgba(98, 200, 255, 0.16);
+    border-color:
+        rgba(98, 200, 255, 0.16);
 
     transform: translateX(2px);
 }
@@ -990,7 +1014,9 @@ img {
 }
 
 .recent-lead:focus-visible {
-    outline: 2px solid rgba(98, 200, 255, 0.65);
+    outline:
+        2px solid rgba(98, 200, 255, 0.65);
+
     outline-offset: 2px;
 }
 
@@ -1047,7 +1073,6 @@ img {
 
     display: flex;
     flex-direction: column;
-
     align-items: center;
     justify-content: center;
 
@@ -1110,148 +1135,974 @@ img {
 .portfolio-admin-grid {
     display: grid;
 
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
 
-    gap: 18px;
+    gap: 20px;
 }
 
 .portfolio-admin-card {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+
     overflow: hidden;
 
-    background: rgba(255, 255, 255, 0.04);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.065),
+            rgba(255, 255, 255, 0.025)
+        );
 
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border: 1px solid rgba(255, 255, 255, 0.095);
 
-    transition: var(--transition);
+    border-radius: 20px;
+
+    box-shadow:
+        0 15px 45px rgba(0, 0, 0, 0.18);
+
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
 }
 
 .portfolio-admin-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-4px);
 
-    border-color: var(--border-light);
+    border-color:
+        rgba(98, 200, 255, 0.22);
+
+    box-shadow:
+        0 22px 55px rgba(0, 0, 0, 0.28);
 }
 
-.portfolio-admin-image {
+
+/* =========================================================
+   PORTFOLIO PREVIEW
+   ========================================================= */
+
+.portfolio-preview-area {
     position: relative;
 
     width: 100%;
 
     aspect-ratio: 16 / 10;
 
+    overflow: hidden;
+
     background:
         linear-gradient(
             135deg,
-            rgba(98, 200, 255, 0.08),
-            rgba(155, 92, 255, 0.08)
+            #11101a,
+            #171222
         );
 
-    overflow: hidden;
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.07);
 }
 
-.portfolio-admin-image img {
+.portfolio-preview-area::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            180deg,
+            transparent 55%,
+            rgba(0, 0, 0, 0.18)
+        );
+}
+
+.portfolio-preview-image {
     width: 100%;
     height: 100%;
 
     display: block;
 
     object-fit: cover;
+
+    transition:
+        transform 0.45s ease,
+        filter 0.45s ease;
 }
 
-.portfolio-admin-placeholder {
+.portfolio-admin-card:hover
+.portfolio-preview-image {
+    transform: scale(1.025);
+}
+
+.portfolio-image-error {
+    position: absolute;
+
+    inset: 0;
+
     width: 100%;
     height: 100%;
 
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   BUILT WEBSITE PREVIEW
+   ========================================================= */
+
+.portfolio-built-preview {
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+}
+
+.portfolio-preview-website {
+    background:
+        radial-gradient(
+            circle at 80% 20%,
+            rgba(98, 200, 255, 0.22),
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at 20% 80%,
+            rgba(155, 92, 255, 0.20),
+            transparent 35%
+        ),
+        #10101a;
+}
+
+.browser-window {
+    position: absolute;
+
+    left: 7%;
+    right: 7%;
+    top: 9%;
+    bottom: 8%;
+
+    overflow: hidden;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.14);
+
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #181722,
+            #0e0d15
+        );
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.38);
+}
+
+.browser-top {
+    height: 16%;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 3.5%;
+
+    background: rgba(255, 255, 255, 0.045);
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.07);
+}
+
+.browser-dots {
+    display: flex;
+    gap: 5px;
+}
+
+.browser-dots i {
+    width: 6px;
+    height: 6px;
+
+    display: block;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.browser-address {
+    width: 55%;
+
+    margin-left: 10%;
+
+    padding: 3px 8px;
+
+    border-radius: 5px;
+
+    background: rgba(255, 255, 255, 0.055);
+
+    color: rgba(255, 255, 255, 0.35);
+
+    font-size: 6px;
+
+    text-align: center;
+}
+
+.browser-content {
+    position: relative;
+
+    height: 84%;
+
+    padding: 7% 8%;
+}
+
+.site-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.site-nav strong {
+    color: #fff;
+
+    font-size: 8px;
+
+    letter-spacing: 0.08em;
+}
+
+.site-nav-lines {
+    display: flex;
+    gap: 4px;
+}
+
+.site-nav-lines span {
+    width: 10px;
+    height: 2px;
+
+    display: block;
+
+    border-radius: 3px;
+
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.site-hero {
+    height: 70%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+}
+
+.site-hero-text {
+    width: 48%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.site-hero-text small {
+    margin-bottom: 7px;
+
+    color: var(--blue);
+
+    font-size: 5px;
+    font-weight: 800;
+
+    letter-spacing: 0.14em;
+}
+
+.site-hero-text strong {
+    color: #fff;
+
+    font-size: clamp(15px, 2vw, 24px);
+
+    line-height: 0.98;
+
+    letter-spacing: -0.04em;
+}
+
+.site-button {
+    margin-top: 10px;
+
+    padding: 5px 8px;
+
+    border-radius: 5px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(98, 200, 255, 0.85),
+            rgba(155, 92, 255, 0.85)
+        );
+
+    color: #fff;
+
+    font-size: 5px;
+    font-weight: 800;
+}
+
+.site-hero-card {
+    position: relative;
+
+    width: 38%;
+
+    aspect-ratio: 1;
+
+    border-radius: 15px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(98, 200, 255, 0.18),
+            rgba(255, 79, 154, 0.18)
+        );
+
+    border:
+        1px solid rgba(255, 255, 255, 0.09);
+}
+
+.site-card-glow {
+    position: absolute;
+
+    width: 55%;
+    height: 55%;
+
+    top: 22%;
+    left: 22%;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(98, 200, 255, 0.8),
+            rgba(155, 92, 255, 0.1) 70%,
+            transparent
+        );
+
+    filter: blur(4px);
+}
+
+.site-card-circle {
+    position: absolute;
+
+    width: 45%;
+    height: 45%;
+
+    top: 27%;
+    left: 27%;
+
+    border-radius: 50%;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.4);
+
+    box-shadow:
+        0 0 20px rgba(98, 200, 255, 0.3);
+}
+
+.site-bottom {
+    display: flex;
+    gap: 5px;
+}
+
+.site-bottom span {
+    width: 20%;
+    height: 2px;
+
+    border-radius: 3px;
+
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.website-label {
+    position: absolute;
+
+    left: 8%;
+    bottom: 8%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 6px;
+
+    z-index: 2;
+}
+
+.website-label span {
+    color: var(--blue);
+
+    font-size: 6px;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+}
+
+.website-label strong {
+    color: rgba(255, 255, 255, 0.75);
+
+    font-size: 8px;
+}
+
+
+/* =========================================================
+   BUILT NEURO PREVIEW
+   ========================================================= */
+
+.portfolio-preview-neuro {
     display: flex;
     align-items: center;
     justify-content: center;
 
-    color: var(--text-muted);
-
-    font-size: 30px;
+    background:
+        radial-gradient(
+            circle at 30% 30%,
+            rgba(255, 79, 154, 0.25),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 75% 70%,
+            rgba(155, 92, 255, 0.28),
+            transparent 35%
+        ),
+        #100c18;
 }
 
-.portfolio-admin-content {
-    padding: 17px;
+.preview-glow {
+    position: absolute;
+
+    border-radius: 50%;
+
+    filter: blur(18px);
+
+    opacity: 0.8;
 }
 
-.portfolio-admin-category {
-    display: inline-block;
+.preview-glow-one {
+    width: 42%;
+    aspect-ratio: 1;
 
-    margin-bottom: 7px;
+    top: 8%;
+    left: 8%;
+
+    background: rgba(255, 79, 154, 0.22);
+}
+
+.preview-glow-two {
+    width: 50%;
+    aspect-ratio: 1;
+
+    right: 2%;
+    bottom: 0;
+
+    background: rgba(155, 92, 255, 0.22);
+}
+
+.neuro-preview-content {
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.neuro-spark {
+    position: absolute;
+
+    top: 13%;
+    right: 20%;
+
+    color: #fff;
+
+    font-size: 15px;
+
+    text-shadow:
+        0 0 15px rgba(255, 79, 154, 0.8);
+}
+
+.neuro-face {
+    position: relative;
+
+    width: 34%;
+
+    aspect-ratio: 0.78;
+
+    margin-top: -4%;
+
+    border-radius:
+        45%
+        45%
+        48%
+        48%
+        /
+        38%
+        38%
+        60%
+        60%;
+
+    background:
+        linear-gradient(
+            145deg,
+            #f6d7d5,
+            #c58fa7
+        );
+
+    box-shadow:
+        0 15px 35px rgba(0, 0, 0, 0.35);
+}
+
+.neuro-hair {
+    position: absolute;
+
+    left: -10%;
+    right: -10%;
+
+    top: -8%;
+
+    height: 48%;
+
+    border-radius:
+        50%
+        50%
+        35%
+        35%;
+
+    background:
+        linear-gradient(
+            135deg,
+            #17111f,
+            #5b315f
+        );
+
+    z-index: 2;
+}
+
+.neuro-face-shape {
+    position: absolute;
+
+    inset: 38% 16% 20%;
+
+    z-index: 3;
+}
+
+.neuro-eye {
+    position: absolute;
+
+    top: 20%;
+
+    width: 14%;
+    height: 5%;
+
+    border-radius: 50%;
+
+    background: #241a2c;
+}
+
+.neuro-eye.left {
+    left: 17%;
+}
+
+.neuro-eye.right {
+    right: 17%;
+}
+
+.neuro-mouth {
+    position: absolute;
+
+    width: 28%;
+    height: 12%;
+
+    left: 36%;
+    bottom: 6%;
+
+    border-bottom:
+        1px solid #5c2c4d;
+
+    border-radius: 50%;
+}
+
+.neuro-label {
+    margin-top: 7px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+}
+
+.neuro-label span {
+    color: var(--pink);
+
+    font-size: 7px;
+    font-weight: 900;
+
+    letter-spacing: 0.12em;
+}
+
+.neuro-label strong {
+    color: #fff;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 0.06em;
+}
+
+
+/* =========================================================
+   BUILT MARKETPLACE PREVIEW
+   ========================================================= */
+
+.portfolio-preview-marketplace {
+    padding: 7% 8%;
+
+    background:
+        radial-gradient(
+            circle at 70% 25%,
+            rgba(98, 200, 255, 0.18),
+            transparent 35%
+        ),
+        linear-gradient(
+            135deg,
+            #10131a,
+            #0d0e14
+        );
+}
+
+.market-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.market-logo {
+    color: #fff;
+
+    font-size: 9px;
+    font-weight: 900;
+
+    letter-spacing: 0.12em;
+}
+
+.market-icon {
+    color: rgba(255, 255, 255, 0.45);
+
+    font-size: 12px;
+}
+
+.market-product {
+    height: 58%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-box {
+    position: relative;
+
+    width: 30%;
+
+    aspect-ratio: 0.8;
+
+    border-radius: 8px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #f2edf5,
+            #b9afc4
+        );
+
+    transform:
+        perspective(180px)
+        rotateY(-10deg);
+
+    box-shadow:
+        14px 16px 30px rgba(0, 0, 0, 0.3);
+}
+
+.product-shine {
+    position: absolute;
+
+    inset: 7%;
+
+    border-radius: 6px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.8),
+            transparent 50%
+        );
+}
+
+.product-line {
+    position: absolute;
+
+    left: 17%;
+    right: 17%;
+
+    top: 45%;
+
+    height: 2px;
+
+    border-radius: 2px;
+
+    background:
+        rgba(20, 18, 28, 0.16);
+}
+
+.product-circle {
+    position: absolute;
+
+    width: 26%;
+
+    aspect-ratio: 1;
+
+    left: 37%;
+    top: 28%;
+
+    border-radius: 50%;
+
+    border:
+        1px solid rgba(20, 18, 28, 0.16);
+}
+
+.market-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+}
+
+.market-lines {
+    width: 55%;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+.market-lines span {
+    height: 3px;
+
+    border-radius: 3px;
+
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.market-lines span:nth-child(1) {
+    width: 90%;
+}
+
+.market-lines span:nth-child(2) {
+    width: 65%;
+}
+
+.market-lines span:nth-child(3) {
+    width: 45%;
+}
+
+.market-price {
+    color: #fff;
+
+    font-size: 8px;
+    font-weight: 900;
+
+    white-space: nowrap;
+}
+
+.market-badge {
+    position: absolute;
+
+    left: 8%;
+    bottom: 7%;
+
+    padding: 4px 7px;
+
+    border-radius: 5px;
+
+    background:
+        rgba(98, 200, 255, 0.12);
+
+    border:
+        1px solid rgba(98, 200, 255, 0.18);
+
+    color: var(--blue-light);
+
+    font-size: 5px;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+}
+
+
+/* =========================================================
+   PORTFOLIO CARD CONTENT
+   ========================================================= */
+
+.portfolio-admin-card-content {
+    display: flex;
+    flex-direction: column;
+
+    padding: 18px 18px 17px;
+}
+
+.portfolio-admin-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 14px;
+
+    margin-bottom: 9px;
+}
+
+.portfolio-category {
+    margin-bottom: 5px;
 
     color: var(--blue);
 
     font-size: 8px;
     font-weight: 800;
 
-    letter-spacing: 0.14em;
+    letter-spacing: 0.13em;
+
     text-transform: uppercase;
 }
 
-.portfolio-admin-content h3 {
-    margin-bottom: 6px;
-
+.portfolio-admin-card-top h3 {
     color: #fff;
 
     font-size: 15px;
+    font-weight: 800;
+
+    line-height: 1.25;
+
+    letter-spacing: -0.015em;
 }
 
-.portfolio-admin-content p {
-    min-height: 34px;
+.portfolio-price {
+    flex-shrink: 0;
 
-    margin-bottom: 14px;
+    padding: 5px 8px;
+
+    border:
+        1px solid rgba(98, 200, 255, 0.13);
+
+    border-radius: 7px;
+
+    background:
+        rgba(98, 200, 255, 0.055);
+
+    color: var(--blue-light);
+
+    font-size: 9px;
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+.portfolio-description {
+    min-height: 38px;
+
+    margin-bottom: 15px;
 
     color: var(--text-muted);
 
     font-size: 10px;
+
     line-height: 1.55;
 }
 
-.portfolio-admin-price {
-    margin-bottom: 14px;
+.portfolio-card-actions {
+    display: grid;
 
-    color: #fff;
+    grid-template-columns:
+        1fr 1fr;
 
-    font-size: 12px;
-    font-weight: 800;
-}
-
-.portfolio-admin-actions {
-    display: flex;
     gap: 8px;
+
+    margin-top: auto;
 }
 
-.portfolio-edit-button,
-.portfolio-delete-button {
-    flex: 1;
+.admin-button {
+    min-height: 36px;
 
-    min-height: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 10px;
 
     border-radius: 9px;
 
     font-size: 9px;
     font-weight: 800;
 
-    transition: var(--transition);
+    transition:
+        background var(--transition),
+        border-color var(--transition),
+        color var(--transition),
+        transform var(--transition);
 }
 
 .portfolio-edit-button {
-    background: rgba(98, 200, 255, 0.08);
+    background:
+        rgba(98, 200, 255, 0.075);
+
+    border:
+        1px solid rgba(98, 200, 255, 0.12);
+
     color: var(--blue-light);
 }
 
 .portfolio-edit-button:hover {
-    background: rgba(98, 200, 255, 0.14);
+    background:
+        rgba(98, 200, 255, 0.14);
+
+    border-color:
+        rgba(98, 200, 255, 0.25);
+
+    transform: translateY(-1px);
 }
 
 .portfolio-delete-button {
-    background: rgba(255, 79, 154, 0.07);
-    color: #ff75b0;
+    background:
+        rgba(255, 79, 154, 0.055);
+
+    border:
+        1px solid rgba(255, 79, 154, 0.11);
+
+    color: #ff79b2;
 }
 
 .portfolio-delete-button:hover {
-    background: rgba(255, 79, 154, 0.13);
+    background:
+        rgba(255, 79, 154, 0.12);
+
+    border-color:
+        rgba(255, 79, 154, 0.24);
+
+    transform: translateY(-1px);
 }
 
 
@@ -1266,13 +2117,15 @@ img {
 .form-grid {
     display: grid;
 
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
 
     gap: 17px;
 }
 
 .form-grid.three {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
 }
 
 .form-group,
@@ -1309,6 +2162,7 @@ img {
     width: 100%;
 
     border: 1px solid var(--border);
+
     border-radius: 11px;
 
     background: rgba(0, 0, 0, 0.18);
@@ -1328,6 +2182,7 @@ img {
 .admin-field input,
 .admin-field select {
     min-height: 45px;
+
     padding: 0 13px;
 }
 
@@ -1355,9 +2210,11 @@ img {
 .admin-field select:focus {
     background: rgba(0, 0, 0, 0.26);
 
-    border-color: rgba(98, 200, 255, 0.55);
+    border-color:
+        rgba(98, 200, 255, 0.55);
 
-    box-shadow: 0 0 0 3px rgba(98, 200, 255, 0.07);
+    box-shadow:
+        0 0 0 3px rgba(98, 200, 255, 0.07);
 }
 
 .admin-select option,
@@ -1372,18 +2229,21 @@ img {
     color: var(--text-muted);
 
     font-size: 9px;
+
     line-height: 1.5;
 }
 
 .form-actions,
 .admin-form-actions {
     display: flex;
+
     align-items: center;
     justify-content: flex-end;
 
     gap: 10px;
 
     margin-top: 22px;
+
     padding-top: 18px;
 
     border-top: 1px solid var(--border);
@@ -1407,10 +2267,13 @@ img {
 
     padding: 20px;
 
-    border: 1px dashed rgba(98, 200, 255, 0.35);
+    border:
+        1px dashed rgba(98, 200, 255, 0.35);
+
     border-radius: 15px;
 
-    background: rgba(98, 200, 255, 0.035);
+    background:
+        rgba(98, 200, 255, 0.035);
 
     text-align: center;
 
@@ -1420,9 +2283,11 @@ img {
 }
 
 .portfolio-upload-box:hover {
-    background: rgba(98, 200, 255, 0.07);
+    background:
+        rgba(98, 200, 255, 0.07);
 
-    border-color: rgba(98, 200, 255, 0.6);
+    border-color:
+        rgba(98, 200, 255, 0.6);
 }
 
 .portfolio-upload-box input[type="file"] {
@@ -1472,6 +2337,7 @@ img {
 
 .portfolio-existing-header {
     display: flex;
+
     align-items: center;
     justify-content: space-between;
 
@@ -1486,6 +2352,7 @@ img {
 
 .portfolio-existing-count {
     color: var(--text-muted);
+
     font-size: 10px;
 }
 
@@ -1493,7 +2360,8 @@ img {
 .portfolio-images-preview {
     display: grid;
 
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
 
     gap: 12px;
 
@@ -1504,9 +2372,12 @@ img {
 .portfolio-existing-image-item {
     overflow: hidden;
 
-    background: rgba(255, 255, 255, 0.035);
+    background:
+        rgba(255, 255, 255, 0.035);
 
-    border: 1px solid var(--border);
+    border:
+        1px solid var(--border);
+
     border-radius: 13px;
 }
 
@@ -1557,10 +2428,13 @@ img {
 
     resize: vertical;
 
-    border: 1px solid var(--border);
+    border:
+        1px solid var(--border);
+
     border-radius: 9px;
 
-    background: rgba(0, 0, 0, 0.18);
+    background:
+        rgba(0, 0, 0, 0.18);
 
     color: #fff;
 
@@ -1570,7 +2444,8 @@ img {
 }
 
 .portfolio-image-description:focus {
-    border-color: rgba(98, 200, 255, 0.5);
+    border-color:
+        rgba(98, 200, 255, 0.5);
 }
 
 .portfolio-image-remove,
@@ -1589,7 +2464,8 @@ img {
 
     border-radius: 8px;
 
-    background: rgba(0, 0, 0, 0.72);
+    background:
+        rgba(0, 0, 0, 0.72);
 
     color: #fff;
 
@@ -1600,11 +2476,13 @@ img {
 
 .portfolio-image-remove:hover,
 .portfolio-existing-image-delete:hover {
-    background: rgba(255, 79, 154, 0.9);
+    background:
+        rgba(255, 79, 154, 0.9);
 }
 
 .portfolio-existing-image-actions {
     display: flex;
+
     justify-content: flex-end;
 
     margin-top: 8px;
@@ -1613,7 +2491,9 @@ img {
 .portfolio-existing-empty {
     padding: 15px;
 
-    border: 1px dashed var(--border);
+    border:
+        1px dashed var(--border);
+
     border-radius: 10px;
 
     color: var(--text-muted);
@@ -1630,6 +2510,7 @@ img {
 
 .leads-toolbar {
     display: flex;
+
     align-items: center;
     justify-content: space-between;
 
@@ -1640,6 +2521,7 @@ img {
 
 .leads-total {
     color: var(--text-muted);
+
     font-size: 10px;
 }
 
@@ -1649,7 +2531,9 @@ img {
 
     overflow-x: auto;
 
-    border: 1px solid var(--border);
+    border:
+        1px solid var(--border);
+
     border-radius: 15px;
 }
 
@@ -1664,9 +2548,11 @@ img {
 .leads-table th {
     padding: 13px 15px;
 
-    background: rgba(255, 255, 255, 0.035);
+    background:
+        rgba(255, 255, 255, 0.035);
 
-    border-bottom: 1px solid var(--border);
+    border-bottom:
+        1px solid var(--border);
 
     color: var(--text-muted);
 
@@ -1676,13 +2562,15 @@ img {
     letter-spacing: 0.08em;
 
     text-align: left;
+
     text-transform: uppercase;
 }
 
 .leads-table td {
     padding: 15px;
 
-    border-bottom: 1px solid var(--border);
+    border-bottom:
+        1px solid var(--border);
 
     color: var(--text-soft);
 
@@ -1696,7 +2584,8 @@ img {
 }
 
 .leads-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.025);
+    background:
+        rgba(255, 255, 255, 0.025);
 }
 
 .lead-name {
@@ -1714,6 +2603,7 @@ img {
 
 .lead-date {
     color: var(--text-muted);
+
     white-space: nowrap;
 }
 
@@ -1727,7 +2617,9 @@ img {
 
     padding: 0 10px;
 
-    border: 1px solid var(--border);
+    border:
+        1px solid var(--border);
+
     border-radius: 8px;
 
     background: transparent;
@@ -1739,7 +2631,9 @@ img {
 }
 
 .lead-action-button:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background:
+        rgba(255, 255, 255, 0.05);
+
     color: #fff;
 }
 
@@ -1748,7 +2642,8 @@ img {
 }
 
 .lead-action-button.danger:hover {
-    background: rgba(255, 79, 154, 0.09);
+    background:
+        rgba(255, 79, 154, 0.09);
 }
 
 
@@ -1768,7 +2663,8 @@ img {
 
     padding: 24px;
 
-    background: rgba(0, 0, 0, 0.72);
+    background:
+        rgba(0, 0, 0, 0.72);
 
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -1786,7 +2682,16 @@ img {
     width: min(720px, calc(100vw - 48px));
 
     min-width: 320px;
-    min-height: 400px;
+
+    /*
+       ВАЖНО:
+       Ограничиваем высоту окна.
+       Теперь длинный контент не вытесняет кнопки.
+    */
+    height: min(
+        820px,
+        calc(100vh - 48px)
+    );
 
     max-height: calc(100vh - 48px);
 
@@ -1797,22 +2702,32 @@ img {
 
     background: #110e19;
 
-    border: 1px solid var(--border-light);
+    border:
+        1px solid var(--border-light);
+
     border-radius: 22px;
 
     box-shadow: var(--shadow);
 
     overflow: hidden;
 
-    animation: adminModalIn 0.2s ease;
+    animation:
+        adminModalIn 0.2s ease;
 }
 
 .admin-modal.large {
     width: min(900px, calc(100vw - 48px));
 }
 
+
+/*
+   ШАПКА МОДАЛЬНОГО ОКНА
+*/
+
 .admin-modal-header {
     min-height: 70px;
+
+    flex: 0 0 auto;
 
     display: flex;
     align-items: center;
@@ -1822,11 +2737,18 @@ img {
 
     padding: 18px 22px;
 
-    border-bottom: 1px solid var(--border);
+    border-bottom:
+        1px solid var(--border);
+
+    background:
+        rgba(17, 14, 25, 0.98);
+
+    z-index: 5;
 }
 
 .admin-modal-header h2 {
     color: #fff;
+
     font-size: 18px;
 }
 
@@ -1848,7 +2770,9 @@ img {
 
     flex-shrink: 0;
 
-    border: 1px solid var(--border);
+    border:
+        1px solid var(--border);
+
     border-radius: 9px;
 
     background: transparent;
@@ -1856,44 +2780,173 @@ img {
     color: var(--text-soft);
 
     font-size: 18px;
+
     line-height: 1;
 
     transition: var(--transition);
 }
 
 .admin-modal-close:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background:
+        rgba(255, 255, 255, 0.06);
+
     color: #fff;
 }
+
+
+/*
+   ОСНОВНОЕ СОДЕРЖИМОЕ СТАРЫХ МОДАЛОК
+*/
 
 .admin-modal-body {
     padding: 22px;
 
     overflow-y: auto;
+
+    min-height: 0;
+
+    flex: 1 1 auto;
 }
+
+
+/*
+   =========================================================
+   ГЛАВНОЕ ИСПРАВЛЕНИЕ ДЛЯ ФОРМЫ ПОРТФОЛИО
+   =========================================================
+
+   Форма занимает всё свободное место.
+
+   Её содержимое прокручивается,
+   а нижние кнопки остаются видимыми.
+*/
+
+.admin-modal > form.admin-form {
+    min-height: 0;
+
+    flex: 1 1 auto;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+}
+
+
+/*
+   Все поля формы портфолио находятся
+   в обычном потоке.
+
+   Чтобы именно содержимое формы прокручивалось,
+   используем внутреннюю область через псевдоструктуру
+   с помощью overflow на форме.
+*/
+
+.admin-modal > form.admin-form {
+    overflow-y: auto;
+
+    padding: 22px;
+
+    scrollbar-width: thin;
+}
+
+
+/*
+   Кнопки формы портфолио.
+   Они всегда остаются снизу благодаря sticky.
+*/
+
+.admin-modal > form.admin-form > .admin-form-actions {
+    position: sticky;
+
+    bottom: 0;
+
+    z-index: 20;
+
+    flex: 0 0 auto;
+
+    margin-left: -22px;
+    margin-right: -22px;
+    margin-bottom: -22px;
+
+    padding: 18px 22px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(17, 14, 25, 0.88),
+            #110e19 30%
+        );
+
+    border-top:
+        1px solid var(--border);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+
+/*
+   Чтобы кнопки точно не исчезали
+   при большом количестве изображений.
+*/
+
+#portfolioForm .admin-form-actions {
+    flex-shrink: 0;
+
+    min-height: 80px;
+}
+
+
+/*
+   Кнопки поверх содержимого.
+*/
+
+#portfolioForm .admin-form-actions button {
+    position: relative;
+
+    z-index: 30;
+
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   MODAL FOOTER
+   ========================================================= */
 
 .admin-modal-footer {
     display: flex;
+
     justify-content: flex-end;
 
     gap: 10px;
 
+    flex: 0 0 auto;
+
     padding: 17px 22px;
 
-    border-top: 1px solid var(--border);
+    border-top:
+        1px solid var(--border);
 
-    background: rgba(255, 255, 255, 0.015);
+    background:
+        rgba(255, 255, 255, 0.015);
 }
 
 @keyframes adminModalIn {
     from {
         opacity: 0;
-        transform: translateY(12px) scale(0.98);
+
+        transform:
+            translateY(12px)
+            scale(0.98);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+
+        transform:
+            translateY(0)
+            scale(1);
     }
 }
 
@@ -1905,7 +2958,8 @@ img {
 .lead-details-grid {
     display: grid;
 
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
 
     gap: 14px;
 
@@ -1915,9 +2969,12 @@ img {
 .lead-detail-card {
     padding: 14px;
 
-    background: rgba(255, 255, 255, 0.03);
+    background:
+        rgba(255, 255, 255, 0.03);
 
-    border: 1px solid var(--border);
+    border:
+        1px solid var(--border);
+
     border-radius: 12px;
 }
 
@@ -1942,9 +2999,12 @@ img {
 .lead-message-box {
     padding: 15px;
 
-    background: rgba(255, 255, 255, 0.025);
+    background:
+        rgba(255, 255, 255, 0.025);
 
-    border: 1px solid var(--border);
+    border:
+        1px solid var(--border);
+
     border-radius: 12px;
 }
 
@@ -1963,9 +3023,11 @@ img {
     color: var(--text-soft);
 
     font-size: 11px;
+
     line-height: 1.7;
 
     white-space: pre-wrap;
+
     overflow-wrap: anywhere;
 }
 
@@ -1980,7 +3042,9 @@ img {
     right: 25px;
     bottom: 25px;
 
-    max-width: min(380px, calc(100vw - 40px));
+    max-width:
+        min(380px, calc(100vw - 40px));
+
     min-width: 250px;
 
     display: flex;
@@ -1992,7 +3056,9 @@ img {
 
     background: #17131f;
 
-    border: 1px solid var(--border-light);
+    border:
+        1px solid var(--border-light);
+
     border-radius: 13px;
 
     box-shadow: var(--shadow);
@@ -2016,17 +3082,20 @@ img {
 
 .admin-notification.show {
     opacity: 1;
+
     visibility: visible;
 
     transform: translateY(0);
 }
 
 .admin-notification.success {
-    border-color: rgba(101, 214, 160, 0.3);
+    border-color:
+        rgba(101, 214, 160, 0.3);
 }
 
 .admin-notification.error {
-    border-color: rgba(255, 102, 127, 0.35);
+    border-color:
+        rgba(255, 102, 127, 0.35);
 }
 
 .admin-notification-icon {
@@ -2081,7 +3150,9 @@ img {
             rgba(255, 255, 255, 0.025)
         );
 
-    border: 1px solid var(--border-light);
+    border:
+        1px solid var(--border-light);
+
     border-radius: 24px;
 
     box-shadow: var(--shadow);
@@ -2121,6 +3192,7 @@ img {
     color: var(--text-muted);
 
     font-size: 11px;
+
     line-height: 1.6;
 }
 
@@ -2129,10 +3201,13 @@ img {
 
     padding: 10px 12px;
 
-    border: 1px solid rgba(255, 102, 127, 0.25);
+    border:
+        1px solid rgba(255, 102, 127, 0.25);
+
     border-radius: 9px;
 
-    background: rgba(255, 102, 127, 0.06);
+    background:
+        rgba(255, 102, 127, 0.06);
 
     color: #ff8b9c;
 
@@ -2147,7 +3222,8 @@ img {
 .settings-grid {
     display: grid;
 
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
 
     gap: 22px;
 }
@@ -2167,7 +3243,8 @@ img {
 
     padding: 11px 0;
 
-    border-bottom: 1px solid var(--border);
+    border-bottom:
+        1px solid var(--border);
 }
 
 .info-row:last-child {
@@ -2176,6 +3253,7 @@ img {
 
 .info-row-label {
     color: var(--text-muted);
+
     font-size: 10px;
 }
 
@@ -2208,22 +3286,30 @@ img {
 }
 
 .status-badge.success {
-    background: rgba(101, 214, 160, 0.1);
+    background:
+        rgba(101, 214, 160, 0.1);
+
     color: var(--green);
 }
 
 .status-badge.warning {
-    background: rgba(255, 180, 92, 0.1);
+    background:
+        rgba(255, 180, 92, 0.1);
+
     color: var(--orange);
 }
 
 .status-badge.danger {
-    background: rgba(255, 102, 127, 0.1);
+    background:
+        rgba(255, 102, 127, 0.1);
+
     color: var(--red);
 }
 
 .status-badge.info {
-    background: rgba(98, 200, 255, 0.1);
+    background:
+        rgba(98, 200, 255, 0.1);
+
     color: var(--blue-light);
 }
 
@@ -2242,12 +3328,15 @@ img {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
+    background:
+        rgba(255, 255, 255, 0.12);
+
     border-radius: 20px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background:
+        rgba(255, 255, 255, 0.2);
 }
 
 
@@ -2260,7 +3349,9 @@ a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-    outline: 2px solid rgba(98, 200, 255, 0.75);
+    outline:
+        2px solid rgba(98, 200, 255, 0.75);
+
     outline-offset: 2px;
 }
 
@@ -2272,11 +3363,13 @@ select:focus-visible {
 @media (max-width: 1200px) {
 
     .stats-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
     }
 
     .portfolio-admin-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
     }
 
     .dashboard-grid {
@@ -2322,13 +3415,16 @@ select:focus-visible {
 
         flex-direction: row;
 
-        border-top: 1px solid var(--border);
+        border-top:
+            1px solid var(--border);
+
         border-right: 0;
 
         overflow-x: auto;
         overflow-y: hidden;
 
-        background: rgba(10, 8, 15, 0.96);
+        background:
+            rgba(10, 8, 15, 0.96);
 
         backdrop-filter: blur(18px);
         -webkit-backdrop-filter: blur(18px);
@@ -2355,11 +3451,11 @@ select:focus-visible {
         position: relative;
 
         width: auto;
+
         min-width: 70px;
         min-height: 54px;
 
         flex-direction: column;
-
         justify-content: center;
 
         gap: 2px;
@@ -2374,7 +3470,8 @@ select:focus-visible {
 
     .admin-nav-item.active,
     .admin-nav-item.is-active {
-        box-shadow: inset 0 2px 0 var(--blue);
+        box-shadow:
+            inset 0 2px 0 var(--blue);
     }
 
     .admin-nav-icon {
@@ -2435,6 +3532,7 @@ select:focus-visible {
 
     .page-heading-row {
         align-items: flex-start;
+
         flex-direction: column;
     }
 
@@ -2444,6 +3542,7 @@ select:focus-visible {
 
     .stats-grid {
         grid-template-columns: 1fr 1fr;
+
         gap: 10px;
     }
 
@@ -2470,6 +3569,7 @@ select:focus-visible {
 
     .admin-card {
         padding: 18px;
+
         border-radius: 18px;
     }
 
@@ -2479,6 +3579,10 @@ select:focus-visible {
 
     .portfolio-admin-grid {
         grid-template-columns: 1fr;
+    }
+
+    .portfolio-preview-area {
+        aspect-ratio: 16 / 9;
     }
 
     .form-grid,
@@ -2500,9 +3604,14 @@ select:focus-visible {
     }
 
     .admin-modal {
-        width: min(720px, calc(100vw - 24px));
+        width:
+            min(720px, calc(100vw - 24px));
 
-        max-height: calc(100vh - 24px);
+        height:
+            calc(100vh - 24px);
+
+        max-height:
+            calc(100vh - 24px);
 
         border-radius: 18px;
     }
@@ -2515,8 +3624,23 @@ select:focus-visible {
         padding: 15px 17px;
     }
 
-    .admin-modal-footer {
-        padding: 14px 17px;
+    /*
+       На мобильном тоже сохраняем нижние кнопки.
+    */
+
+    .admin-modal > form.admin-form {
+        padding: 17px;
+
+        overflow-y: auto;
+    }
+
+    .admin-modal > form.admin-form > .admin-form-actions {
+        margin-left: -17px;
+        margin-right: -17px;
+        margin-bottom: -17px;
+
+        padding:
+            14px 17px;
     }
 
     .lead-details-grid {
@@ -2525,6 +3649,7 @@ select:focus-visible {
 
     .recent-lead {
         min-height: 54px;
+
         padding: 9px 10px;
     }
 }
@@ -2546,6 +3671,7 @@ select:focus-visible {
     .form-actions,
     .admin-form-actions {
         flex-direction: column-reverse;
+
         align-items: stretch;
     }
 
@@ -2554,8 +3680,18 @@ select:focus-visible {
         width: 100%;
     }
 
-    .portfolio-admin-actions {
+    .portfolio-admin-card-top {
         flex-direction: column;
+
+        gap: 7px;
+    }
+
+    .portfolio-price {
+        align-self: flex-start;
+    }
+
+    .portfolio-card-actions {
+        grid-template-columns: 1fr;
     }
 
     .admin-modal-footer {
@@ -2563,6 +3699,21 @@ select:focus-visible {
     }
 
     .admin-modal-footer button {
+        width: 100%;
+    }
+
+    /*
+       Кнопки портфолио на маленьком экране
+       также остаются полностью доступными.
+    */
+
+    #portfolioForm .admin-form-actions {
+        flex-direction: column-reverse;
+
+        align-items: stretch;
+    }
+
+    #portfolioForm .admin-form-actions button {
         width: 100%;
     }
 }
@@ -2575,10 +3726,12 @@ select:focus-visible {
     *::after {
         scroll-behavior: auto !important;
 
-        animation-duration: 0.01ms !important;
+        animation-duration:
+            0.01ms !important;
 
         animation-iteration-count: 1 !important;
 
-        transition-duration: 0.01ms !important;
+        transition-duration:
+            0.01ms !important;
     }
 }

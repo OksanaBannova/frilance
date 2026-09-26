@@ -1,4 +1,3 @@
-
 :root {
   --bg: #08070d;
   --bg-soft: #100d18;
@@ -124,6 +123,36 @@ section {
   background: var(--blue);
 }
 
+/* Универсальная подпись-киккер над заголовками секций
+   (Портфолио, Для кого, Как это работает, Цены, Мой подход, Вопросы).
+   Внутри .final-cta-content есть отдельное, более специфичное правило —
+   оно всё равно сработает благодаря большей специфичности. */
+.section-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.section-kicker::before {
+  content: "";
+  width: 24px;
+  height: 1px;
+  background: var(--blue);
+}
+
+.gradient-text {
+  background: linear-gradient(110deg, #ffffff 0%, #9fdcff 42%, #d783ff 72%, #ff5f9e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 .section-title {
   max-width: 760px;
   font-size: clamp(32px, 5vw, 58px);
@@ -197,6 +226,18 @@ section {
 }
 
 .secondary-button:hover {
+  transform: translateY(-3px);
+  background: rgba(255,255,255,0.08);
+  border-color: var(--border-light);
+}
+
+.btn-secondary {
+  background: rgba(255,255,255,0.045);
+  border: 1px solid var(--border);
+  color: white;
+}
+
+.btn-secondary:hover {
   transform: translateY(-3px);
   background: rgba(255,255,255,0.08);
   border-color: var(--border-light);
@@ -829,6 +870,44 @@ section {
 .service-price { color: white; font-size: 13px; font-weight: 700; }
 .service-price span { color: var(--text-muted); font-weight: 500; }
 .service-link { color: var(--blue); font-size: 13px; font-weight: 700; }
+
+.services-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: 40px;
+  padding: 24px 26px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(98,200,255,0.06), rgba(255,79,154,0.04));
+}
+
+.services-note-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--gradient-soft);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--blue);
+  font-size: 18px;
+}
+
+.services-note strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #fff;
+  font-size: 15px;
+}
+
+.services-note p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.6;
+}
 
 /* =========================================================
    PORTFOLIO
@@ -1949,6 +2028,21 @@ section {
 .faq-item.is-open .faq-answer { grid-template-rows: 1fr; }
 .faq-item.is-open .faq-answer > div { padding-bottom: 25px; }
 
+/* Реальная разметка ответа в React — простой div без обёртки .faq-answer,
+   поэтому стилизуем именно этот класс (выравнивание под текст вопроса + анимация появления). */
+.faq-answer-visible {
+  padding: 0 5px 25px 63px;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.7;
+  animation: faqReveal 0.25s ease;
+}
+
+@keyframes faqReveal {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* =========================================================
    FINAL CTA
    ========================================================= */
@@ -2477,6 +2571,7 @@ section {
   .faq-plus { width: 30px; height: 30px; font-size: 17px; }
   .faq-answer > div { padding-left: 40px; font-size: 13px; line-height: 1.65; }
   .faq-item.is-open .faq-answer > div { padding-bottom: 20px; }
+  .faq-answer-visible { padding-left: 40px; padding-bottom: 20px; font-size: 13px; line-height: 1.65; }
 
   .final-cta { padding: 70px 0; }
   .cta-box { padding: 55px 22px; border-radius: 23px; }
@@ -2529,6 +2624,12 @@ section {
   .faq-question-text { font-size: 13px; }
   .faq-plus { width: 28px; height: 28px; }
   .faq-answer > div { padding-left: 33px; font-size: 12.5px; }
+  .faq-answer-visible { padding-left: 33px; font-size: 12.5px; }
+
+  /* Декоративные плавающие карточки в hero заданы фиксированными пикселями
+     и на узких телефонах (320–420px) вылезают за пределы контейнера —
+     масштабируем всю группу целиком, сохраняя пропорции. */
+  .hero-visual { height: 420px; transform: scale(0.68); transform-origin: top center; }
 
   .final-cta-content { padding: 34px 18px; }
   .final-cta-content h2 { font-size: 37px; }

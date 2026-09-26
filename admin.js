@@ -7,16 +7,16 @@
    Версия:
    - Supabase
    - Портфолио
-   - Загрузка фотографий портфолио
+   - Многофайловая загрузка изображений
+   - Supabase Storage
+   - portfolio_images
    - Услуги
    - Тексты
    - Контакты
    - Заявки
-   - Проверка авторизации перед загрузкой
-   - Повторные запросы при сетевых ошибках
-   - Последовательная загрузка данных
-   - Сохранение уже загруженных данных при временной ошибке
-   - Встроенные превью без изображений
+   - Авторизация
+   - Повторные запросы
+   - Realtime заявок
 ========================================================= */
 
 
@@ -30,9 +30,19 @@ let texts = null;
 let contacts = null;
 let leads = [];
 
+let portfolioImages = [];
+let currentExistingPortfolioImages = [];
+
+let leadsRealtimeChannel = null;
+let leadsFallbackTimer = null;
+let leadsRealtimeActive = false;
+let leadsLoading = false;
+
+let frilanceAdminInitialized = false;
+
 
 /* =========================================================
-   ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+   DOM HELPERS
 ========================================================= */
 
 function $(selector, root = document) {
@@ -45,8 +55,16 @@ function $$(selector, root = document) {
 }
 
 
+/* =========================================================
+   ОБЩИЕ HELPERS
+========================================================= */
+
 function escapeHtml(value) {
-    if (value === null || value === undefined) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
         return "";
     }
 
@@ -60,6 +78,7 @@ function escapeHtml(value) {
 
 
 function formatDate(date) {
+
     if (!date) {
         return "—";
     }
@@ -70,15 +89,19 @@ function formatDate(date) {
         return "—";
     }
 
-    return d.toLocaleDateString("ru-RU", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric"
-    });
+    return d.toLocaleDateString(
+        "ru-RU",
+        {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        }
+    );
 }
 
 
 function formatDateTime(date) {
+
     if (!date) {
         return "—";
     }
@@ -89,17 +112,21 @@ function formatDateTime(date) {
         return "—";
     }
 
-    return d.toLocaleString("ru-RU", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-    });
+    return d.toLocaleString(
+        "ru-RU",
+        {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
 }
 
 
 function sleep(ms) {
+
     return new Promise(resolve => {
         setTimeout(resolve, ms);
     });
@@ -107,7 +134,7 @@ function sleep(ms) {
 
 
 /* =========================================================
-   ПРОВЕРКА ВРЕМЕННЫХ СЕТЕВЫХ ОШИБОК
+   SUPABASE RETRY
 ========================================================= */
 
 function isRetryableSupabaseError(error) {
@@ -127,12 +154,10 @@ function isRetryableSupabaseError(error) {
     const combined =
         `${message} ${details} ${hint} ${code}`;
 
-
     return (
         combined.includes("failed to fetch") ||
         combined.includes("networkerror") ||
         combined.includes("network error") ||
-        combined.includes("err_http2_ping_failed") ||
         combined.includes("http2") ||
         combined.includes("timeout") ||
         combined.includes("502") ||
@@ -140,14 +165,13 @@ function isRetryableSupabaseError(error) {
         combined.includes("504") ||
         combined.includes("connection reset") ||
         combined.includes("connection closed") ||
-        combined.includes("network request failed")
+        combined.includes("connection refused") ||
+        combined.includes("network request failed") ||
+        combined.includes("err_connection_reset") ||
+        combined.includes("err_http2_ping_failed")
     );
 }
 
-
-/* =========================================================
-   ПОВТОРНЫЙ SUPABASE ЗАПРОС
-========================================================= */
 
 async function withSupabaseRetry(
     operation,
@@ -163,7 +187,6 @@ async function withSupabaseRetry(
 
     let lastError = null;
 
-
     for (
         let attempt = 1;
         attempt <= attempts;
@@ -176,26 +199,13 @@ async function withSupabaseRetry(
                 `FRILANCE: запрос ${label}, попытка ${attempt}/${attempts}`
             );
 
-
             const result =
                 await operation();
-
-
-            /*
-               Supabase может вернуть объект
-               с error вместо throw.
-            */
 
             if (result?.error) {
 
                 lastError =
                     result.error;
-
-
-                /*
-                   Если ошибка не сетевая —
-                   повторять бессмысленно.
-                */
 
                 if (
                     !isRetryableSupabaseError(
@@ -203,7 +213,6 @@ async function withSupabaseRetry(
                     ) ||
                     attempt === attempts
                 ) {
-
                     return result;
                 }
 
@@ -212,36 +221,37 @@ async function withSupabaseRetry(
                 return result;
             }
 
-
         } catch (error) {
 
             lastError =
                 error;
 
-
             if (
                 !isRetryableSupabaseError(error) ||
                 attempt === attempts
             ) {
-
                 throw error;
             }
         }
 
+        /*
+           Экспоненциальная задержка.
+           Для Storage даём серверу немного больше времени.
+        */
 
         const delay =
-            baseDelay * attempt;
-
+            Math.min(
+                baseDelay * Math.pow(2, attempt - 1),
+                8000
+            );
 
         console.warn(
             `FRILANCE: временная ошибка ${label}. ` +
             `Повтор через ${delay} мс.`
         );
 
-
         await sleep(delay);
     }
-
 
     throw (
         lastError ||
@@ -253,12 +263,10 @@ async function withSupabaseRetry(
 
 
 /* =========================================================
-   ПРОВЕРКА SUPABASE-СЕССИИ
+   AUTH
 ========================================================= */
 
-async function waitForAuthSession(
-    timeout = 10000
-) {
+async function waitForAuthSession(timeout = 10000) {
 
     if (
         typeof frilanceSupabase === "undefined" ||
@@ -272,10 +280,8 @@ async function waitForAuthSession(
         return null;
     }
 
-
     const started =
         Date.now();
-
 
     while (
         Date.now() - started < timeout
@@ -286,10 +292,8 @@ async function waitForAuthSession(
             const result =
                 await frilanceSupabase.auth.getSession();
 
-
             const session =
                 result?.data?.session;
-
 
             if (session) {
 
@@ -300,7 +304,6 @@ async function waitForAuthSession(
                 return session;
             }
 
-
         } catch (error) {
 
             console.warn(
@@ -309,15 +312,12 @@ async function waitForAuthSession(
             );
         }
 
-
         await sleep(300);
     }
-
 
     console.warn(
         "FRILANCE AUTH: активная сессия не найдена."
     );
-
 
     return null;
 }
@@ -335,7 +335,6 @@ function showNotification(
     let notification =
         $("#adminNotification");
 
-
     if (!notification) {
 
         notification =
@@ -352,17 +351,14 @@ function showNotification(
         );
     }
 
-
     notification.textContent =
         message;
-
 
     notification.classList.remove(
         "show",
         "success",
         "error"
     );
-
 
     notification.classList.add(
         "show",
@@ -371,11 +367,9 @@ function showNotification(
             : "success"
     );
 
-
     clearTimeout(
         notification._timer
     );
-
 
     notification._timer =
         setTimeout(() => {
@@ -384,12 +378,55 @@ function showNotification(
                 "show"
             );
 
-        }, 3000);
+        }, 3500);
 }
 
 
 /* =========================================================
-   ВСТРОЕННЫЕ ПРЕВЬЮ ПОРТФОЛИО
+   NORMALIZE IMAGE URL
+========================================================= */
+
+function normalizePortfolioImageUrl(url) {
+
+    if (
+        url === null ||
+        url === undefined
+    ) {
+        return "";
+    }
+
+    const value =
+        String(url).trim();
+
+    if (!value) {
+        return "";
+    }
+
+    const lower =
+        value.toLowerCase();
+
+    if (
+        lower.startsWith("images/") ||
+        lower.startsWith("/images/") ||
+        lower.startsWith("./images/") ||
+        lower.includes("127.0.0.1") ||
+        lower.includes("localhost")
+    ) {
+
+        console.warn(
+            "FRILANCE: найден старый локальный путь изображения:",
+            value
+        );
+
+        return "";
+    }
+
+    return value;
+}
+
+
+/* =========================================================
+   ВСТРОЕННЫЕ ПРЕВЬЮ
 ========================================================= */
 
 function getPortfolioPreviewType(item) {
@@ -402,16 +439,13 @@ function getPortfolioPreviewType(item) {
         .join(" ")
         .toLowerCase();
 
-
     if (
         text.includes("нейро") ||
         text.includes("фото") ||
         text.includes("ai")
     ) {
-
         return "neuro";
     }
-
 
     if (
         text.includes("карточ") ||
@@ -419,10 +453,8 @@ function getPortfolioPreviewType(item) {
         text.includes("market") ||
         text.includes("маркет")
     ) {
-
         return "marketplace";
     }
-
 
     return "website";
 }
@@ -494,11 +526,9 @@ function getBuiltInPreview(type) {
                 <div class="market-info">
 
                     <div class="market-lines">
-
                         <span></span>
                         <span></span>
                         <span></span>
-
                     </div>
 
                     <div class="market-price">
@@ -607,14 +637,11 @@ function injectPortfolioPreviewStyles() {
         return;
     }
 
-
     const style =
         document.createElement("style");
 
-
     style.id =
         "portfolioBuiltPreviewStyles";
-
 
     style.textContent = `
 
@@ -661,7 +688,6 @@ function injectPortfolioPreviewStyles() {
             border: 1px solid rgba(255,255,255,.12);
             box-shadow: 0 18px 45px rgba(0,0,0,.45);
             overflow: hidden;
-            transform: perspective(700px) rotateX(3deg);
         }
 
         .browser-top {
@@ -773,8 +799,6 @@ function injectPortfolioPreviewStyles() {
                     rgba(98,200,255,.5),
                     rgba(255,79,154,.45)
                 );
-            box-shadow:
-                0 0 30px rgba(98,200,255,.2);
         }
 
         .site-card-glow {
@@ -883,9 +907,6 @@ function injectPortfolioPreviewStyles() {
                     #171020
                 );
             border: 1px solid rgba(255,255,255,.12);
-            box-shadow:
-                0 15px 35px rgba(0,0,0,.4),
-                0 0 25px rgba(255,79,154,.12);
         }
 
         .product-shine {
@@ -896,7 +917,6 @@ function injectPortfolioPreviewStyles() {
             height: 25px;
             border-radius: 50%;
             background: rgba(255,255,255,.14);
-            filter: blur(3px);
         }
 
         .product-line {
@@ -959,7 +979,6 @@ function injectPortfolioPreviewStyles() {
             border: 1px solid rgba(255,79,154,.25);
             color: #ff82b5;
             font-size: 6px;
-            letter-spacing: .7px;
         }
 
         .portfolio-preview-neuro {
@@ -968,11 +987,6 @@ function injectPortfolioPreviewStyles() {
                     circle at 50% 35%,
                     rgba(255,79,154,.35),
                     transparent 34%
-                ),
-                radial-gradient(
-                    circle at 20% 80%,
-                    rgba(155,92,255,.25),
-                    transparent 35%
                 ),
                 #0d0915;
         }
@@ -1026,15 +1040,12 @@ function injectPortfolioPreviewStyles() {
             width: 100px;
             height: 105px;
             border-radius: 48% 48% 35% 35%;
-            background:
-                linear-gradient(
-                    135deg,
-                    #171020,
-                    #3a2447
-                );
+            background: linear-gradient(
+                135deg,
+                #171020,
+                #3a2447
+            );
             top: 2px;
-            box-shadow:
-                0 0 35px rgba(255,79,154,.18);
         }
 
         .neuro-face-shape {
@@ -1043,15 +1054,12 @@ function injectPortfolioPreviewStyles() {
             height: 82px;
             left: 18px;
             top: 24px;
-            border-radius: 46% 46% 48% 48%;
-            background:
-                linear-gradient(
-                    135deg,
-                    #f3c6ba,
-                    #c98982
-                );
-            box-shadow:
-                0 8px 20px rgba(0,0,0,.3);
+            border-radius: 46%;
+            background: linear-gradient(
+                135deg,
+                #f3c6ba,
+                #c98982
+            );
         }
 
         .neuro-eye {
@@ -1102,16 +1110,122 @@ function injectPortfolioPreviewStyles() {
             letter-spacing: 1px;
         }
 
-        .portfolio-image-error {
-            width: 100%;
-            height: 100%;
-        }
-
         .portfolio-preview-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
+        }
+
+        .portfolio-image-error {
+            width: 100%;
+            height: 100%;
+        }
+
+        .portfolio-images-editor {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fill,
+                minmax(120px, 1fr)
+            );
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .portfolio-selected-image {
+            position: relative;
+            height: 120px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #11101a;
+            border: 1px solid rgba(255,255,255,.1);
+        }
+
+        .portfolio-selected-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .portfolio-selected-remove,
+        .portfolio-existing-remove {
+            position: absolute;
+            top: 7px;
+            right: 7px;
+            width: 28px;
+            height: 28px;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(0,0,0,.75);
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .portfolio-selected-remove:hover,
+        .portfolio-existing-remove:hover {
+            background: #ff4f9a;
+        }
+
+        .portfolio-existing-images {
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(255,255,255,.08);
+        }
+
+        .portfolio-existing-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .portfolio-existing-header span {
+            min-width: 25px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            background: rgba(255,255,255,.08);
+            text-align: center;
+        }
+
+        .portfolio-existing-grid {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fill,
+                minmax(120px, 1fr)
+            );
+            gap: 12px;
+        }
+
+        .portfolio-existing-image {
+            position: relative;
+            height: 120px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #11101a;
+            border: 1px solid rgba(255,255,255,.1);
+        }
+
+        .portfolio-existing-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .portfolio-existing-main {
+            position: absolute;
+            left: 7px;
+            bottom: 7px;
+            padding: 4px 7px;
+            border-radius: 5px;
+            background: rgba(0,0,0,.75);
+            color: white;
+            font-size: 10px;
+        }
+
+        .portfolio-existing-remove {
+            z-index: 5;
         }
 
         .leads-loading {
@@ -1137,8 +1251,31 @@ function injectPortfolioPreviewStyles() {
                 transform: rotate(360deg);
             }
         }
-    `;
 
+        .portfolio-image-loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,.55);
+            color: white;
+            font-size: 12px;
+            z-index: 4;
+        }
+
+        .portfolio-image-broken {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            text-align: center;
+            color: rgba(255,255,255,.55);
+            font-size: 11px;
+        }
+    `;
 
     document.head.appendChild(style);
 }
@@ -1152,10 +1289,20 @@ document.addEventListener(
     "DOMContentLoaded",
     () => {
 
+        if (frilanceAdminInitialized) {
+
+            console.warn(
+                "FRILANCE ADMIN: повторная инициализация предотвращена."
+            );
+
+            return;
+        }
+
+        frilanceAdminInitialized = true;
+
         console.log(
             "FRILANCE ADMIN: запуск..."
         );
-
 
         injectPortfolioPreviewStyles();
 
@@ -1187,17 +1334,10 @@ function waitForSupabase() {
             "FRILANCE ADMIN: Supabase готов."
         );
 
-
         loadAllData();
 
         return;
     }
-
-
-    console.log(
-        "FRILANCE ADMIN: ждём Supabase..."
-    );
-
 
     setTimeout(
         waitForSupabase,
@@ -1207,7 +1347,7 @@ function waitForSupabase() {
 
 
 /* =========================================================
-   ЗАГРУЗКА ВСЕХ ДАННЫХ
+   ЗАГРУЗКА ДАННЫХ
 ========================================================= */
 
 async function loadAllData() {
@@ -1216,52 +1356,43 @@ async function loadAllData() {
         "FRILANCE ADMIN: начинаем загрузку данных..."
     );
 
-
     const session =
         await waitForAuthSession();
 
-
-    if (!session) {
-
-        console.error(
-            "FRILANCE ADMIN: активная Supabase-сессия не найдена."
-        );
-
-    } else {
+    if (session) {
 
         console.log(
             "FRILANCE ADMIN: пользователь:",
             session.user?.email || "без email"
+        );
+
+    } else {
+
+        console.error(
+            "FRILANCE ADMIN: активная Supabase-сессия не найдена."
+        );
+    }
+
+
+    try {
+
+        await loadLeads(false);
+
+    } catch (error) {
+
+        console.error(
+            "FRILANCE: ошибка первичной загрузки заявок:",
+            error
         );
     }
 
 
     const loaders = [
 
-        [
-            "портфолио",
-            loadPortfolio
-        ],
-
-        [
-            "услуги",
-            loadServices
-        ],
-
-        [
-            "тексты",
-            loadTexts
-        ],
-
-        [
-            "контакты",
-            loadContacts
-        ],
-
-        [
-            "заявки",
-            loadLeads
-        ]
+        ["портфолио", loadPortfolio],
+        ["услуги", loadServices],
+        ["тексты", loadTexts],
+        ["контакты", loadContacts]
 
     ];
 
@@ -1287,6 +1418,7 @@ async function loadAllData() {
 
     updateDashboard();
 
+    initLeadsRealtime();
 
     console.log(
         "FRILANCE ADMIN: загрузка завершена."
@@ -1309,13 +1441,8 @@ function initNavigation() {
 
                     event.preventDefault();
 
-
                     const section =
-                        item.dataset.section ||
-                        item.getAttribute(
-                            "data-section"
-                        );
-
+                        item.dataset.section;
 
                     if (section) {
                         showSection(section);
@@ -1336,7 +1463,6 @@ function initNavigation() {
                 return;
             }
 
-
             if (
                 item.dataset.section &&
                 item.tagName === "BUTTON"
@@ -1349,7 +1475,6 @@ function initNavigation() {
                         showSection(
                             item.dataset.section
                         );
-
                     }
                 );
             }
@@ -1362,12 +1487,9 @@ function initNavigation() {
             ""
         );
 
-
-    if (hash) {
-        showSection(hash);
-    } else {
-        showSection("dashboard");
-    }
+    showSection(
+        hash || "dashboard"
+    );
 }
 
 
@@ -1378,60 +1500,26 @@ function showSection(sectionName) {
     }
 
 
-    const sections =
-        $$(".admin-section");
+    $$(".admin-section")
+        .forEach(section => {
+
+            section.classList.toggle(
+                "active",
+                section.id ===
+                `section-${sectionName}`
+            );
+        });
 
 
-    sections.forEach(section => {
+    $$(".admin-nav-item")
+        .forEach(item => {
 
-        section.classList.toggle(
-            "active",
-            section.id ===
-            `section-${sectionName}`
-        );
-
-    });
-
-
-    const navItems =
-        $$(".admin-nav-item");
-
-
-    navItems.forEach(item => {
-
-        item.classList.toggle(
-            "active",
-            item.dataset.section ===
-            sectionName
-        );
-
-    });
-
-
-    const title =
-        $("[data-page-title]");
-
-
-    if (title) {
-
-        const titles = {
-
-            dashboard: "Обзор",
-            portfolio: "Портфолио",
-            services: "Услуги",
-            texts: "Тексты",
-            contacts: "Контакты",
-            leads: "Заявки",
-            seo: "SEO",
-            settings: "Настройки"
-
-        };
-
-
-        title.textContent =
-            titles[sectionName] ||
-            "Админ-панель";
-    }
+            item.classList.toggle(
+                "active",
+                item.dataset.section ===
+                sectionName
+            );
+        });
 
 
     window.location.hash =
@@ -1439,20 +1527,18 @@ function showSection(sectionName) {
 
 
     if (sectionName === "leads") {
-
         renderLeads();
     }
 
 
     if (sectionName === "portfolio") {
-
         renderPortfolio();
     }
 }
 
 
 /* =========================================================
-   БЫСТРЫЕ ДЕЙСТВИЯ
+   QUICK ACTIONS
 ========================================================= */
 
 function initQuickActions() {
@@ -1462,11 +1548,12 @@ function initQuickActions() {
 
             button.addEventListener(
                 "click",
-                () => {
+                event => {
+
+                    event.preventDefault();
 
                     const section =
                         button.dataset.openSection;
-
 
                     if (section) {
                         showSection(section);
@@ -1478,7 +1565,7 @@ function initQuickActions() {
 
 
 /* =========================================================
-   ПОРТФОЛИО
+   ПОРТФОЛИО — ИНИЦИАЛИЗАЦИЯ
 ========================================================= */
 
 function initPortfolio() {
@@ -1486,16 +1573,35 @@ function initPortfolio() {
     const addButton =
         $("#addPortfolioButton");
 
-
     const addEmptyButton =
         $("#addPortfolioButtonEmpty");
+
+    const closeButton =
+        $("#closePortfolioModal");
+
+    const cancelButton =
+        $("#cancelPortfolioButton");
+
+    const modal =
+        $("#portfolioModal");
+
+    const form =
+        $("#portfolioForm");
+
+    const imageInput =
+        $("#portfolioImages");
 
 
     if (addButton) {
 
         addButton.addEventListener(
             "click",
-            () => openPortfolioModal()
+            event => {
+
+                event.preventDefault();
+
+                openPortfolioModal();
+            }
         );
     }
 
@@ -1504,39 +1610,42 @@ function initPortfolio() {
 
         addEmptyButton.addEventListener(
             "click",
-            () => openPortfolioModal()
+            event => {
+
+                event.preventDefault();
+
+                openPortfolioModal();
+            }
         );
     }
-
-
-    const closeButton =
-        $("#closePortfolioModal");
 
 
     if (closeButton) {
 
         closeButton.addEventListener(
             "click",
-            closePortfolioModal
+            event => {
+
+                event.preventDefault();
+
+                closePortfolioModal();
+            }
         );
     }
-
-
-    const cancelButton =
-        $("#cancelPortfolioButton");
 
 
     if (cancelButton) {
 
         cancelButton.addEventListener(
             "click",
-            closePortfolioModal
+            event => {
+
+                event.preventDefault();
+
+                closePortfolioModal();
+            }
         );
     }
-
-
-    const modal =
-        $("#portfolioModal");
 
 
     if (modal) {
@@ -1555,35 +1664,32 @@ function initPortfolio() {
     }
 
 
-    const form =
-        $("#portfolioForm");
-
-
     if (form) {
 
         form.addEventListener(
             "submit",
-            savePortfolio
+            event => {
+
+                event.preventDefault();
+
+                savePortfolio(event);
+            }
         );
     }
-
-
-    const imageInput =
-        $("#portfolioImage");
 
 
     if (imageInput) {
 
         imageInput.addEventListener(
             "change",
-            previewPortfolioImage
+            previewPortfolioImages
         );
     }
 }
 
 
 /* =========================================================
-   ЗАГРУЗКА ПОРТФОЛИО
+   ЗАГРУЗКА PORTFOLIO
 ========================================================= */
 
 async function loadPortfolio() {
@@ -1622,7 +1728,16 @@ async function loadPortfolio() {
 
     portfolio =
         Array.isArray(result.data)
-            ? result.data
+            ? result.data.map(item => ({
+
+                ...item,
+
+                image_url:
+                    normalizePortfolioImageUrl(
+                        item.image_url
+                    )
+
+            }))
             : [];
 
 
@@ -1633,12 +1748,86 @@ async function loadPortfolio() {
 
 
     renderPortfolio();
+
     updatePortfolioCount();
 }
 
 
 /* =========================================================
-   ЗАГРУЗКА ФОТОГРАФИИ ПОРТФОЛИО В STORAGE
+   ЗАГРУЗКА PORTFOLIO_IMAGES
+========================================================= */
+
+async function loadPortfolioImages(
+    portfolioId
+) {
+
+    if (!portfolioId) {
+        return [];
+    }
+
+
+    try {
+
+        const result =
+            await withSupabaseRetry(
+                () =>
+                    frilanceSupabase
+                        .from("portfolio_images")
+                        .select("*")
+                        .eq(
+                            "portfolio_id",
+                            portfolioId
+                        )
+                        .order(
+                            "sort_order",
+                            {
+                                ascending: true
+                            }
+                        )
+                        .order(
+                            "created_at",
+                            {
+                                ascending: true
+                            }
+                        ),
+                "portfolio_images",
+                {
+                    attempts: 4,
+                    baseDelay: 1000
+                }
+            );
+
+
+        if (result.error) {
+            throw result.error;
+        }
+
+
+        return Array.isArray(result.data)
+            ? result.data
+            : [];
+
+
+    } catch (error) {
+
+        /*
+           ВАЖНО:
+           Дополнительные изображения не должны блокировать
+           открытие и редактирование самой работы.
+        */
+
+        console.warn(
+            "FRILANCE: portfolio_images временно недоступна:",
+            error
+        );
+
+        return [];
+    }
+}
+
+
+/* =========================================================
+   STORAGE UPLOAD
 ========================================================= */
 
 async function uploadPortfolioImage(file) {
@@ -1648,36 +1837,40 @@ async function uploadPortfolioImage(file) {
     }
 
 
-    if (
-        typeof frilanceSupabase === "undefined" ||
-        !frilanceSupabase
-    ) {
+    const session =
+        await waitForAuthSession(5000);
+
+
+    if (!session) {
 
         throw new Error(
-            "Supabase client недоступен."
+            "Сессия администратора не найдена. " +
+            "Обновите страницу и войдите снова."
         );
     }
 
 
     const allowedTypes = [
+
         "image/jpeg",
         "image/png",
         "image/webp",
         "image/gif"
+
     ];
 
 
-    if (!allowedTypes.includes(file.type)) {
+    if (
+        !allowedTypes.includes(
+            file.type
+        )
+    ) {
 
         throw new Error(
-            "Можно загружать только JPG, PNG, WEBP или GIF."
+            `Файл «${file.name}» имеет неподдерживаемый формат.`
         );
     }
 
-
-    /*
-       Ограничение 10 МБ.
-    */
 
     const maxSize =
         10 * 1024 * 1024;
@@ -1686,18 +1879,23 @@ async function uploadPortfolioImage(file) {
     if (file.size > maxSize) {
 
         throw new Error(
-            "Размер изображения не должен превышать 10 МБ."
+            `Файл «${file.name}» больше 10 МБ.`
         );
     }
 
 
     const extension =
         (
-            file.name.split(".").pop() ||
+            file.name
+                .split(".")
+                .pop() ||
             "jpg"
         )
             .toLowerCase()
-            .replace(/[^a-z0-9]/g, "");
+            .replace(
+                /[^a-z0-9]/g,
+                ""
+            );
 
 
     const randomPart =
@@ -1721,22 +1919,29 @@ async function uploadPortfolioImage(file) {
 
 
     const uploadResult =
-        await frilanceSupabase
-            .storage
-            .from("portfolio-images")
-            .upload(
-                storagePath,
-                file,
-                {
-                    cacheControl: "3600",
-                    upsert: false,
-                    contentType: file.type
-                }
-            );
+        await withSupabaseRetry(
+            () =>
+                frilanceSupabase
+                    .storage
+                    .from("portfolio-images")
+                    .upload(
+                        storagePath,
+                        file,
+                        {
+                            cacheControl: "3600",
+                            upsert: false,
+                            contentType: file.type
+                        }
+                    ),
+            `загрузка ${file.name}`,
+            {
+                attempts: 6,
+                baseDelay: 1200
+            }
+        );
 
 
     if (uploadResult.error) {
-
         throw uploadResult.error;
     }
 
@@ -1757,7 +1962,7 @@ async function uploadPortfolioImage(file) {
     if (!publicUrl) {
 
         throw new Error(
-            "Не удалось получить публичный URL изображения."
+            "Изображение загружено, но публичный URL не получен."
         );
     }
 
@@ -1769,21 +1974,82 @@ async function uploadPortfolioImage(file) {
 
 
     return {
+
         publicUrl,
+
         storagePath
+
     };
 }
 
 
 /* =========================================================
-   ОТОБРАЖЕНИЕ ПОРТФОЛИО
+   УДАЛЕНИЕ ФАЙЛА ИЗ STORAGE
+========================================================= */
+
+async function removePortfolioStorageFile(
+    storagePath
+) {
+
+    if (!storagePath) {
+        return;
+    }
+
+
+    try {
+
+        const result =
+            await withSupabaseRetry(
+                () =>
+                    frilanceSupabase
+                        .storage
+                        .from("portfolio-images")
+                        .remove([
+                            storagePath
+                        ]),
+                `удаление Storage ${storagePath}`,
+                {
+                    attempts: 4,
+                    baseDelay: 1000
+                }
+            );
+
+
+        if (result.error) {
+            throw result.error;
+        }
+
+
+        console.log(
+            "FRILANCE: файл Storage удалён:",
+            storagePath
+        );
+
+
+    } catch (error) {
+
+        /*
+           Удаление Storage не должно ломать удаление
+           записи из базы.
+        */
+
+        console.warn(
+            "FRILANCE: не удалось удалить файл Storage:",
+            storagePath,
+            error
+        );
+    }
+}
+
+
+/* =========================================================
+   RENDER PORTFOLIO
 ========================================================= */
 
 function renderPortfolio() {
 
     const grid =
         $("#portfolioAdminGrid");
-
 
     const emptyState =
         $("#portfolioEmptyState");
@@ -1798,11 +2064,9 @@ function renderPortfolio() {
 
         grid.innerHTML = "";
 
-
         if (emptyState) {
             emptyState.style.display = "";
         }
-
 
         return;
     }
@@ -1815,9 +2079,7 @@ function renderPortfolio() {
 
     grid.innerHTML =
         portfolio
-            .map(item =>
-                createPortfolioCard(item)
-            )
+            .map(createPortfolioCard)
             .join("");
 
 
@@ -1826,18 +2088,18 @@ function renderPortfolio() {
 
             button.addEventListener(
                 "click",
-                () => {
+                event => {
+
+                    event.preventDefault();
 
                     const id =
                         button.dataset.id;
-
 
                     const item =
                         portfolio.find(
                             portfolioItem =>
                                 portfolioItem.id === id
                         );
-
 
                     if (item) {
                         openPortfolioModal(item);
@@ -1852,18 +2114,22 @@ function renderPortfolio() {
 
             button.addEventListener(
                 "click",
-                () => {
+                event => {
 
-                    const id =
-                        button.dataset.id;
+                    event.preventDefault();
 
-
-                    deletePortfolio(id);
+                    deletePortfolio(
+                        button.dataset.id
+                    );
                 }
             );
         });
 }
 
+
+/* =========================================================
+   PORTFOLIO CARD
+========================================================= */
 
 function createPortfolioCard(item) {
 
@@ -1871,25 +2137,30 @@ function createPortfolioCard(item) {
         getPortfolioPreviewType(item);
 
 
-    const hasImage =
-        item.image_url &&
-        String(item.image_url).trim();
+    const imageUrl =
+        normalizePortfolioImageUrl(
+            item.image_url
+        );
 
 
     let preview;
 
 
-    if (hasImage) {
+    if (imageUrl) {
 
         preview = `
+
             <div class="portfolio-preview-area">
 
                 <img
                     class="portfolio-preview-image"
-                    src="${escapeHtml(item.image_url)}"
+                    src="${escapeHtml(imageUrl)}"
                     alt="${escapeHtml(item.title)}"
                     loading="lazy"
-                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                    onerror="
+                        this.style.display='none';
+                        this.nextElementSibling.style.display='block';
+                    "
                 >
 
                 <div
@@ -1900,19 +2171,25 @@ function createPortfolioCard(item) {
                 </div>
 
             </div>
+
         `;
 
     } else {
 
         preview = `
+
             <div class="portfolio-preview-area">
+
                 ${getBuiltInPreview(previewType)}
+
             </div>
+
         `;
     }
 
 
     return `
+
         <article class="portfolio-admin-card">
 
             ${preview}
@@ -1925,7 +2202,8 @@ function createPortfolioCard(item) {
 
                         <div class="portfolio-category">
                             ${escapeHtml(
-                                item.category || "Работа"
+                                item.category ||
+                                "Работа"
                             )}
                         </div>
 
@@ -1940,17 +2218,21 @@ function createPortfolioCard(item) {
 
                     <div class="portfolio-price">
                         ${escapeHtml(
-                            item.price || ""
+                            item.price ||
+                            ""
                         )}
                     </div>
 
                 </div>
 
+
                 <p class="portfolio-description">
                     ${escapeHtml(
-                        item.description || ""
+                        item.description ||
+                        ""
                     )}
                 </p>
+
 
                 <div class="portfolio-card-actions">
 
@@ -1975,19 +2257,19 @@ function createPortfolioCard(item) {
             </div>
 
         </article>
+
     `;
 }
 
 
 /* =========================================================
-   МОДАЛЬНОЕ ОКНО ПОРТФОЛИО
+   OPEN PORTFOLIO MODAL
 ========================================================= */
 
-function openPortfolioModal(item = null) {
+async function openPortfolioModal(item = null) {
 
     const modal =
         $("#portfolioModal");
-
 
     const form =
         $("#portfolioForm");
@@ -1998,6 +2280,10 @@ function openPortfolioModal(item = null) {
     }
 
 
+    portfolioImages = [];
+    currentExistingPortfolioImages = [];
+
+
     if (form) {
         form.reset();
     }
@@ -2006,40 +2292,24 @@ function openPortfolioModal(item = null) {
     const modalTitle =
         $("#portfolioModalTitle");
 
-
     const idInput =
         $("#portfolioId");
 
 
-    const imagePreview =
-        $("#portfolioImagePreview");
+    clearSelectedImagesPreview();
 
-
-    /*
-       При открытии нового элемента
-       скрываем старое изображение предпросмотра.
-    */
-
-    if (imagePreview) {
-
-        imagePreview.removeAttribute("src");
-
-        imagePreview.style.display =
-            "none";
-    }
+    clearExistingImages();
 
 
     if (item) {
 
         if (modalTitle) {
-
             modalTitle.textContent =
                 "Редактировать работу";
         }
 
 
         if (idInput) {
-
             idInput.value =
                 item.id || "";
         }
@@ -2048,77 +2318,83 @@ function openPortfolioModal(item = null) {
         const title =
             $("#portfolioTitle");
 
-
         const category =
             $("#portfolioCategory");
 
-
         const price =
             $("#portfolioPrice");
-
 
         const description =
             $("#portfolioDescription");
 
 
         if (title) {
-
             title.value =
                 item.title || "";
         }
 
 
         if (category) {
-
             category.value =
                 item.category || "";
         }
 
 
         if (price) {
-
             price.value =
                 item.price || "";
         }
 
 
         if (description) {
-
             description.value =
                 item.description || "";
         }
 
 
-        /*
-           Если у работы уже есть фотография,
-           показываем её при редактировании.
-        */
+        modal.classList.add("active");
+        modal.style.display = "flex";
 
-        if (
-            imagePreview &&
-            item.image_url
-        ) {
 
-            imagePreview.src =
-                item.image_url;
+        try {
 
-            imagePreview.style.display =
-                "block";
+            const images =
+                await loadPortfolioImages(
+                    item.id
+                );
+
+            currentExistingPortfolioImages =
+                images;
+
+            renderExistingImages(
+                images
+            );
+
+        } catch (error) {
+
+            console.error(
+                "FRILANCE: ошибка загрузки изображений портфолио:",
+                error
+            );
+
+            renderExistingImages([]);
+
         }
 
     } else {
 
         if (modalTitle) {
-
             modalTitle.textContent =
                 "Добавить работу";
         }
 
 
         if (idInput) {
-
             idInput.value = "";
         }
+
+
+        renderExistingImages([]);
     }
 
 
@@ -2126,6 +2402,10 @@ function openPortfolioModal(item = null) {
     modal.style.display = "flex";
 }
 
+
+/* =========================================================
+   CLOSE PORTFOLIO MODAL
+========================================================= */
 
 function closePortfolioModal() {
 
@@ -2139,110 +2419,702 @@ function closePortfolioModal() {
 
 
     modal.classList.remove("active");
-    modal.style.display = "none";
+
+    modal.style.display =
+        "none";
+
+
+    portfolioImages = [];
+    currentExistingPortfolioImages = [];
+
+    clearSelectedImagesPreview();
+    clearExistingImages();
 }
 
 
 /* =========================================================
-   ПРЕДПРОСМОТР ФОТОГРАФИИ
+   PREVIEW MULTIPLE IMAGES
 ========================================================= */
 
-function previewPortfolioImage(event) {
+function previewPortfolioImages(event) {
 
-    const file =
-        event.target.files?.[0];
-
-
-    const preview =
-        $("#portfolioImagePreview");
+    const input =
+        event.target;
 
 
-    if (!file || !preview) {
+    const files =
+        [...(
+            input.files ||
+            []
+        )];
+
+
+    if (!files.length) {
+
+        portfolioImages = [];
+
+        clearSelectedImagesPreview();
+
         return;
     }
 
 
     const allowedTypes = [
+
         "image/jpeg",
         "image/png",
         "image/webp",
         "image/gif"
+
     ];
-
-
-    if (!allowedTypes.includes(file.type)) {
-
-        showNotification(
-            "Можно выбрать JPG, PNG, WEBP или GIF.",
-            "error"
-        );
-
-
-        event.target.value =
-            "";
-
-
-        preview.removeAttribute("src");
-
-        preview.style.display =
-            "none";
-
-
-        return;
-    }
 
 
     const maxSize =
         10 * 1024 * 1024;
 
 
-    if (file.size > maxSize) {
-
-        showNotification(
-            "Размер изображения не должен превышать 10 МБ.",
-            "error"
-        );
+    const validFiles = [];
 
 
-        event.target.value =
-            "";
+    for (const file of files) {
+
+        if (
+            !allowedTypes.includes(
+                file.type
+            )
+        ) {
+
+            showNotification(
+                `Файл «${file.name}» имеет неподдерживаемый формат.`,
+                "error"
+            );
+
+            continue;
+        }
 
 
-        preview.removeAttribute("src");
+        if (file.size > maxSize) {
 
-        preview.style.display =
-            "none";
+            showNotification(
+                `Файл «${file.name}» больше 10 МБ.`,
+                "error"
+            );
+
+            continue;
+        }
 
 
+        validFiles.push(file);
+    }
+
+
+    portfolioImages =
+        validFiles;
+
+
+    renderSelectedImages(
+        portfolioImages
+    );
+}
+
+
+/* =========================================================
+   RENDER SELECTED FILES
+========================================================= */
+
+function renderSelectedImages(files) {
+
+    const container =
+        $("#portfolioImagesEditor");
+
+
+    if (!container) {
         return;
     }
 
 
-    const reader =
-        new FileReader();
+    container.innerHTML =
+        "";
 
 
-    reader.onload = () => {
+    if (!files.length) {
+        return;
+    }
 
-        preview.src =
-            reader.result;
+
+    files.forEach(
+        (file, index) => {
+
+            const wrapper =
+                document.createElement("div");
+
+            wrapper.className =
+                "portfolio-selected-image";
 
 
-        preview.style.display =
-            "block";
+            const img =
+                document.createElement("img");
+
+
+            const removeButton =
+                document.createElement("button");
+
+
+            removeButton.type =
+                "button";
+
+            removeButton.className =
+                "portfolio-selected-remove";
+
+            removeButton.textContent =
+                "×";
+
+            removeButton.title =
+                "Убрать изображение";
+
+
+            removeButton.addEventListener(
+                "click",
+                event => {
+
+                    event.preventDefault();
+
+                    portfolioImages.splice(
+                        index,
+                        1
+                    );
+
+                    renderSelectedImages(
+                        portfolioImages
+                    );
+                }
+            );
+
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(removeButton);
+
+            container.appendChild(
+                wrapper
+            );
+
+
+            const reader =
+                new FileReader();
+
+
+            reader.onload =
+                () => {
+
+                    img.src =
+                        reader.result;
+                };
+
+
+            reader.readAsDataURL(file);
+        }
+    );
+}
+
+
+/* =========================================================
+   CLEAR SELECTED PREVIEW
+========================================================= */
+
+function clearSelectedImagesPreview() {
+
+    const container =
+        $("#portfolioImagesEditor");
+
+
+    if (container) {
+        container.innerHTML = "";
+    }
+
+
+    const input =
+        $("#portfolioImages");
+
+
+    if (input) {
+        input.value = "";
+    }
+}
+
+
+/* =========================================================
+   EXISTING IMAGES
+========================================================= */
+
+function clearExistingImages() {
+
+    const grid =
+        $("#portfolioExistingGrid");
+
+    const count =
+        $("#portfolioExistingCount");
+
+
+    if (grid) {
+        grid.innerHTML = "";
+    }
+
+
+    if (count) {
+        count.textContent = "0";
+    }
+}
+
+
+function renderExistingImages(images) {
+
+    const grid =
+        $("#portfolioExistingGrid");
+
+    const count =
+        $("#portfolioExistingCount");
+
+
+    if (!grid) {
+        return;
+    }
+
+
+    grid.innerHTML =
+        "";
+
+
+    if (count) {
+        count.textContent =
+            String(images.length);
+    }
+
+
+    if (!images.length) {
+        return;
+    }
+
+
+    images.forEach(
+        (image, index) => {
+
+            const wrapper =
+                document.createElement("div");
+
+            wrapper.className =
+                "portfolio-existing-image";
+
+
+            const img =
+                document.createElement("img");
+
+
+            img.src =
+                image.image_url;
+
+            img.alt =
+                image.description ||
+                "Изображение проекта";
+
+            img.loading =
+                "lazy";
+
+
+            img.onerror =
+                () => {
+
+                    img.style.display =
+                        "none";
+
+                    const broken =
+                        document.createElement("div");
+
+                    broken.className =
+                        "portfolio-image-broken";
+
+                    broken.textContent =
+                        "Изображение временно недоступно";
+
+                    wrapper.appendChild(
+                        broken
+                    );
+                };
+
+
+            const mainLabel =
+                document.createElement("span");
+
+            mainLabel.className =
+                "portfolio-existing-main";
+
+
+            if (index === 0) {
+
+                mainLabel.textContent =
+                    "Основное";
+
+            } else {
+
+                mainLabel.textContent =
+                    "Изображение";
+            }
+
+
+            const removeButton =
+                document.createElement("button");
+
+            removeButton.type =
+                "button";
+
+            removeButton.className =
+                "portfolio-existing-remove";
+
+            removeButton.textContent =
+                "×";
+
+            removeButton.title =
+                "Удалить изображение";
+
+
+            removeButton.addEventListener(
+                "click",
+                event => {
+
+                    event.preventDefault();
+
+                    event.stopPropagation();
+
+                    deleteExistingPortfolioImage(
+                        image,
+                        wrapper
+                    );
+                }
+            );
+
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(mainLabel);
+            wrapper.appendChild(removeButton);
+
+
+            grid.appendChild(
+                wrapper
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   DELETE EXISTING PORTFOLIO IMAGE
+========================================================= */
+
+async function deleteExistingPortfolioImage(
+    image,
+    wrapper
+) {
+
+    if (!image?.id) {
+        return;
+    }
+
+
+    const confirmed =
+        confirm(
+            "Удалить это изображение?"
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const deleteResult =
+            await withSupabaseRetry(
+                () =>
+                    frilanceSupabase
+                        .from("portfolio_images")
+                        .delete()
+                        .eq(
+                            "id",
+                            image.id
+                        ),
+                "удаление portfolio_images",
+                {
+                    attempts: 5,
+                    baseDelay: 1000
+                }
+            );
+
+
+        if (deleteResult.error) {
+            throw deleteResult.error;
+        }
+
+
+        await removePortfolioStorageFile(
+            image.storage_path
+        );
+
+
+        currentExistingPortfolioImages =
+            currentExistingPortfolioImages.filter(
+                item =>
+                    item.id !== image.id
+            );
+
+
+        /*
+           Если удалили основное изображение,
+           назначаем первым оставшееся изображение.
+        */
+
+        const portfolioId =
+            $("#portfolioId")?.value.trim() ||
+            "";
+
+
+        if (
+            portfolioId &&
+            currentExistingPortfolioImages.length
+        ) {
+
+            const first =
+                currentExistingPortfolioImages[0];
+
+
+            const updateResult =
+                await withSupabaseRetry(
+                    () =>
+                        frilanceSupabase
+                            .from("portfolio")
+                            .update({
+                                image_url:
+                                    first.image_url
+                            })
+                            .eq(
+                                "id",
+                                portfolioId
+                            ),
+                    "обновление основного изображения",
+                    {
+                        attempts: 4,
+                        baseDelay: 800
+                    }
+                );
+
+
+            if (updateResult.error) {
+                console.warn(
+                    "FRILANCE: не удалось обновить основное изображение:",
+                    updateResult.error
+                );
+            }
+        }
+
+
+        if (
+            portfolioId &&
+            !currentExistingPortfolioImages.length
+        ) {
+
+            const updateResult =
+                await withSupabaseRetry(
+                    () =>
+                        frilanceSupabase
+                            .from("portfolio")
+                            .update({
+                                image_url: ""
+                            })
+                            .eq(
+                                "id",
+                                portfolioId
+                            ),
+                    "очистка основного изображения",
+                    {
+                        attempts: 4,
+                        baseDelay: 800
+                    }
+                );
+
+
+            if (updateResult.error) {
+                console.warn(
+                    "FRILANCE: не удалось очистить основное изображение:",
+                    updateResult.error
+                );
+            }
+        }
+
+
+        if (wrapper) {
+            wrapper.remove();
+        }
+
+
+        const count =
+            $("#portfolioExistingCount");
+
+        if (count) {
+            count.textContent =
+                String(
+                    currentExistingPortfolioImages.length
+                );
+        }
+
+
+        await loadPortfolio();
+
+
+        showNotification(
+            "Изображение удалено."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "FRILANCE: ошибка удаления изображения:",
+            error
+        );
+
+
+        showNotification(
+            error?.message ||
+            "Не удалось удалить изображение.",
+            "error"
+        );
+    }
+}
+
+
+/* =========================================================
+   СОХРАНЕНИЕ PORTFOLIO_IMAGES
+========================================================= */
+
+async function savePortfolioImageRecords(
+    portfolioId,
+    uploadedImages,
+    description
+) {
+
+    if (
+        !portfolioId ||
+        !uploadedImages.length
+    ) {
+        return {
+            saved: 0,
+            failed: 0
+        };
+    }
+
+
+    let saved = 0;
+    let failed = 0;
+
+
+    for (
+        let index = 0;
+        index < uploadedImages.length;
+        index++
+    ) {
+
+        const uploaded =
+            uploadedImages[index];
+
+
+        const imageRecord = {
+
+            portfolio_id:
+                portfolioId,
+
+            image_url:
+                uploaded.publicUrl,
+
+            storage_path:
+                uploaded.storagePath,
+
+            description:
+                description || "",
+
+            sort_order:
+                index
+
+        };
+
+
+        try {
+
+            const imageResult =
+                await withSupabaseRetry(
+                    () =>
+                        frilanceSupabase
+                            .from("portfolio_images")
+                            .insert(
+                                imageRecord
+                            ),
+                    "добавление portfolio_images",
+                    {
+                        attempts: 5,
+                        baseDelay: 1000
+                    }
+                );
+
+
+            if (imageResult.error) {
+                throw imageResult.error;
+            }
+
+
+            saved++;
+
+
+        } catch (error) {
+
+            failed++;
+
+
+            console.warn(
+                "FRILANCE: не удалось сохранить portfolio_images:",
+                error
+            );
+
+            /*
+               Важно:
+               файл уже находится в Storage.
+               Не удаляем его автоматически при временной
+               сетевой ошибке, чтобы не потерять загруженное
+               изображение.
+            */
+        }
+    }
+
+
+    return {
+        saved,
+        failed
     };
-
-
-    reader.readAsDataURL(file);
 }
 
 
 /* =========================================================
    СОХРАНЕНИЕ ПОРТФОЛИО
 ========================================================= */
+
 async function savePortfolio(event) {
 
-    event.preventDefault();
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+
+    console.log(
+        "FRILANCE: savePortfolio запущен пользователем."
+    );
 
 
     const id =
@@ -2270,15 +3142,11 @@ async function savePortfolio(event) {
         "";
 
 
-    const imageInput =
-        $("#portfolioImage");
-
-
-    const imageFile =
-        imageInput?.files?.[0] || null;
-
-
-    if (!title || !category || !price) {
+    if (
+        !title ||
+        !category ||
+        !price
+    ) {
 
         showNotification(
             "Заполните название, категорию и цену.",
@@ -2289,115 +3157,152 @@ async function savePortfolio(event) {
     }
 
 
+    const selectedFiles =
+        [...portfolioImages];
+
+
     const payload = {
+
         title,
         category,
         price,
         description
+
     };
+
+
+    const saveButton =
+        $("#savePortfolioButton");
+
+
+    if (saveButton) {
+
+        saveButton.disabled =
+            true;
+
+        saveButton.dataset.originalText =
+            saveButton.textContent;
+
+        saveButton.textContent =
+            "Сохранение...";
+    }
 
 
     try {
 
+        let uploadedImages = [];
+
+
         /*
-           Если выбрана новая фотография —
-           загружаем её в Storage.
+           =================================================
+           1. СНАЧАЛА ЗАГРУЖАЕМ ФАЙЛЫ В STORAGE
+           =================================================
         */
 
-        let uploaded = null;
-
-
-        if (imageFile) {
+        if (selectedFiles.length) {
 
             showNotification(
-                "Загружаем фотографию..."
+                `Загружаем ${selectedFiles.length} изображений...`
             );
 
 
-            uploaded =
-                await uploadPortfolioImage(
-                    imageFile
+            for (
+                let i = 0;
+                i < selectedFiles.length;
+                i++
+            ) {
+
+                const file =
+                    selectedFiles[i];
+
+
+                console.log(
+                    `FRILANCE: загрузка изображения ${i + 1}/${selectedFiles.length}:`,
+                    file.name
                 );
 
 
-            if (!uploaded?.publicUrl) {
+                try {
 
-                throw new Error(
-                    "Фотография загружена, но URL не получен."
-                );
+                    const uploaded =
+                        await uploadPortfolioImage(
+                            file
+                        );
+
+
+                    if (uploaded?.publicUrl) {
+
+                        uploadedImages.push(
+                            uploaded
+                        );
+                    }
+
+
+                } catch (error) {
+
+                    console.error(
+                        `FRILANCE: не удалось загрузить ${file.name}:`,
+                        error
+                    );
+
+
+                    showNotification(
+                        `Не удалось загрузить «${file.name}».`,
+                        "error"
+                    );
+                }
             }
-
-
-            payload.image_url =
-                uploaded.publicUrl;
         }
 
 
-        let result;
-        let portfolioId = id;
+        /*
+           =================================================
+           2. ЕСЛИ ЕСТЬ НОВОЕ ИЗОБРАЖЕНИЕ —
+              ДЕЛАЕМ ЕГО ОСНОВНЫМ
+           =================================================
+        */
+
+        if (
+            uploadedImages.length
+        ) {
+
+            payload.image_url =
+                uploadedImages[0].publicUrl;
+        }
 
 
-        /* =====================================================
-           ОБНОВЛЕНИЕ СУЩЕСТВУЮЩЕЙ РАБОТЫ
-        ===================================================== */
+        /*
+           =================================================
+           3. СОХРАНЯЕМ САМУ РАБОТУ
+           =================================================
+        */
+
+        let portfolioId =
+            id;
+
 
         if (id) {
 
-            result =
+            console.log(
+                "FRILANCE: обновляем portfolio..."
+            );
+
+
+            const result =
                 await withSupabaseRetry(
                     () =>
                         frilanceSupabase
                             .from("portfolio")
                             .update(payload)
-                            .eq("id", id),
-                    "обновление portfolio"
-                );
-
-
-            if (result.error) {
-                throw result.error;
-            }
-
-
-            portfolioId = id;
-
-
-        /* =====================================================
-           ДОБАВЛЕНИЕ НОВОЙ РАБОТЫ
-        ===================================================== */
-
-        } else {
-
-            const maxSort =
-                portfolio.reduce(
-                    (max, item) =>
-                        Math.max(
-                            max,
-                            Number(item.sort_order) || 0
-                        ),
-                    0
-                );
-
-
-            payload.sort_order =
-                maxSort + 1;
-
-
-            /*
-               Важно:
-               получаем созданную запись обратно,
-               чтобы узнать её id.
-            */
-
-            result =
-                await withSupabaseRetry(
-                    () =>
-                        frilanceSupabase
-                            .from("portfolio")
-                            .insert(payload)
-                            .select()
-                            .single(),
-                    "добавление portfolio"
+                            .eq(
+                                "id",
+                                id
+                            ),
+                    "обновление portfolio",
+                    {
+                        attempts: 5,
+                        baseDelay: 1000
+                    }
                 );
 
 
@@ -2407,65 +3312,119 @@ async function savePortfolio(event) {
 
 
             portfolioId =
-                result.data?.id || "";
-        }
+                id;
 
+        } else {
 
-        /* =====================================================
-           ЗАПИСЬ ФОТОГРАФИИ В portfolio_images
-        ===================================================== */
-
-        if (
-            uploaded &&
-            portfolioId
-        ) {
-
-            console.log(
-                "FRILANCE: сохраняем изображение в portfolio_images..."
-            );
-
-
-            const imageRecord = {
-
-                portfolio_id:
-                    portfolioId,
-
-                image_url:
-                    uploaded.publicUrl,
-
-                storage_path:
-                    uploaded.storagePath,
-
-                description:
-                    description || "",
-
-                sort_order:
+            const maxSort =
+                portfolio.reduce(
+                    (
+                        max,
+                        item
+                    ) =>
+                        Math.max(
+                            max,
+                            Number(
+                                item.sort_order
+                            ) || 0
+                        ),
                     0
-
-            };
-
-
-            const imageResult =
-                await withSupabaseRetry(
-                    () =>
-                        frilanceSupabase
-                            .from("portfolio_images")
-                            .insert(imageRecord),
-                    "добавление portfolio_images"
                 );
 
 
-            if (imageResult.error) {
+            payload.sort_order =
+                maxSort + 1;
 
-                throw imageResult.error;
+
+            if (
+                !Object.prototype.hasOwnProperty.call(
+                    payload,
+                    "image_url"
+                )
+            ) {
+                payload.image_url = "";
             }
 
 
             console.log(
-                "FRILANCE: изображение сохранено в portfolio_images."
+                "FRILANCE: добавляем новую работу..."
+            );
+
+
+            const result =
+                await withSupabaseRetry(
+                    () =>
+                        frilanceSupabase
+                            .from("portfolio")
+                            .insert(
+                                payload
+                            )
+                            .select()
+                            .single(),
+                    "добавление portfolio",
+                    {
+                        attempts: 5,
+                        baseDelay: 1000
+                    }
+                );
+
+
+            if (result.error) {
+                throw result.error;
+            }
+
+
+            portfolioId =
+                result.data?.id ||
+                "";
+        }
+
+
+        /*
+           =================================================
+           4. СОХРАНЯЕМ ДОПОЛНИТЕЛЬНЫЕ ИЗОБРАЖЕНИЯ
+           =================================================
+
+           Ошибка этой таблицы больше НЕ отменяет
+           сохранение самой работы.
+        */
+
+        let imageSaveResult = {
+            saved: 0,
+            failed: 0
+        };
+
+
+        if (
+            uploadedImages.length &&
+            portfolioId
+        ) {
+
+            console.log(
+                "FRILANCE: сохраняем изображения в portfolio_images..."
+            );
+
+
+            imageSaveResult =
+                await savePortfolioImageRecords(
+                    portfolioId,
+                    uploadedImages,
+                    description
+                );
+
+
+            console.log(
+                "FRILANCE: portfolio_images результат:",
+                imageSaveResult
             );
         }
 
+
+        /*
+           =================================================
+           5. ОБНОВЛЯЕМ ПОРТФОЛИО
+           =================================================
+        */
 
         closePortfolioModal();
 
@@ -2476,17 +3435,47 @@ async function savePortfolio(event) {
         updateDashboard();
 
 
-        showNotification(
-            id
-                ? "Работа и фотография обновлены."
-                : "Работа и фотография добавлены."
-        );
+        /*
+           =================================================
+           6. УВЕДОМЛЕНИЕ
+           =================================================
+        */
+
+        if (uploadedImages.length) {
+
+            if (
+                imageSaveResult.failed > 0
+            ) {
+
+                showNotification(
+                    id
+                        ? "Работа обновлена. Некоторые изображения сохранены в Storage, но пока не добавлены в галерею."
+                        : "Работа добавлена. Некоторые изображения сохранены в Storage, но пока не добавлены в галерею."
+                );
+
+            } else {
+
+                showNotification(
+                    id
+                        ? `Работа обновлена. Загружено изображений: ${uploadedImages.length}`
+                        : `Работа добавлена. Загружено изображений: ${uploadedImages.length}`
+                );
+            }
+
+        } else {
+
+            showNotification(
+                id
+                    ? "Работа обновлена."
+                    : "Работа добавлена."
+            );
+        }
 
 
     } catch (error) {
 
         console.error(
-            "Ошибка сохранения портфолио:",
+            "FRILANCE: ошибка сохранения портфолио:",
             error
         );
 
@@ -2496,6 +3485,19 @@ async function savePortfolio(event) {
             "Не удалось сохранить работу.",
             "error"
         );
+
+
+    } finally {
+
+        if (saveButton) {
+
+            saveButton.disabled =
+                false;
+
+            saveButton.textContent =
+                saveButton.dataset.originalText ||
+                "Сохранить";
+        }
     }
 }
 
@@ -2531,14 +3533,48 @@ async function deletePortfolio(id) {
 
     try {
 
+        /*
+           Сначала получаем изображения.
+           Даже если portfolio_images временно недоступна,
+           удаление самой работы всё равно должно работать.
+        */
+
+        let images = [];
+
+        try {
+
+            images =
+                await loadPortfolioImages(id);
+
+        } catch (error) {
+
+            console.warn(
+                "FRILANCE: не удалось получить изображения перед удалением:",
+                error
+            );
+        }
+
+
+        /*
+           Удаляем саму работу.
+           portfolio_images удалятся благодаря ON DELETE CASCADE.
+        */
+
         const result =
             await withSupabaseRetry(
                 () =>
                     frilanceSupabase
                         .from("portfolio")
                         .delete()
-                        .eq("id", id),
-                "удаление portfolio"
+                        .eq(
+                            "id",
+                            id
+                        ),
+                "удаление portfolio",
+                {
+                    attempts: 5,
+                    baseDelay: 1000
+                }
             );
 
 
@@ -2547,8 +3583,23 @@ async function deletePortfolio(id) {
         }
 
 
-        await loadPortfolio();
+        /*
+           После удаления записи удаляем физические файлы
+           из Storage.
+        */
 
+        if (images.length) {
+
+            for (const image of images) {
+
+                await removePortfolioStorageFile(
+                    image.storage_path
+                );
+            }
+        }
+
+
+        await loadPortfolio();
 
         updateDashboard();
 
@@ -2567,6 +3618,7 @@ async function deletePortfolio(id) {
 
 
         showNotification(
+            error?.message ||
             "Не удалось удалить работу.",
             "error"
         );
@@ -2584,20 +3636,21 @@ function updatePortfolioCount() {
     ];
 
 
-    elements.forEach(element => {
+    elements.forEach(
+        element => {
 
-        if (element) {
+            if (element) {
 
-            element.textContent =
-                portfolio.length;
+                element.textContent =
+                    portfolio.length;
+            }
         }
-
-    });
+    );
 }
 
 
 /* =========================================================
-   УСЛУГИ
+   SERVICES
 ========================================================= */
 
 function initServices() {
@@ -2643,10 +3696,12 @@ async function loadServices() {
 
 
     services =
-        result.data?.[0] || null;
+        result.data?.[0] ||
+        null;
 
 
     fillServicesForm();
+
     updateServicesCount();
 }
 
@@ -2679,19 +3734,20 @@ function fillServicesForm() {
 
 
     Object.entries(fields)
-        .forEach(([id, value]) => {
+        .forEach(
+            ([id, value]) => {
 
-            const field =
-                $(`#${id}`);
+                const field =
+                    $(`#${id}`);
 
 
-            if (field) {
+                if (field) {
 
-                field.value =
-                    value || "";
+                    field.value =
+                        value || "";
+                }
             }
-
-        });
+        );
 }
 
 
@@ -2738,7 +3794,10 @@ async function saveServices(event) {
                         frilanceSupabase
                             .from("services")
                             .update(payload)
-                            .eq("id", services.id),
+                            .eq(
+                                "id",
+                                services.id
+                            ),
                     "обновление services"
                 );
 
@@ -2793,13 +3852,15 @@ function updateServicesCount() {
     if (element) {
 
         element.textContent =
-            services ? "5" : "0";
+            services
+                ? "5"
+                : "0";
     }
 }
 
 
 /* =========================================================
-   ТЕКСТЫ
+   TEXTS
 ========================================================= */
 
 function initTexts() {
@@ -2813,22 +3874,24 @@ function initTexts() {
     ];
 
 
-    forms.forEach(selector => {
+    forms.forEach(
+        selector => {
 
-        const form =
-            $(selector);
+            const form =
+                $(selector);
 
 
-        if (!form) {
-            return;
+            if (!form) {
+                return;
+            }
+
+
+            form.addEventListener(
+                "submit",
+                saveTexts
+            );
         }
-
-
-        form.addEventListener(
-            "submit",
-            saveTexts
-        );
-    });
+    );
 }
 
 
@@ -2857,7 +3920,8 @@ async function loadTexts() {
 
 
     texts =
-        result.data?.[0] || null;
+        result.data?.[0] ||
+        null;
 
 
     fillTextsForms();
@@ -2910,19 +3974,20 @@ function fillTextsForms() {
 
 
     Object.entries(fields)
-        .forEach(([id, value]) => {
+        .forEach(
+            ([id, value]) => {
 
-            const field =
-                $(`#${id}`);
+                const field =
+                    $(`#${id}`);
 
 
-            if (field) {
+                if (field) {
 
-                field.value =
-                    value || "";
+                    field.value =
+                        value || "";
+                }
             }
-
-        });
+        );
 }
 
 
@@ -2993,7 +4058,10 @@ async function saveTexts(event) {
                         frilanceSupabase
                             .from("texts")
                             .update(payload)
-                            .eq("id", texts.id),
+                            .eq(
+                                "id",
+                                texts.id
+                            ),
                     "обновление texts"
                 );
 
@@ -3040,7 +4108,7 @@ async function saveTexts(event) {
 
 
 /* =========================================================
-   КОНТАКТЫ
+   CONTACTS
 ========================================================= */
 
 function initContacts() {
@@ -3086,7 +4154,8 @@ async function loadContacts() {
 
 
     contacts =
-        result.data?.[0] || null;
+        result.data?.[0] ||
+        null;
 
 
     fillContactsForm();
@@ -3103,20 +4172,17 @@ function fillContactsForm() {
     const email =
         $("#contactEmail");
 
-
     const site =
         $("#contactSite");
 
 
     if (email) {
-
         email.value =
             contacts.email || "";
     }
 
 
     if (site) {
-
         site.value =
             contacts.site || "";
     }
@@ -3154,7 +4220,10 @@ async function saveContacts(event) {
                         frilanceSupabase
                             .from("contacts")
                             .update(payload)
-                            .eq("id", contacts.id),
+                            .eq(
+                                "id",
+                                contacts.id
+                            ),
                     "обновление contacts"
                 );
 
@@ -3201,7 +4270,7 @@ async function saveContacts(event) {
 
 
 /* =========================================================
-   ЗАЯВКИ
+   LEADS
 ========================================================= */
 
 function initLeads() {
@@ -3214,7 +4283,12 @@ function initLeads() {
 
         refreshButton.addEventListener(
             "click",
-            () => loadLeads(true)
+            event => {
+
+                event.preventDefault();
+
+                loadLeads(true);
+            }
         );
     }
 
@@ -3268,25 +4342,210 @@ function initLeads() {
 
 
 /* =========================================================
-   ЗАГРУЗКА ЗАЯВОК
+   REALTIME
+========================================================= */
+
+function initLeadsRealtime() {
+
+    if (
+        typeof frilanceSupabase === "undefined" ||
+        !frilanceSupabase
+    ) {
+
+        startLeadsFallbackRefresh();
+
+        return;
+    }
+
+
+    if (leadsRealtimeChannel) {
+        return;
+    }
+
+
+    console.log(
+        "FRILANCE: подключаем Realtime для заявок..."
+    );
+
+
+    try {
+
+        leadsRealtimeChannel =
+            frilanceSupabase
+                .channel(
+                    "frilance-leads-realtime"
+                )
+                .on(
+                    "postgres_changes",
+                    {
+                        event: "*",
+                        schema: "public",
+                        table: "leads"
+                    },
+                    async payload => {
+
+                        console.log(
+                            "FRILANCE: Realtime изменение заявок:",
+                            payload.eventType
+                        );
+
+
+                        await loadLeads(false);
+
+                        updateDashboard();
+
+
+                        if (
+                            payload.eventType ===
+                            "INSERT"
+                        ) {
+
+                            showNotification(
+                                "Поступила новая заявка!"
+                            );
+                        }
+                    }
+                )
+                .subscribe(
+                    status => {
+
+                        console.log(
+                            "FRILANCE: статус Realtime заявок:",
+                            status
+                        );
+
+
+                        if (
+                            status ===
+                            "SUBSCRIBED"
+                        ) {
+
+                            leadsRealtimeActive =
+                                true;
+
+                            stopLeadsFallbackRefresh();
+
+                            console.log(
+                                "FRILANCE: Realtime заявок подключён."
+                            );
+
+                            return;
+                        }
+
+
+                        if (
+                            status ===
+                            "CHANNEL_ERROR" ||
+                            status ===
+                            "TIMED_OUT" ||
+                            status ===
+                            "CLOSED"
+                        ) {
+
+                            leadsRealtimeActive =
+                                false;
+
+                            startLeadsFallbackRefresh();
+                        }
+                    }
+                );
+
+    } catch (error) {
+
+        console.error(
+            "FRILANCE: ошибка подключения Realtime:",
+            error
+        );
+
+
+        leadsRealtimeActive =
+            false;
+
+
+        startLeadsFallbackRefresh();
+    }
+}
+
+
+/* =========================================================
+   FALLBACK LEADS
+========================================================= */
+
+function startLeadsFallbackRefresh() {
+
+    if (leadsFallbackTimer) {
+        return;
+    }
+
+
+    leadsFallbackTimer =
+        setInterval(
+            async () => {
+
+                if (leadsRealtimeActive) {
+
+                    stopLeadsFallbackRefresh();
+
+                    return;
+                }
+
+
+                try {
+
+                    await loadLeads(false);
+
+                } catch (error) {
+
+                    console.warn(
+                        "FRILANCE: резервное обновление заявок не удалось:",
+                        error
+                    );
+                }
+
+            },
+            10000
+        );
+}
+
+
+function stopLeadsFallbackRefresh() {
+
+    if (!leadsFallbackTimer) {
+        return;
+    }
+
+
+    clearInterval(
+        leadsFallbackTimer
+    );
+
+
+    leadsFallbackTimer =
+        null;
+}
+
+
+/* =========================================================
+   LOAD LEADS
 ========================================================= */
 
 async function loadLeads(
     showMessage = false
 ) {
 
+    if (leadsLoading) {
+
+        return leads;
+    }
+
+
+    leadsLoading =
+        true;
+
+
     const tbody =
         $("#leadsTableBody");
 
-
-    /*
-       Если заявок пока нет,
-       показываем индикатор загрузки.
-
-       Если заявки уже есть,
-       НЕ очищаем таблицу во время
-       повторного запроса.
-    */
 
     if (
         tbody &&
@@ -3294,7 +4553,9 @@ async function loadLeads(
     ) {
 
         tbody.innerHTML = `
+
             <tr>
+
                 <td colspan="6">
 
                     <div class="leads-loading">
@@ -3308,20 +4569,14 @@ async function loadLeads(
                     </div>
 
                 </td>
+
             </tr>
+
         `;
     }
 
 
     try {
-
-        /*
-           Каждый повтор создаёт НОВЫЙ
-           Supabase query builder.
-
-           Это важно для корректной
-           повторной попытки запроса.
-        */
 
         const result =
             await withSupabaseRetry(
@@ -3348,23 +4603,10 @@ async function loadLeads(
         }
 
 
-        /*
-           КЛЮЧЕВОЙ МОМЕНТ:
-
-           Массив leads заменяется ТОЛЬКО
-           после успешного ответа Supabase.
-        */
-
         leads =
             Array.isArray(result.data)
                 ? result.data
                 : [];
-
-
-        console.log(
-            "FRILANCE: заявок загружено:",
-            leads.length
-        );
 
 
         renderLeads();
@@ -3391,74 +4633,39 @@ async function loadLeads(
         );
 
 
-        /*
-           НИКОГДА не делаем:
-
-           leads = [];
-
-           при ошибке запроса.
-
-           Если заявки уже были загружены,
-           оставляем их на экране.
-        */
-
-        if (tbody && !leads.length) {
-
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="6">
-
-                        <div class="admin-empty-state">
-
-                            Не удалось загрузить заявки.<br>
-
-                            <small>
-                                Повторите обновление через несколько секунд.
-                            </small>
-
-                        </div>
-
-                    </td>
-                </tr>
-            `;
-        } else {
-
-            /*
-               Если старые заявки уже есть,
-               снова показываем их.
-            */
-
-            renderLeads();
-        }
-
-
-        updateLeadsCount();
+        renderLeads();
         renderRecentLeads();
+        updateLeadsCount();
 
 
         if (showMessage) {
 
             showNotification(
-                "Не удалось обновить заявки. Повторите попытку.",
+                "Не удалось обновить заявки.",
                 "error"
             );
         }
 
 
         throw error;
+
+
+    } finally {
+
+        leadsLoading =
+            false;
     }
 }
 
 
 /* =========================================================
-   ОТОБРАЖЕНИЕ ЗАЯВОК
+   RENDER LEADS
 ========================================================= */
 
 function renderLeads() {
 
     const tbody =
         $("#leadsTableBody");
-
 
     const total =
         $("#leadsTotal");
@@ -3479,7 +4686,9 @@ function renderLeads() {
     if (!leads.length) {
 
         tbody.innerHTML = `
+
             <tr>
+
                 <td colspan="6">
 
                     <div class="admin-empty-state">
@@ -3487,7 +4696,9 @@ function renderLeads() {
                     </div>
 
                 </td>
+
             </tr>
+
         `;
 
         return;
@@ -3496,13 +4707,7 @@ function renderLeads() {
 
     tbody.innerHTML =
         leads
-            .map(
-                (lead, index) =>
-                    createLeadRow(
-                        lead,
-                        index
-                    )
-            )
+            .map(createLeadRow)
             .join("");
 
 
@@ -3513,19 +4718,15 @@ function renderLeads() {
                 "click",
                 () => {
 
-                    const id =
-                        button.dataset.id;
-
-
                     const lead =
                         leads.find(
                             item =>
-                                item.id === id
+                                item.id ===
+                                button.dataset.id
                         );
 
 
                     if (lead) {
-
                         openLeadDetailsModal(
                             lead
                         );
@@ -3542,77 +4743,63 @@ function renderLeads() {
                 "click",
                 () => {
 
-                    const id =
-                        button.dataset.id;
-
-
-                    deleteLead(id);
+                    deleteLead(
+                        button.dataset.id
+                    );
                 }
             );
         });
 }
 
 
-function createLeadRow(
-    lead,
-    index
-) {
+function createLeadRow(lead) {
 
     return `
+
         <tr>
 
             <td>
-
                 <div class="lead-name">
                     ${escapeHtml(
                         lead.name ||
                         "Без имени"
                     )}
                 </div>
-
             </td>
 
             <td>
-
                 <div class="lead-contact">
                     ${escapeHtml(
                         lead.contact ||
                         "—"
                     )}
                 </div>
-
             </td>
 
             <td>
-
                 <div class="lead-service">
                     ${escapeHtml(
                         lead.service ||
                         "—"
                     )}
                 </div>
-
             </td>
 
             <td>
-
                 <div class="lead-message">
                     ${escapeHtml(
                         lead.message ||
                         "—"
                     )}
                 </div>
-
             </td>
 
             <td>
-
                 <div class="lead-date">
                     ${formatDateTime(
                         lead.created_at
                     )}
                 </div>
-
             </td>
 
             <td>
@@ -3640,12 +4827,13 @@ function createLeadRow(
             </td>
 
         </tr>
+
     `;
 }
 
 
 /* =========================================================
-   ПОСЛЕДНИЕ ЗАЯВКИ НА ГЛАВНОМ ЭКРАНЕ
+   RECENT LEADS
 ========================================================= */
 
 function renderRecentLeads() {
@@ -3662,9 +4850,11 @@ function renderRecentLeads() {
     if (!leads.length) {
 
         container.innerHTML = `
+
             <div class="admin-empty-state">
                 Пока нет новых заявок.
             </div>
+
         `;
 
         return;
@@ -3714,7 +4904,7 @@ function renderRecentLeads() {
 
 
 /* =========================================================
-   СЧЁТЧИК ЗАЯВОК
+   LEADS COUNT
 ========================================================= */
 
 function updateLeadsCount() {
@@ -3723,29 +4913,25 @@ function updateLeadsCount() {
         leads.length;
 
 
-    const elements = [
-
+    [
         $("#dashboardLeadsCount"),
         $("#leadsCount")
+    ]
+        .forEach(
+            element => {
 
-    ];
+                if (element) {
 
-
-    elements.forEach(element => {
-
-        if (!element) {
-            return;
-        }
-
-
-        element.textContent =
-            count;
-    });
+                    element.textContent =
+                        count;
+                }
+            }
+        );
 }
 
 
 /* =========================================================
-   МОДАЛЬНОЕ ОКНО ЗАЯВКИ
+   LEAD MODAL
 ========================================================= */
 
 function openLeadDetailsModal(lead) {
@@ -3786,23 +4972,26 @@ function openLeadDetailsModal(lead) {
 
 
     Object.entries(fields)
-        .forEach(([id, value]) => {
+        .forEach(
+            ([id, value]) => {
 
-            const element =
-                $(`#${id}`);
+                const element =
+                    $(`#${id}`);
 
 
-            if (element) {
+                if (element) {
 
-                element.textContent =
-                    value;
+                    element.textContent =
+                        value;
+                }
             }
-
-        });
+        );
 
 
     modal.classList.add("active");
-    modal.style.display = "flex";
+
+    modal.style.display =
+        "flex";
 }
 
 
@@ -3818,12 +5007,14 @@ function closeLeadDetailsModal() {
 
 
     modal.classList.remove("active");
-    modal.style.display = "none";
+
+    modal.style.display =
+        "none";
 }
 
 
 /* =========================================================
-   УДАЛЕНИЕ ЗАЯВКИ
+   DELETE LEAD
 ========================================================= */
 
 async function deleteLead(id) {
@@ -3859,7 +5050,10 @@ async function deleteLead(id) {
                     frilanceSupabase
                         .from("leads")
                         .delete()
-                        .eq("id", id),
+                        .eq(
+                            "id",
+                            id
+                        ),
                 "удаление заявки"
             );
 
@@ -3869,8 +5063,7 @@ async function deleteLead(id) {
         }
 
 
-        await loadLeads();
-
+        await loadLeads(false);
 
         updateDashboard();
 
@@ -3917,7 +5110,10 @@ document.addEventListener(
     "keydown",
     event => {
 
-        if (event.key !== "Escape") {
+        if (
+            event.key !==
+            "Escape"
+        ) {
             return;
         }
 
@@ -3929,7 +5125,7 @@ document.addEventListener(
 
 
 /* =========================================================
-   ПУБЛИЧНЫЙ API
+   PUBLIC API
 ========================================================= */
 
 window.FRILANCE_ADMIN = {
@@ -3964,7 +5160,7 @@ window.FRILANCE_ADMIN = {
 
 
 /* =========================================================
-   ГОТОВО
+   READY
 ========================================================= */
 
 console.log(
