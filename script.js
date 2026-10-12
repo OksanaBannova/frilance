@@ -5,18 +5,7 @@ const { useState, useEffect } = React;
    SUPABASE — ПУБЛИЧНЫЙ САЙТ
    ========================================================= */
 
-const PUBLIC_SUPABASE_URL =
-  "https://vmiehkctmtpmpmizhkzt.supabase.co";
-
-const PUBLIC_SUPABASE_KEY =
-  "sb_publishable_XeGc3k4Wl67a0MSXzSufYA_L0Zl-sRS";
-
-const frilancePublicSupabase =
-  window.supabase.createClient(
-    PUBLIC_SUPABASE_URL,
-    PUBLIC_SUPABASE_KEY
-  );
-
+const frilancePublicSupabase = window.frilanceSupabase;
 
 /* =========================================================
    НАСТРОЙКИ ПО УМОЛЧАНИЮ
@@ -90,34 +79,6 @@ const DEFAULT_SERVICES = [
       "Продающая композиция",
       "Подготовка изображений"
     ]
-  }
-];
-
-
-const DEFAULT_BUSINESS_TYPES = [
-  {
-    icon: "✂",
-    title: "Мастерам",
-    text:
-      "Сайт, портфолио, нейрофото и визуал для продвижения услуг."
-  },
-  {
-    icon: "◉",
-    title: "Экспертам",
-    text:
-      "Упаковка личного бренда и современная презентация услуг."
-  },
-  {
-    icon: "▣",
-    title: "Малому бизнесу",
-    text:
-      "Сайт и визуал, которые помогают выглядеть профессионально."
-  },
-  {
-    icon: "◆",
-    title: "Магазинам",
-    text:
-      "Карточки товаров и визуальная упаковка для маркетплейсов."
   }
 ];
 
@@ -326,493 +287,47 @@ const DEFAULT_PORTFOLIO = [
    ========================================================= */
 
 async function loadSiteData() {
-
-  const result = {
-    services: DEFAULT_SERVICES,
-    prices: DEFAULT_PRICES,
-    neuroPrices: DEFAULT_NEURO_PRICES,
-    texts: DEFAULT_TEXTS,
-    contacts: {
-      ...CONFIG
-    },
-    portfolio: DEFAULT_PORTFOLIO
-  };
-
-
-  /* ---------------------------------------------------------
-     SERVICES
-     --------------------------------------------------------- */
-
-  try {
-
-    const servicesResult =
-      await frilancePublicSupabase
-        .from("services")
-        .select("*")
-        .order("created_at", {
-          ascending: false
-        })
-        .limit(1)
-        .maybeSingle();
-
-
-    if (
-      !servicesResult.error &&
-      servicesResult.data
-    ) {
-
-      const dbServices =
-        servicesResult.data;
-
-
-      result.services =
-        DEFAULT_SERVICES.map((service) => {
-
-          if (service.id === "website") {
-
-            return {
-              ...service,
-              price:
-                dbServices.website_price ||
-                service.price
-            };
-
-          }
-
-
-          if (service.id === "neuro") {
-
-            return {
-              ...service,
-              price:
-                dbServices.neuro_price ||
-                service.price
-            };
-
-          }
-
-
-          if (service.id === "marketplace") {
-
-            return {
-              ...service,
-              price:
-                dbServices.marketplace_price ||
-                service.price
-            };
-
-          }
-
-
-          return service;
-
-        });
-
-
-      result.prices =
-        DEFAULT_PRICES.map((price) => {
-
-          if (
-            price.title === "Старт"
-          ) {
-
-            return {
-              ...price,
-              value:
-                dbServices.start_price ||
-                price.value
-            };
-
-          }
-
-
-          if (
-            price.title === "Бизнес"
-          ) {
-
-            return {
-              ...price,
-              value:
-                dbServices.business_price ||
-                price.value
-            };
-
-          }
-
-
-          if (
-            price.title === "Карточка"
-          ) {
-
-            return {
-              ...price,
-              value:
-                dbServices.marketplace_price ||
-                price.value
-            };
-
-          }
-
-
-          return price;
-
-        });
-
-
-      result.neuroPrices =
-        DEFAULT_NEURO_PRICES.map(
-          ([name, price], index) => {
-
-            if (
-              index ===
-              DEFAULT_NEURO_PRICES.length - 1
-            ) {
-
-              return [
-                name,
-                dbServices.neuro_price ||
-                price
-              ];
-
-            }
-
-            return [
-              name,
-              price
-            ];
-
-          }
-        );
-
+  const result = { services: DEFAULT_SERVICES, prices: DEFAULT_PRICES,
+    neuroPrices: DEFAULT_NEURO_PRICES, texts: DEFAULT_TEXTS,
+    contacts: { ...CONFIG }, portfolio: DEFAULT_PORTFOLIO };
+  if (!frilancePublicSupabase) return result;
+  const latest = table => frilancePublicSupabase.from(table).select("*")
+    .order("created_at", { ascending: false }).order("id", { ascending: false }).limit(1).maybeSingle();
+  const responses = await Promise.allSettled([
+    latest("services"), latest("texts"), latest("contacts"),
+    frilancePublicSupabase.from("portfolio").select("*").order("sort_order", { ascending: true }).order("created_at", { ascending: true }),
+    frilancePublicSupabase.from("portfolio_images").select("*").order("sort_order", { ascending: true }).order("created_at", { ascending: true })
+  ]);
+  const tables = ["services", "texts", "contacts", "portfolio", "portfolio_images"];
+  const data = responses.map((response, index) => {
+    if (response.status === "rejected" || response.value.error) {
+      console.error("FRILANCE: ошибка чтения " + tables[index], response.reason || response.value.error);
+      return null;
     }
-
-  } catch (error) {
-
-    console.error(
-      "FRILANCE: ошибка загрузки services:",
-      error
-    );
-
+    return response.value.data;
+  });
+  const [services, texts, contacts, portfolio, images] = data;
+  if (services) {
+    const priceFields = { website: "website_price", neuro: "neuro_price", marketplace: "marketplace_price" };
+    result.services = DEFAULT_SERVICES.map(service => ({ ...service, price: services[priceFields[service.id]] || service.price }));
+    result.prices = DEFAULT_PRICES.map((price, index) => ({ ...price, value: services[["start_price", "business_price", "marketplace_price"][index]] || price.value }));
+    result.neuroPrices = DEFAULT_NEURO_PRICES.map(([name, price], index) => [name, index === DEFAULT_NEURO_PRICES.length - 1 ? services.neuro_price || price : price]);
   }
-
-
-  /* ---------------------------------------------------------
-     TEXTS
-     --------------------------------------------------------- */
-
-  try {
-
-    const textsResult =
-      await frilancePublicSupabase
-        .from("texts")
-        .select("*")
-        .order("created_at", {
-          ascending: false
-        })
-        .limit(1)
-        .maybeSingle();
-
-
-    if (
-      !textsResult.error &&
-      textsResult.data
-    ) {
-
-      result.texts = {
-        ...DEFAULT_TEXTS,
-        ...textsResult.data
-      };
-
-    }
-
-  } catch (error) {
-
-    console.error(
-      "FRILANCE: ошибка загрузки texts:",
-      error
-    );
-
-  }
-
-
-  /* ---------------------------------------------------------
-     CONTACTS
-     --------------------------------------------------------- */
-
-  try {
-
-    const contactsResult =
-      await frilancePublicSupabase
-        .from("contacts")
-        .select("*")
-        .order("created_at", {
-          ascending: false
-        })
-        .limit(1)
-        .maybeSingle();
-
-
-    if (
-      !contactsResult.error &&
-      contactsResult.data
-    ) {
-
-      result.contacts = {
-        ...CONFIG,
-        email:
-          contactsResult.data.email ||
-          CONFIG.email,
-        site:
-          contactsResult.data.site ||
-          CONFIG.site
-      };
-
-    }
-
-  } catch (error) {
-
-    console.error(
-      "FRILANCE: ошибка загрузки contacts:",
-      error
-    );
-
-  }
-
-
-  /* ---------------------------------------------------------
-     PORTFOLIO
-     --------------------------------------------------------- */
-
-  try {
-
-    const portfolioResult =
-      await frilancePublicSupabase
-        .from("portfolio")
-        .select("*")
-        .order("sort_order", {
-          ascending: true
-        })
-        .order("created_at", {
-          ascending: true
-        });
-
-
-    if (
-      !portfolioResult.error &&
-      Array.isArray(portfolioResult.data) &&
-      portfolioResult.data.length > 0
-    ) {
-
-      const portfolioRows =
-        portfolioResult.data;
-
-
-      /* -----------------------------------------------------
-         Загружаем дополнительные изображения
-         ----------------------------------------------------- */
-
-      let imageRows = [];
-
-
-      try {
-
-        const imagesResult =
-          await frilancePublicSupabase
-            .from("portfolio_images")
-            .select("*")
-            .order("sort_order", {
-              ascending: true
-            })
-            .order("created_at", {
-              ascending: true
-            });
-
-
-        if (
-          !imagesResult.error &&
-          Array.isArray(imagesResult.data)
-        ) {
-
-          imageRows =
-            imagesResult.data;
-
-        }
-
-      } catch (imageError) {
-
-        console.error(
-          "FRILANCE: ошибка загрузки portfolio_images:",
-          imageError
-        );
-
-      }
-
-
-      result.portfolio =
-        portfolioRows.map(
-          (row, index) => {
-
-            const relatedImages =
-              imageRows.filter(
-                (image) =>
-                  image.portfolio_id ===
-                  row.id
-              );
-
-
-            const firstRelatedImage =
-              relatedImages[0];
-
-
-            let category =
-              String(
-                row.category ||
-                ""
-              ).trim();
-
-
-            if (!category) {
-
-              category =
-                "ПОРТФОЛИО";
-
-            }
-
-
-            let image =
-              row.image_url ||
-              firstRelatedImage?.image_url ||
-              "";
-
-
-            let title =
-              row.title ||
-              "Работа";
-
-
-            let description =
-              row.description ||
-              "";
-
-
-            let price =
-              row.price ||
-              "";
-
-
-            const categoryUpper =
-              category.toUpperCase();
-
-
-            let defaultTags = [
-              "Дизайн",
-              "Структура",
-              "Визуал"
-            ];
-
-
-            if (
-              categoryUpper.includes(
-                "НЕЙРО"
-              )
-            ) {
-
-              defaultTags = [
-                "Beauty",
-                "Личный бренд",
-                "Соцсети"
-              ];
-
-            } else if (
-              categoryUpper.includes(
-                "МАРКЕТ"
-              )
-            ) {
-
-              defaultTags = [
-                "Инфографика",
-                "Wildberries",
-                "Ozon"
-              ];
-
-            } else if (
-              categoryUpper.includes(
-                "САЙТ"
-              )
-            ) {
-
-              defaultTags = [
-                "Дизайн",
-                "Структура",
-                "Мобильная версия"
-              ];
-
-            }
-
-
-            return {
-
-              id:
-                row.id,
-
-              number:
-                String(index + 1)
-                  .padStart(2, "0"),
-
-              category:
-                categoryUpper,
-
-              title,
-
-              description,
-
-              task:
-                description ||
-                "Создать современное решение под задачу клиента.",
-
-              result:
-                "Готовое визуальное решение, которое можно использовать для продвижения и работы с клиентами.",
-
-              price,
-
-              tags:
-                defaultTags,
-
-              image,
-
-              imageTitle:
-                title,
-
-              imageText:
-                description ||
-                title
-
-            };
-
-          }
-        );
-
-    }
-
-  } catch (error) {
-
-    console.error(
-      "FRILANCE: ошибка загрузки portfolio:",
-      error
-    );
-
-  }
-
-
-  console.log(
-    "FRILANCE: данные сайта загружены из Supabase.",
-    result
-  );
-
-
+  if (texts) result.texts = { ...DEFAULT_TEXTS, ...Object.fromEntries(Object.entries(texts).filter(([, value]) => value != null)) };
+  if (contacts) result.contacts = { email: contacts.email || CONFIG.email, site: contacts.site || CONFIG.site };
+  // An empty successful response is authoritative: deleted work must stay deleted.
+  if (Array.isArray(portfolio)) result.portfolio = portfolio.map((row, index) => {
+    const category = (row.category || "Портфолио").toUpperCase();
+    const gallery = [...new Set([row.image_url, ...(images || []).filter(image => String(image.portfolio_id) === String(row.id)).map(image => image.image_url)].filter(Boolean))];
+    return { id: row.id, number: String(index + 1).padStart(2, "0"), category,
+      title: row.title || "Работа", description: row.description || "", price: row.price || "",
+      task: row.description || "Создать современное решение под задачу клиента.",
+      result: "Готовое визуальное решение, которое можно использовать для продвижения и работы с клиентами.",
+      tags: category.includes("НЕЙРО") ? ["Beauty", "Личный бренд", "Соцсети"] : category.includes("МАРКЕТ") ? ["Инфографика", "Wildberries", "Ozon"] : ["Дизайн", "Структура", "Мобильная версия"],
+      image: gallery[0] || "", images: gallery, imageTitle: row.title || "Работа", imageText: row.description || row.title || "Работа" };
+  });
   return result;
 }
-
 
 /* =========================================================
    HEADER
@@ -890,13 +405,13 @@ function Header({ onOrder, texts }) {
       <div className="container header-inner">
 
         <a
-          href="#top"
+          href="#home"
           className="logo"
           onClick={(e) => {
 
             e.preventDefault();
 
-            goTo("top");
+            goTo("home");
 
           }}
         >
@@ -1008,6 +523,7 @@ function Header({ onOrder, texts }) {
 
 function Hero({
   onOrder,
+  services,
   texts
 }) {
 
@@ -1116,7 +632,7 @@ function Hero({
 
             <div className="hero-stat">
               <strong>
-                от 700 ₽
+                {services?.find(service => service.id === "neuro")?.price || "от 700 ₽"}
               </strong>
 
               <span>
@@ -1130,7 +646,7 @@ function Hero({
 
             <div className="hero-stat">
               <strong>
-                от 15 000 ₽
+                {services?.find(service => service.id === "website")?.price || "от 15 000 ₽"}
               </strong>
 
               <span>
@@ -1275,7 +791,7 @@ function Hero({
                 <div className="product-line small"></div>
 
                 <div className="product-price">
-                  1 500 ₽
+                  {(services?.find(service => service.id === "marketplace")?.price || "от 1 500 ₽").replace(/^от\s*/i, "")}
                 </div>
 
               </div>
@@ -1597,15 +1113,13 @@ function Portfolio({
   texts
 }) {
 
-  const [active, setActive] =
-    React.useState(0);
+  const [active, setActive] = useState(0);
+  const [imageIndex, setImageIndex] = useState(0);
+  useEffect(() => setImageIndex(0), [active, portfolio]);
 
 
   const portfolioItems =
-    portfolio &&
-    portfolio.length
-      ? portfolio
-      : DEFAULT_PORTFOLIO;
+    Array.isArray(portfolio) ? portfolio : DEFAULT_PORTFOLIO;
 
 
   useEffect(() => {
@@ -1722,6 +1236,11 @@ function Portfolio({
 
 
             <div className="portfolio-image-frame">
+              {item.images?.length > 1 && <div className="portfolio-gallery-controls">
+                <button type="button" className="portfolio-tab" aria-label="Предыдущее фото" onClick={() => setImageIndex((imageIndex - 1 + item.images.length) % item.images.length)}>←</button>
+                <span aria-live="polite">{imageIndex + 1} / {item.images.length}</span>
+                <button type="button" className="portfolio-tab" aria-label="Следующее фото" onClick={() => setImageIndex((imageIndex + 1) % item.images.length)}>→</button>
+              </div>}
 
               <div className="portfolio-browser-bar">
 
@@ -1741,13 +1260,16 @@ function Portfolio({
               </div>
 
 
-              <div className="portfolio-image">
+              <div className={`portfolio-image ${!item.image ? "portfolio-image-empty" : ""}`} key={`${item.id || item.number}-${imageIndex}`}>
 
                 {item.image ? (
 
                   <img
-                    src={item.image}
+                    key={item.images?.[imageIndex] || item.image}
+                    src={item.images?.[imageIndex] || item.image}
+                    loading="lazy"
                     alt={item.title}
+                    onLoad={(e) => e.currentTarget.parentElement.classList.remove("portfolio-image-empty")}
                     onError={(e) => {
 
                       e.currentTarget.style.display =
@@ -2551,8 +2073,7 @@ function Prices({
             </span>
 
             <strong>
-              {prices?.[0]?.neuro_price ||
-                "700 ₽"}
+              {(neuroPrices?.[neuroPrices.length - 1]?.[1] || "от 700 ₽").replace(/^от\s*/i, "")}
             </strong>
 
           </div>
@@ -2973,6 +2494,8 @@ function OrderModal({
     });
 
 
+  const [submitting, setSubmitting] = useState(false);
+  const submitPending = React.useRef(false);
   const [sent, setSent] =
     useState(false);
 
@@ -3008,6 +2531,7 @@ function OrderModal({
   const handleSubmit = async (e) => {
 
     e.preventDefault();
+    if (submitPending.current) return;
 
 
     if (
@@ -3024,6 +2548,8 @@ function OrderModal({
     }
 
 
+    submitPending.current = true;
+    setSubmitting(true);
     try {
 
       const {
@@ -3070,6 +2596,9 @@ function OrderModal({
 
       return;
 
+    } finally {
+      submitPending.current = false;
+      setSubmitting(false);
     }
 
 
@@ -3312,8 +2841,9 @@ ${
           <button
             type="submit"
             className="form-submit"
+            disabled={submitting}
           >
-            Отправить заявку →
+            {submitting ? "Отправка..." : "Отправить заявку →"}
           </button>
 
 
@@ -3439,6 +2969,7 @@ function NeuroPricesModal({
    ========================================================= */
 
 function Footer({
+  about,
   email
 }) {
 
@@ -3483,8 +3014,7 @@ function Footer({
 
 
             <p>
-              Сайты, нейрофото и визуальная упаковка
-              для специалистов и небольшого бизнеса.
+              {about || "Сайты, нейрофото и визуальная упаковка для специалистов и небольшого бизнеса."}
             </p>
 
           </div>
@@ -3701,8 +3231,7 @@ function App() {
     });
 
 
-  const [dataLoading, setDataLoading] =
-    useState(true);
+
 
 
   /* ---------------------------------------------------------
@@ -3714,7 +3243,10 @@ function App() {
     let mounted = true;
 
 
+    let loading = false;
     const initSiteData = async () => {
+      if (loading) return;
+      loading = true;
 
       try {
 
@@ -3737,11 +3269,7 @@ function App() {
 
       } finally {
 
-        if (mounted) {
-
-          setDataLoading(false);
-
-        }
+        loading = false;
 
       }
 
@@ -3749,10 +3277,17 @@ function App() {
 
 
     initSiteData();
-
-
+    const refreshVisible = () => { if (!document.hidden) initSiteData(); };
+    const storageChanged = event => { if (event.key === "frilance-content-updated") refreshVisible(); };
+    const timer = setInterval(refreshVisible, 30000);
+    window.addEventListener("focus", refreshVisible);
+    window.addEventListener("storage", storageChanged);
+    document.addEventListener("visibilitychange", refreshVisible);
     return () => {
-
+      clearInterval(timer);
+      window.removeEventListener("focus", refreshVisible);
+      window.removeEventListener("storage", storageChanged);
+      document.removeEventListener("visibilitychange", refreshVisible);
       mounted = false;
 
     };
@@ -3893,6 +3428,7 @@ function App() {
       <main>
 
         <Hero
+          services={siteData.services}
           onOrder={() =>
             openOrder()
           }
@@ -3987,6 +3523,7 @@ function App() {
 
 
       <Footer
+        about={siteData.texts.about !== DEFAULT_TEXTS.about ? siteData.texts.about : ""}
         email={
           siteData.contacts.email
         }

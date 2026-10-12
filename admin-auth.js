@@ -1,64 +1,6 @@
 "use strict";
 
 /* =========================================================
-   FRILANCE ADMIN — SUPABASE AUTH
-========================================================= */
-
-const SUPABASE_URL =
-    "https://vmiehkctmtpmpmizhkzt.supabase.co";
-
-const SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_XeGc3k4Wl67a0MSXzSufYA_L0Zl-sRS";
-
-
-/* =========================================================
-   SUPABASE CLIENT
-========================================================= */
-
-if (!window.supabase) {
-
-    console.error(
-        "FRILANCE AUTH: библиотека Supabase не загружена."
-    );
-
-} else {
-
-    try {
-
-        window.frilanceSupabase =
-            window.supabase.createClient(
-                SUPABASE_URL,
-                SUPABASE_PUBLISHABLE_KEY,
-                {
-                    auth: {
-                        persistSession: true,
-                        autoRefreshToken: true,
-                        detectSessionInUrl: true
-                    },
-                    global: {
-                        headers: {
-                            "X-Client-Info": "frilance-admin"
-                        }
-                    }
-                }
-            );
-
-        console.log(
-            "FRILANCE AUTH: Supabase client создан."
-        );
-
-    } catch (error) {
-
-        console.error(
-            "FRILANCE AUTH: ошибка создания Supabase client:",
-            error
-        );
-
-    }
-}
-
-
-/* =========================================================
    LOGIN OVERLAY
 ========================================================= */
 
@@ -410,8 +352,9 @@ async function handleLogin(event) {
 
         if (errorBox) {
             errorBox.textContent =
-                error?.message ||
-                "Не удалось выполнить вход.";
+                (error?.message === "Invalid login credentials"
+                  ? "Неверный email или пароль. Используйте пользователя из Supabase → Authentication → Users, а не пароль от аккаунта Supabase."
+                  : error?.message) || "Не удалось выполнить вход.";
         }
 
     } finally {
@@ -563,6 +506,9 @@ if (window.frilanceSupabase) {
             );
 
             if (session) {
+                if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
+                    setTimeout(() => window.dispatchEvent(new Event("frilance-auth-ready")), 0);
+                }
 
                 const overlay =
                     document.getElementById(
@@ -573,6 +519,8 @@ if (window.frilanceSupabase) {
                     overlay.remove();
                 }
 
+            } else if (event === "SIGNED_OUT") {
+                showLogin();
             }
 
         }
@@ -600,6 +548,9 @@ if (window.frilanceSupabase) {
             "FRILANCE AUTH: Supabase недоступен."
         );
 
+        showLogin();
+        const errorBox = document.getElementById("frilanceLoginError");
+        if (errorBox) errorBox.textContent = "Не удалось загрузить Supabase. Проверьте подключение и обновите страницу.";
         return;
     }
 

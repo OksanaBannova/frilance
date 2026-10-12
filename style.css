@@ -1156,6 +1156,44 @@ section {
 
 .portfolio-image:not(.portfolio-image-empty) .portfolio-image-placeholder { display: none; }
 
+.portfolio-gallery-controls {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.portfolio-gallery-controls button {
+  pointer-events: auto;
+  color: var(--text);
+  background: var(--bg-soft);
+  min-height: 44px;
+}
+.portfolio-gallery-controls span {
+  padding: 5px 10px;
+  border-radius: 12px;
+  background: var(--bg-soft);
+}
+
+.portfolio-main-card > *, .footer-main > *, .prices-grid > * { min-width: 0; }
+section[id] { scroll-margin-top: 90px; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+button:disabled { cursor: wait; opacity: 0.65; }
+.modal { max-height: calc(100dvh - 32px); overflow-y: auto; }
+
+@media (max-width: 720px) {
+  input, select, textarea { font-size: 16px; }
+  .modal-overlay { padding: 16px; }
+  .floating-cta { bottom: calc(16px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
 .portfolio-floating-label {
   position: absolute;
   z-index: 5;
@@ -2681,7 +2719,6 @@ section {
   overflow: hidden;
 }
 
-
 /* -----------------------------------------
    МЯГКОЕ СВЕЧЕНИЕ ВНУТРИ
    ----------------------------------------- */
@@ -2726,7 +2763,6 @@ section {
   z-index: -1;
 }
 
-
 /* -----------------------------------------
    ДОПОЛНИТЕЛЬНЫЕ GLOW-ЭЛЕМЕНТЫ
    ----------------------------------------- */
@@ -2764,7 +2800,6 @@ section {
     transparent 70%
   );
 }
-
 
 /* -----------------------------------------
    ТЕКСТ
@@ -2823,7 +2858,6 @@ section {
   color: rgba(255, 255, 255, 0.62);
 }
 
-
 /* -----------------------------------------
    КНОПКА
    ----------------------------------------- */
@@ -2858,7 +2892,6 @@ section {
   color: #fff;
 }
 
-
 /* -----------------------------------------
    EMAIL
    ----------------------------------------- */
@@ -2883,7 +2916,6 @@ section {
   color: rgba(255, 255, 255, 0.82);
   font-size: 13px;
 }
-
 
 /* -----------------------------------------
    ПРАВАЯ ДЕКОРАТИВНАЯ ЧАСТЬ
@@ -2929,7 +2961,6 @@ section {
   color: #fff;
   transform: translateX(-3px);
 }
-
 
 /* -----------------------------------------
    МОБИЛЬНАЯ ВЕРСИЯ
@@ -3069,7 +3100,6 @@ section {
   text-align: right;
 }
 
-
 /* ---------- TABLET ---------- */
 
 @media (max-width: 1050px) {
@@ -3087,7 +3117,6 @@ section {
     align-items: flex-end;
   }
 }
-
 
 /* ---------- MOBILE ---------- */
 
@@ -3149,7 +3178,6 @@ section {
     text-align: left;
   }
 }
-
 
 /* ---------- SMALL PHONE ---------- */
 

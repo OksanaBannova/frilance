@@ -6,7 +6,7 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
 
   <!-- Основные SEO -->
@@ -35,8 +35,6 @@
   <meta name="theme-color" content="#090812" />
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png" />
-  <link rel="apple-touch-icon" href="favicon.png" />
 
   <!-- Open Graph — превью ссылки -->
   <meta
@@ -131,16 +129,15 @@
   <link rel="stylesheet" href="style.css" />
 
   <script
-    src="https://unpkg.com/react@18/umd/react.development.js"
+    src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"
     crossorigin
   ></script>
 
   <script
-    src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+    src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"
     crossorigin
   ></script>
 
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 </head>
 
@@ -150,8 +147,8 @@
 
   <!-- React application -->
    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-   <script type="text/babel" src="script.js"></script>
-  
+<script src="supabase-config.js"></script>
+   <script src="site.js"></script>
 
 </body>
 </html>

@@ -1313,6 +1313,7 @@ document.addEventListener(
         initContacts();
         initLeads();
         initQuickActions();
+        $("#logoutButton")?.addEventListener("click", () => window.frilanceLogout?.());
 
         waitForSupabase();
     }
@@ -1323,28 +1324,22 @@ document.addEventListener(
    ОЖИДАНИЕ SUPABASE
 ========================================================= */
 
-function waitForSupabase() {
-
-    if (
-        typeof frilanceSupabase !== "undefined" &&
-        frilanceSupabase
-    ) {
-
-        console.log(
-            "FRILANCE ADMIN: Supabase готов."
-        );
-
-        loadAllData();
-
-        return;
-    }
-
-    setTimeout(
-        waitForSupabase,
-        100
-    );
+let adminDataLoading = false;
+async function loadAuthenticatedData() {
+  if (!window.frilanceSupabase || adminDataLoading) return;
+  const { data, error } = await frilanceSupabase.auth.getSession();
+  if (error || !data?.session) return;
+  adminDataLoading = true;
+  try { await loadAllData(); } finally { adminDataLoading = false; }
 }
-
+function waitForSupabase() {
+  if (!window.frilanceSupabase) {
+    showNotification("Supabase не загружен. Проверьте соединение и обновите страницу.", "error");
+    return;
+  }
+  window.addEventListener("frilance-auth-ready", loadAuthenticatedData);
+  loadAuthenticatedData();
+}
 
 /* =========================================================
    ЗАГРУЗКА ДАННЫХ
@@ -1367,10 +1362,7 @@ async function loadAllData() {
         );
 
     } else {
-
-        console.error(
-            "FRILANCE ADMIN: активная Supabase-сессия не найдена."
-        );
+        return;
     }
 
 
@@ -1495,9 +1487,7 @@ function initNavigation() {
 
 function showSection(sectionName) {
 
-    if (!sectionName) {
-        return;
-    }
+    if (!document.getElementById(`section-${sectionName}`)) sectionName = "dashboard";
 
 
     $$(".admin-section")
@@ -1830,7 +1820,10 @@ async function loadPortfolioImages(
    STORAGE UPLOAD
 ========================================================= */
 
+const uploadedFileCache = new WeakMap();
+
 async function uploadPortfolioImage(file) {
+    if (uploadedFileCache.has(file)) return uploadedFileCache.get(file);
 
     if (!file) {
         return null;
@@ -1850,20 +1843,10 @@ async function uploadPortfolioImage(file) {
     }
 
 
-    const allowedTypes = [
-
-        "image/jpeg",
-        "image/png",
-        "image/webp",
-        "image/gif"
-
-    ];
 
 
     if (
-        !allowedTypes.includes(
-            file.type
-        )
+        !FRILANCE_CONFIG.imageTypes.includes(frilanceImageType(file))
     ) {
 
         throw new Error(
@@ -1873,7 +1856,7 @@ async function uploadPortfolioImage(file) {
 
 
     const maxSize =
-        10 * 1024 * 1024;
+        FRILANCE_CONFIG.maxImageSize;
 
 
     if (file.size > maxSize) {
@@ -1923,14 +1906,14 @@ async function uploadPortfolioImage(file) {
             () =>
                 frilanceSupabase
                     .storage
-                    .from("portfolio-images")
+                    .from(FRILANCE_CONFIG.imageBucket)
                     .upload(
                         storagePath,
                         file,
                         {
                             cacheControl: "3600",
-                            upsert: false,
-                            contentType: file.type
+                            upsert: true,
+                            contentType: frilanceImageType(file)
                         }
                     ),
             `загрузка ${file.name}`,
@@ -1942,14 +1925,17 @@ async function uploadPortfolioImage(file) {
 
 
     if (uploadResult.error) {
-        throw uploadResult.error;
+        const message = String(uploadResult.error.message || "");
+        if (/bucket.*not found/i.test(message)) throw new Error("Не найден бакет portfolio-images. Выполните настройку из supabase/setup.sql.");
+        if (/row.level security|unauthorized|permission|403/i.test(message)) throw new Error("Supabase запретил загрузку. Проверьте права администратора и политики Storage (supabase/setup.sql).");
+        throw new Error("Не удалось загрузить «" + file.name + "»: " + message);
     }
 
 
     const publicResult =
         frilanceSupabase
             .storage
-            .from("portfolio-images")
+            .from(FRILANCE_CONFIG.imageBucket)
             .getPublicUrl(
                 storagePath
             );
@@ -1973,13 +1959,9 @@ async function uploadPortfolioImage(file) {
     );
 
 
-    return {
-
-        publicUrl,
-
-        storagePath
-
-    };
+    const uploaded = { publicUrl, storagePath };
+    uploadedFileCache.set(file, uploaded);
+    return uploaded;
 }
 
 
@@ -2003,7 +1985,7 @@ async function removePortfolioStorageFile(
                 () =>
                     frilanceSupabase
                         .storage
-                        .from("portfolio-images")
+                        .from(FRILANCE_CONFIG.imageBucket)
                         .remove([
                             storagePath
                         ]),
@@ -2459,18 +2441,10 @@ function previewPortfolioImages(event) {
     }
 
 
-    const allowedTypes = [
-
-        "image/jpeg",
-        "image/png",
-        "image/webp",
-        "image/gif"
-
-    ];
 
 
     const maxSize =
-        10 * 1024 * 1024;
+        FRILANCE_CONFIG.maxImageSize;
 
 
     const validFiles = [];
@@ -2479,9 +2453,7 @@ function previewPortfolioImages(event) {
     for (const file of files) {
 
         if (
-            !allowedTypes.includes(
-                file.type
-            )
+            !FRILANCE_CONFIG.imageTypes.includes(frilanceImageType(file))
         ) {
 
             showNotification(
@@ -2967,6 +2939,7 @@ async function deleteExistingPortfolioImage(
 
 
         await loadPortfolio();
+        frilanceNotifySiteChanged();
 
 
         showNotification(
@@ -2995,110 +2968,18 @@ async function deleteExistingPortfolioImage(
    СОХРАНЕНИЕ PORTFOLIO_IMAGES
 ========================================================= */
 
-async function savePortfolioImageRecords(
-    portfolioId,
-    uploadedImages,
-    description
-) {
-
-    if (
-        !portfolioId ||
-        !uploadedImages.length
-    ) {
-        return {
-            saved: 0,
-            failed: 0
-        };
-    }
-
-
-    let saved = 0;
-    let failed = 0;
-
-
-    for (
-        let index = 0;
-        index < uploadedImages.length;
-        index++
-    ) {
-
-        const uploaded =
-            uploadedImages[index];
-
-
-        const imageRecord = {
-
-            portfolio_id:
-                portfolioId,
-
-            image_url:
-                uploaded.publicUrl,
-
-            storage_path:
-                uploaded.storagePath,
-
-            description:
-                description || "",
-
-            sort_order:
-                index
-
-        };
-
-
-        try {
-
-            const imageResult =
-                await withSupabaseRetry(
-                    () =>
-                        frilanceSupabase
-                            .from("portfolio_images")
-                            .insert(
-                                imageRecord
-                            ),
-                    "добавление portfolio_images",
-                    {
-                        attempts: 5,
-                        baseDelay: 1000
-                    }
-                );
-
-
-            if (imageResult.error) {
-                throw imageResult.error;
-            }
-
-
-            saved++;
-
-
-        } catch (error) {
-
-            failed++;
-
-
-            console.warn(
-                "FRILANCE: не удалось сохранить portfolio_images:",
-                error
-            );
-
-            /*
-               Важно:
-               файл уже находится в Storage.
-               Не удаляем его автоматически при временной
-               сетевой ошибке, чтобы не потерять загруженное
-               изображение.
-            */
-        }
-    }
-
-
-    return {
-        saved,
-        failed
-    };
+async function savePortfolioImageRecords(portfolioId, uploadedImages, description) {
+    if (!portfolioId || !uploadedImages.length) return { saved: 0, failed: 0 };
+    const offset = currentExistingPortfolioImages.reduce((max, image) => Math.max(max, Number(image.sort_order) || 0), -1) + 1;
+    const records = uploadedImages.map((uploaded, index) => {
+        uploaded.recordId ||= crypto.randomUUID();
+        return { id: uploaded.recordId, portfolio_id: portfolioId, image_url: uploaded.publicUrl,
+            storage_path: uploaded.storagePath, description: description || "", sort_order: offset + index };
+    });
+    const result = await withSupabaseRetry(() => frilanceSupabase.from("portfolio_images").upsert(records, { onConflict: "id" }), "сохранение галереи");
+    if (result.error) throw new Error("Работа сохранена, но галерея не сохранена: " + result.error.message + ". Проверьте portfolio_images и права Supabase. Можно повторить сохранение.");
+    return { saved: records.length, failed: 0 };
 }
-
 
 /* =========================================================
    СОХРАНЕНИЕ ПОРТФОЛИО
@@ -3173,6 +3054,7 @@ async function savePortfolio(event) {
 
     const saveButton =
         $("#savePortfolioButton");
+    if (saveButton?.disabled) return;
 
 
     if (saveButton) {
@@ -3247,9 +3129,10 @@ async function savePortfolio(event) {
 
 
                     showNotification(
-                        `Не удалось загрузить «${file.name}».`,
+                        error?.message || `Не удалось загрузить «${file.name}».`,
                         "error"
                     );
+                    throw error;
                 }
             }
         }
@@ -3297,7 +3180,7 @@ async function savePortfolio(event) {
                             .eq(
                                 "id",
                                 id
-                            ),
+                            ).select("id").single(),
                     "обновление portfolio",
                     {
                         attempts: 5,
@@ -3332,6 +3215,7 @@ async function savePortfolio(event) {
                 );
 
 
+            payload.id = crypto.randomUUID();
             payload.sort_order =
                 maxSort + 1;
 
@@ -3356,9 +3240,7 @@ async function savePortfolio(event) {
                     () =>
                         frilanceSupabase
                             .from("portfolio")
-                            .insert(
-                                payload
-                            )
+                            .upsert(payload, { onConflict: "id" })
                             .select()
                             .single(),
                     "добавление portfolio",
@@ -3377,6 +3259,8 @@ async function savePortfolio(event) {
             portfolioId =
                 result.data?.id ||
                 "";
+            if (!portfolioId) throw new Error("Supabase не вернул ID сохранённой работы.");
+            $("#portfolioId").value = portfolioId;
         }
 
 
@@ -3430,6 +3314,7 @@ async function savePortfolio(event) {
 
 
         await loadPortfolio();
+        frilanceNotifySiteChanged();
 
 
         updateDashboard();
@@ -3600,6 +3485,7 @@ async function deletePortfolio(id) {
 
 
         await loadPortfolio();
+        frilanceNotifySiteChanged();
 
         updateDashboard();
 
@@ -3682,10 +3568,10 @@ async function loadServices() {
                     .order(
                         "created_at",
                         {
-                            ascending: true
+                            ascending: false
                         }
                     )
-                    .limit(1),
+                    .order("id", { ascending: false }).limit(1),
             "services"
         );
 
@@ -3797,7 +3683,7 @@ async function saveServices(event) {
                             .eq(
                                 "id",
                                 services.id
-                            ),
+                            ).select("id").single(),
                     "обновление services"
                 );
 
@@ -3822,6 +3708,7 @@ async function saveServices(event) {
         await loadServices();
 
 
+        frilanceNotifySiteChanged();
         showNotification(
             "Цены сохранены."
         );
@@ -3906,10 +3793,10 @@ async function loadTexts() {
                     .order(
                         "created_at",
                         {
-                            ascending: true
+                            ascending: false
                         }
                     )
-                    .limit(1),
+                    .order("id", { ascending: false }).limit(1),
             "texts"
         );
 
@@ -4061,7 +3948,7 @@ async function saveTexts(event) {
                             .eq(
                                 "id",
                                 texts.id
-                            ),
+                            ).select("id").single(),
                     "обновление texts"
                 );
 
@@ -4086,6 +3973,7 @@ async function saveTexts(event) {
         await loadTexts();
 
 
+        frilanceNotifySiteChanged();
         showNotification(
             "Тексты сохранены."
         );
@@ -4140,10 +4028,10 @@ async function loadContacts() {
                     .order(
                         "created_at",
                         {
-                            ascending: true
+                            ascending: false
                         }
                     )
-                    .limit(1),
+                    .order("id", { ascending: false }).limit(1),
             "contacts"
         );
 
@@ -4223,7 +4111,7 @@ async function saveContacts(event) {
                             .eq(
                                 "id",
                                 contacts.id
-                            ),
+                            ).select("id").single(),
                     "обновление contacts"
                 );
 
@@ -4248,6 +4136,7 @@ async function saveContacts(event) {
         await loadContacts();
 
 
+        frilanceNotifySiteChanged();
         showNotification(
             "Контакты сохранены."
         );
