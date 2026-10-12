@@ -3698,7 +3698,9 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--blue); outline-
 .admin-modal { max-height: calc(100dvh - 24px); }
 @media (max-width: 720px) {
   input, select, textarea { font-size: 16px; }
-  .admin-modal { height: auto; max-height: calc(100dvh - 24px); }
+  .admin-modal { position: relative; height: auto; max-height: calc(100dvh - 24px); }
+  .admin-modal > .admin-modal-close { position: absolute; top: 12px; right: 12px; z-index: 7; }
+  .admin-modal-header { flex-direction: column; align-items: flex-start; gap: 5px; padding-right: 56px; }
   .admin-sidebar { padding-bottom: env(safe-area-inset-bottom); max-height: calc(70px + env(safe-area-inset-bottom)); }
   .admin-main { padding-bottom: calc(70px + env(safe-area-inset-bottom)); }
   .settings-row { flex-wrap: wrap; gap: 12px; }
