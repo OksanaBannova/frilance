@@ -970,6 +970,9 @@ section {
 
 .portfolio-tabs::-webkit-scrollbar { display: none; }
 
+.portfolio-work-controls { display: flex; align-items: center; gap: 12px; }
+.portfolio-work-controls .portfolio-tab { min-height: 44px; color: var(--text); }
+
 .portfolio-tab {
   position: relative;
   display: flex;

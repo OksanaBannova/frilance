@@ -46,6 +46,14 @@ test('A failing gallery request does not discard the portfolio', async () => {
 });
 
 const admin = fs.readFileSync('admin.js', 'utf8');
+test('Portfolio tabs group repeated categories without losing any work', () => {
+  const context = vm.createContext({});
+  vm.runInContext(source.slice(source.indexOf('function getPortfolioGroups('), source.indexOf('function Portfolio(')), context);
+  const groups = vm.runInContext('getPortfolioGroups([{category:"Сайты"},{category:"Нейрофото"},{category:"Карточки товаров"},{category:"САЙТЫ"},{category:"Маркетплейсы"}])', context);
+  assert.deepEqual(Array.from(groups, group => group.category), ['САЙТЫ', 'НЕЙРОФОТО', 'КАРТОЧКИ ТОВАРОВ']);
+  assert.deepEqual(Array.from(groups[0].indices), [0, 3]);
+  assert.deepEqual(Array.from(groups[2].indices), [2, 4]);
+});
 function adminContext(client) {
   return vm.createContext({ window: { frilanceSupabase: client }, frilanceSupabase: client,
     document: { addEventListener() {} }, console: { log() {}, warn() {}, error() {} },

@@ -416,8 +416,11 @@ function Header({ onOrder, texts }) {
           }}
         >
 
-          <span className="logo-mark">
-            ✦
+          <span className="logo-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <ellipse cx="9" cy="16" rx="4.5" ry="7" />
+              <path d="M18 23V9h4a3.5 3.5 0 0 1 0 7h-4m4 0a3.5 3.5 0 0 1 0 7h-4" />
+            </svg>
           </span>
 
           <span>
@@ -1107,6 +1110,18 @@ function ServiceModal({
    PORTFOLIO
    ========================================================= */
 
+function getPortfolioGroups(items) {
+  const groups = [];
+  items.forEach((item, index) => {
+    const raw = String(item.category || "Портфолио").trim().toUpperCase();
+    const category = /КАРТОЧ|МАРКЕТ/.test(raw) ? "КАРТОЧКИ ТОВАРОВ" : /НЕЙРО/.test(raw) ? "НЕЙРОФОТО" : /САЙТ/.test(raw) ? "САЙТЫ" : raw;
+    let group = groups.find(group => group.category === category);
+    if (!group) { group = { category, indices: [] }; groups.push(group); }
+    group.indices.push(index);
+  });
+  return groups;
+}
+
 function Portfolio({
   onOrder,
   portfolio,
@@ -1142,6 +1157,14 @@ function Portfolio({
   const item =
     portfolioItems[active] ||
     portfolioItems[0];
+
+  const groups = getPortfolioGroups(portfolioItems);
+  const selectedGroup = groups.find(group => group.indices.includes(active)) || groups[0];
+  const groupPosition = selectedGroup?.indices.indexOf(active) ?? 0;
+  const changeWork = direction => {
+    const indices = selectedGroup.indices;
+    setActive(indices[(groupPosition + direction + indices.length) % indices.length]);
+  };
 
 
   if (!item) {
@@ -1186,22 +1209,18 @@ function Portfolio({
 
         <div className="portfolio-tabs">
 
-          {portfolioItems.map(
-            (portfolioItem, index) => (
+          {groups.map(
+            (group, index) => (
 
               <button
-                key={
-                  portfolioItem.id ||
-                  portfolioItem.number ||
-                  index
-                }
+                key={group.category}
                 className={`portfolio-tab ${
-                  active === index
+                  group === selectedGroup
                     ? "active"
                     : ""
                 }`}
                 onClick={() =>
-                  setActive(index)
+                  setActive(group.indices[0])
                 }
               >
 
@@ -1211,7 +1230,7 @@ function Portfolio({
 
 
                 <span>
-                  {portfolioItem.category}
+                  {group.category}
                 </span>
 
               </button>
@@ -1437,6 +1456,12 @@ function Portfolio({
         <div className="portfolio-bottom">
 
           <div className="portfolio-bottom-text">
+
+            {selectedGroup.indices.length > 1 && <div className="portfolio-work-controls">
+              <button type="button" className="portfolio-tab" aria-label="Предыдущая работа" onClick={() => changeWork(-1)}>←</button>
+              <span aria-live="polite">{groupPosition + 1} / {selectedGroup.indices.length}</span>
+              <button type="button" className="portfolio-tab" aria-label="Следующая работа" onClick={() => changeWork(1)}>→</button>
+            </div>}
 
             <span>
               {String(active + 1).padStart(2, "0")}
